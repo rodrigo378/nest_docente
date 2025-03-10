@@ -17,7 +17,7 @@ export class StrategyService extends PassportStrategy(Strategy) {
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      secretOrKey: configService.get('JWT_SECRET', ''),
+      secretOrKey: configService.get('JWT_SECRET') || 'secre',
       ignoreExpiration: false,
     });
   }
@@ -38,7 +38,7 @@ export class StrategyService extends PassportStrategy(Strategy) {
       throw new UnauthorizedException('Usuario no encontroado');
     }
 
-    const { password, ...result } = user;
-    return result;
+    Reflect.deleteProperty(user, 'password');
+    return user;
   }
 }

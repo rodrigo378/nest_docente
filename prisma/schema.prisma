@@ -30,3 +30,24 @@ enum AuthProvider {
   GOOGLE // Login con Google
   MICROSOFT // Login con Microsoft
 }
+
+model Departamento {
+  id         Int         @id @default(autoincrement())
+  nombre     String
+  provincias Provincia[]
+}
+
+model Provincia {
+  id              Int          @id @default(autoincrement())
+  nombre          String
+  departamento    Departamento @relation(fields: [departamento_id], references: [id], onDelete: Cascade)
+  departamento_id Int
+  distritos       Distrito[]
+}
+
+model Distrito {
+  id           Int       @id @default(autoincrement())
+  nombre       String
+  provincia    Provincia @relation(fields: [provincia_id], references: [id], onDelete: Cascade)
+  provincia_id Int
+}
