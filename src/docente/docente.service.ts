@@ -60,101 +60,101 @@ export class DocenteService {
             ],
           },
 
-          // formacionesAcademicas: {
-          //   create: createDocenteDto.formacionAcademica?.map((fa) => ({
-          //     grado_academico: fa.grado_academico,
-          //     universidad: fa.universidad,
-          //     especialidad: fa.especialidad,
-          //     pais: fa.pais,
-          //     resolucion_sunedu: fa.revalidacion,
-          //   })),
-          // },
+          formacionesAcademicas: {
+            create: createDocenteDto.formacionAcademica?.map((fa) => ({
+              grado_academico: fa.grado_academico,
+              universidad: fa.universidad,
+              especialidad: fa.especialidad,
+              pais: fa.pais,
+              resolucion_sunedu: fa.revalidacion,
+            })),
+          },
 
-          // titulosProfesionales: {
-          //   create: createDocenteDto.titulosProfesionales?.map((tp) => ({
-          //     titulo: tp.titulo,
-          //     universidad: tp.universidad,
-          //     especialidad: tp.especialidad,
-          //   })),
-          // },
+          titulosProfesionales: {
+            create: createDocenteDto.titulosProfesionales?.map((tp) => ({
+              titulo: tp.titulo,
+              universidad: tp.universidad,
+              especialidad: tp.especialidad,
+            })),
+          },
 
-          // formacionesComplementarias: {
-          //   create: createDocenteDto.formacionComplementaria?.map((fc) => ({
-          //     denominacion: fc.denominacion,
-          //     especialidad: fc.especialidad,
-          //     institucion: fc.institucion,
-          //   })),
-          // },
+          formacionesComplementarias: {
+            create: createDocenteDto.formacionComplementaria?.map((fc) => ({
+              denominacion: fc.denominacion,
+              especialidad: fc.especialidad,
+              institucion: fc.institucion,
+            })),
+          },
 
-          // experienciasDocentes: {
-          //   create: [
-          //     ...(createDocenteDto.experienciaUniversitaria || []).map(
-          //       (eu) => ({
-          //         institucion: eu.nombre_universidad,
-          //         curso_dictado: eu.curso_dictado,
-          //         semestre: eu.semestre,
-          //         pais: eu.pais,
-          //         tipo_experiencia: 0, // Universitario
-          //       }),
-          //     ),
-          //     ...(createDocenteDto.experienciaNoUnivercitaria || []).map(
-          //       (enu) => ({
-          //         institucion: enu.nombre_universidad,
-          //         curso_dictado: enu.curso_dictado,
-          //         semestre: enu.semestre,
-          //         pais: enu.pais,
-          //         tipo_experiencia: 1, // No Universitario
-          //       }),
-          //     ),
-          //   ],
-          // },
+          experienciasDocentes: {
+            create: [
+              ...(createDocenteDto.experienciaUniversitaria || []).map(
+                (eu) => ({
+                  institucion: eu.nombre_universidad,
+                  curso_dictado: eu.curso_dictado,
+                  semestre: eu.semestre,
+                  pais: eu.pais,
+                  tipo_experiencia: 0, // Universitario
+                }),
+              ),
+              ...(createDocenteDto.experienciaNoUnivercitaria || []).map(
+                (enu) => ({
+                  institucion: enu.nombre_universidad,
+                  curso_dictado: enu.curso_dictado,
+                  semestre: enu.semestre,
+                  pais: enu.pais,
+                  tipo_experiencia: 1, // No Universitario
+                }),
+              ),
+            ],
+          },
 
-          // articulosCientificos: {
-          //   create: createDocenteDto.articuloCientifico?.map((ac) => ({
-          //     titulo_articulo: ac.nombre_articulo,
-          //     nombre_revista: ac.nombre_revista,
-          //     indizado: ac.indizado,
-          //     año: ac.año,
-          //     enlace: ac.enlace,
-          //   })),
-          // },
+          articulosCientificos: {
+            create: createDocenteDto.articuloCientifico?.map((ac) => ({
+              titulo_articulo: ac.nombre_articulo,
+              nombre_revista: ac.nombre_revista,
+              indizado: ac.indizado,
+              año: ac.año,
+              enlace: ac.enlace,
+            })),
+          },
 
-          // libros: {
-          //   create: createDocenteDto.libros?.map((lib) => ({
-          //     titulo: lib.libro_titulo,
-          //     nombre_editorial: lib.nombre_editorial,
-          //     año: lib.año,
-          //   })),
-          // },
+          libros: {
+            create: createDocenteDto.libros?.map((lib) => ({
+              titulo: lib.libro_titulo,
+              nombre_editorial: lib.nombre_editorial,
+              año: lib.año,
+            })),
+          },
 
-          // proyectosInvestigacion: {
-          //   create: createDocenteDto.proyectoInvestigacion?.map((pi) => ({
-          //     nombre: pi.proyecto,
-          //     entidad_financiadora: pi.entidad_financiera,
-          //     año: pi.año_adjudicacion,
-          //   })),
-          // },
+          proyectosInvestigacion: {
+            create: createDocenteDto.proyectoInvestigacion?.map((pi) => ({
+              nombre: pi.proyecto,
+              entidad_financiadora: pi.entidad_financiera,
+              año: pi.año_adjudicacion,
+            })),
+          },
 
-          // asesoriasJurados: {
-          //   create: createDocenteDto.asesoriaJurado?.map((aj) => ({
-          //     titulo_tesis: aj.titulo_tesis,
-          //     universidad: aj.universidad,
-          //     nivel: aj.nivel_tesis,
-          //     año: aj.año,
-          //     tipo: 0, // Asesor (0) o Jurado (1)
-          //   })),
-          // },
+          asesoriasJurados: {
+            create: createDocenteDto.asesoriaJurado?.map((aj) => ({
+              titulo_tesis: aj.titulo_tesis,
+              universidad: aj.universidad,
+              nivel: aj.nivel_tesis,
+              año: aj.año,
+              tipo: 0, // Asesor (0) o Jurado (1)
+            })),
+          },
 
-          // otros: {
-          //   create: createDocenteDto.otros?.map((o) => ({
-          //     idioma: o.idioma,
-          //     nivel_idioma: o.nivel_idioma,
-          //     office: o.office,
-          //     nivel_office: o.nivel_office,
-          //     elearning: o.learning,
-          //     nivel_elearning: o.nivel_learning,
-          //   })),
-          // },
+          otros: {
+            create: createDocenteDto.otros?.map((o) => ({
+              idioma: o.idioma,
+              nivel_idioma: o.nivel_idioma,
+              office: o.office,
+              nivel_office: o.nivel_office,
+              elearning: o.learning,
+              nivel_elearning: o.nivel_learning,
+            })),
+          },
         },
       });
 
