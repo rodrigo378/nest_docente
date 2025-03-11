@@ -51,3 +51,158 @@ model Distrito {
   provincia    Provincia @relation(fields: [provincia_id], references: [id], onDelete: Cascade)
   provincia_id Int
 }
+
+model Docente {
+  id                    Int      @id @default(autoincrement())
+  nombres               String
+  apellido_paterno      String
+  apellido_materno      String
+  tipo_identificacion   String // DNI, RUC, Pasaporte o Carnet Extranjero
+  numero_identificacion String
+  fecha_nacimiento      DateTime
+  email                 String   @unique
+  celular               String   @db.VarChar(9)
+  telefono_fijo         String   @db.VarChar(7)
+  estado                Int      @default(0) // 0 = Pendiente, 1 = Aprobado
+
+  contactosEmergencia        ContactoEmergencia[]
+  domicilios                 Domicilio[]
+  formacionesAcademicas      FormacionAcademica[]
+  titulosProfesionales       TituloProfesional[]
+  formacionesComplementarias FormacionComplementaria[]
+  experienciasDocentes       ExperienciaDocente[]
+  articulosCientificos       ArticuloCientifico[]
+  libros                     Libro[]
+  proyectosInvestigacion     ProyectoInvestigacion[]
+  asesoriasJurados           AsesoriaJurado[]
+  otros                      Otros[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+}
+
+model ContactoEmergencia {
+  id         Int     @id @default(autoincrement())
+  nombre     String
+  relacion   String // Padre/Madre, Hermano/a, Amigo/a, Pareja u Otro
+  telefono_1 String  @db.Char(9)
+  telefono_2 String? @db.Char(9)
+
+  docente_id Int
+  docente    Docente @relation(fields: [docente_id], references: [id], onDelete: Cascade)
+}
+
+model Domicilio {
+  id              Int     @id @default(autoincrement())
+  departamento_id Int
+  provincia_id    Int
+  distrito_id     Int
+  direccion       String? // Nullable
+  referencia      String? // Nullable
+  mz              String? // Nullable
+  lote            String? // Nullable
+
+  docente_id Int
+  docente    Docente @relation(fields: [docente_id], references: [id], onDelete: Cascade)
+}
+
+model FormacionAcademica {
+  id                Int     @id @default(autoincrement())
+  grado_academico   String? // Bachiller, Magister, Doctor
+  universidad       String?
+  especialidad      String?
+  pais              String?
+  resolucion_sunedu String? // Número de resolución en caso de revalidación
+
+  docente_id Int?
+  docente    Docente? @relation(fields: [docente_id], references: [id], onDelete: SetNull)
+}
+
+model TituloProfesional {
+  id           Int     @id @default(autoincrement())
+  titulo       String?
+  universidad  String?
+  especialidad String?
+
+  docente_id Int?
+  docente    Docente? @relation(fields: [docente_id], references: [id], onDelete: SetNull)
+}
+
+model FormacionComplementaria {
+  id           Int     @id @default(autoincrement())
+  denominacion String?
+  especialidad String?
+  institucion  String?
+
+  docente_id Int?
+  docente    Docente? @relation(fields: [docente_id], references: [id], onDelete: SetNull)
+}
+
+model ExperienciaDocente {
+  id               Int     @id @default(autoincrement())
+  institucion      String?
+  curso_dictado    String?
+  semestre         String?
+  pais             String?
+  tipo_experiencia Int // 0 = Universitario, 1 = No Universitario
+
+  docente_id Int?
+  docente    Docente? @relation(fields: [docente_id], references: [id], onDelete: SetNull)
+}
+
+model ArticuloCientifico {
+  id              Int     @id @default(autoincrement())
+  titulo_articulo String?
+  nombre_revista  String?
+  indizado        String?
+  año            String?
+  enlace          String?
+
+  docente_id Int?
+  docente    Docente? @relation(fields: [docente_id], references: [id], onDelete: SetNull)
+}
+
+model Libro {
+  id               Int     @id @default(autoincrement())
+  titulo           String?
+  nombre_editorial String?
+  año             String?
+
+  docente_id Int?
+  docente    Docente? @relation(fields: [docente_id], references: [id], onDelete: SetNull)
+}
+
+model ProyectoInvestigacion {
+  id                   Int     @id @default(autoincrement())
+  nombre               String?
+  entidad_financiadora String?
+  año                 String?
+
+  docente_id Int?
+  docente    Docente? @relation(fields: [docente_id], references: [id], onDelete: SetNull)
+}
+
+model AsesoriaJurado {
+  id           Int     @id @default(autoincrement())
+  titulo_tesis String?
+  universidad  String?
+  nivel        String?
+  año         String?
+  tipo         Int // 0 = Asesor, 1 = Jurado
+
+  docente_id Int?
+  docente    Docente? @relation(fields: [docente_id], references: [id], onDelete: SetNull)
+}
+
+model Otros {
+  id              Int     @id @default(autoincrement())
+  idioma          String?
+  nivel_idioma    String? // Básico, Intermedio, Avanzado
+  office          String?
+  nivel_office    String? // Básico, Intermedio, Avanzado
+  elearning       String?
+  nivel_elearning String? // Básico, Intermedio, Avanzado
+
+  docente_id Int?
+  docente    Docente? @relation(fields: [docente_id], references: [id], onDelete: SetNull)
+}
