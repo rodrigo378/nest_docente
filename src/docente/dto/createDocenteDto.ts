@@ -119,7 +119,7 @@ export class FormacionComplementariaDto {
 export class ExperienciaDocenteDto {
   @IsOptional()
   @IsString()
-  nombre_universidad?: string;
+  institucion?: string;
 
   @IsOptional()
   @IsString()
@@ -135,6 +135,7 @@ export class ExperienciaDocenteDto {
 
   @IsOptional()
   @IsNumber()
+  @Type(() => Number)
   tipo_experiencia?: number;
 }
 
@@ -207,7 +208,8 @@ export class AsesoriaJuradoDto {
 
   @IsOptional()
   @IsNumber()
-  tipo: number;
+  @Type(() => Number)
+  tipo?: number;
 }
 
 export class OtrosDto {
@@ -314,14 +316,7 @@ export class CreateDocenteDto {
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => ExperienciaDocenteDto)
-  experienciaUniversitaria?: ExperienciaDocenteDto[];
-
-  // Experiencia No Universitaria
-  @IsOptional()
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => ExperienciaDocenteDto)
-  experienciaNoUnivercitaria?: ExperienciaDocenteDto[];
+  experienciaDocente?: ExperienciaDocenteDto[];
 
   // Artículos Científicos
   @IsOptional()

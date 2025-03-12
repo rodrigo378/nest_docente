@@ -87,26 +87,13 @@ export class DocenteService {
           },
 
           experienciasDocentes: {
-            create: [
-              ...(createDocenteDto.experienciaUniversitaria || []).map(
-                (eu) => ({
-                  institucion: eu.nombre_universidad,
-                  curso_dictado: eu.curso_dictado,
-                  semestre: eu.semestre,
-                  pais: eu.pais,
-                  tipo_experiencia: 0, // Universitario
-                }),
-              ),
-              ...(createDocenteDto.experienciaNoUnivercitaria || []).map(
-                (enu) => ({
-                  institucion: enu.nombre_universidad,
-                  curso_dictado: enu.curso_dictado,
-                  semestre: enu.semestre,
-                  pais: enu.pais,
-                  tipo_experiencia: 1, // No Universitario
-                }),
-              ),
-            ],
+            create: createDocenteDto.experienciaDocente?.map((exp) => ({
+              institucion: exp.institucion,
+              curso_dictado: exp.curso_dictado,
+              semestre: exp.semestre,
+              pais: exp.pais,
+              tipo_experiencia: Number(exp.tipo_experiencia) || 0,
+            })),
           },
 
           articulosCientificos: {
@@ -141,7 +128,7 @@ export class DocenteService {
               universidad: aj.universidad,
               nivel: aj.nivel,
               año: aj.año,
-              tipo: aj.tipo, // Asesor (0) o Jurado (1)
+              tipo: Number(aj.tipo) || 0,
             })),
           },
 
@@ -326,18 +313,7 @@ export class DocenteService {
       }
 
       // 🔹 Actualizar Experiencia Docente (1:N)
-      const experiencias = [
-        ...(updateDocenteDto.experienciaUniversitaria || []).map((exp) => ({
-          ...exp,
-          tipo_experiencia: 0, // Universitaria
-        })),
-        ...(updateDocenteDto.experienciaNoUnivercitaria || []).map((exp) => ({
-          ...exp,
-          tipo_experiencia: 1, // No Universitaria
-        })),
-      ];
-
-      for (const experiencia of experiencias) {
+      for (const experiencia of updateDocenteDto.experienciaDocente || []) {
         await this.prismaService.experienciaDocente.upsert({
           where: { id: Number(experiencia.id) || 0 },
           update: {
@@ -353,7 +329,7 @@ export class DocenteService {
             curso_dictado: experiencia.curso_dictado,
             semestre: experiencia.semestre,
             pais: experiencia.pais,
-            tipo_experiencia: experiencia.tipo_experiencia,
+            tipo_experiencia: experiencia.tipo_experiencia || 0,
           },
         });
       }

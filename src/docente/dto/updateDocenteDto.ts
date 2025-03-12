@@ -367,14 +367,7 @@ export class UpdateDocenteDto {
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => ExperienciaDocenteDto)
-  experienciaUniversitaria?: ExperienciaDocenteDto[];
-
-  // Experiencia No Universitaria
-  @IsOptional()
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => ExperienciaDocenteDto)
-  experienciaNoUnivercitaria?: ExperienciaDocenteDto[];
+  experienciaDocente?: ExperienciaDocenteDto[];
 
   // Artículos Científicos
   @IsOptional()
