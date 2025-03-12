@@ -66,7 +66,7 @@ export class DocenteService {
               universidad: fa.universidad,
               especialidad: fa.especialidad,
               pais: fa.pais,
-              resolucion_sunedu: fa.revalidacion,
+              resolucion_sunedu: fa.resolucion_sunedu,
             })),
           },
 
@@ -111,7 +111,7 @@ export class DocenteService {
 
           articulosCientificos: {
             create: createDocenteDto.articuloCientifico?.map((ac) => ({
-              titulo_articulo: ac.nombre_articulo,
+              titulo_articulo: ac.titulo_articulo,
               nombre_revista: ac.nombre_revista,
               indizado: ac.indizado,
               año: ac.año,
@@ -129,9 +129,9 @@ export class DocenteService {
 
           proyectosInvestigacion: {
             create: createDocenteDto.proyectoInvestigacion?.map((pi) => ({
-              nombre: pi.proyecto,
+              nombre: pi.nombre,
               entidad_financiadora: pi.entidad_financiera,
-              año: pi.año_adjudicacion,
+              año: pi.año,
             })),
           },
 
@@ -139,9 +139,9 @@ export class DocenteService {
             create: createDocenteDto.asesoriaJurado?.map((aj) => ({
               titulo_tesis: aj.titulo_tesis,
               universidad: aj.universidad,
-              nivel: aj.nivel_tesis,
+              nivel: aj.nivel,
               año: aj.año,
-              tipo: 0, // Asesor (0) o Jurado (1)
+              tipo: aj.tipo, // Asesor (0) o Jurado (1)
             })),
           },
 
@@ -237,31 +237,29 @@ export class DocenteService {
       }
 
       // 🔹 Actualizar Domicilios (1:N)
-      if (updateDocenteDto.domicilios?.length) {
-        for (const domicilio of updateDocenteDto.domicilios) {
-          await this.prismaService.domicilio.upsert({
-            where: { id: Number(domicilio.id) || 0 },
-            update: {
-              departamento_id: domicilio.departamento_id,
-              provincia_id: domicilio.provincia_id,
-              distrito_id: domicilio.distrito_id,
-              direccion: domicilio.direccion,
-              referencia: domicilio.referencia,
-              mz: domicilio.mz,
-              lote: domicilio.lote,
-            },
-            create: {
-              docente_id: id,
-              departamento_id: domicilio.departamento_id || 0,
-              provincia_id: domicilio.provincia_id || 0,
-              distrito_id: domicilio.distrito_id || 0,
-              direccion: domicilio.direccion,
-              referencia: domicilio.referencia,
-              mz: domicilio.mz,
-              lote: domicilio.lote,
-            },
-          });
-        }
+      if (updateDocenteDto.domicilio) {
+        await this.prismaService.domicilio.upsert({
+          where: { id: Number(updateDocenteDto.domicilio.id) || 0 },
+          update: {
+            departamento_id: updateDocenteDto.domicilio.departamento_id,
+            provincia_id: updateDocenteDto.domicilio.provincia_id,
+            distrito_id: updateDocenteDto.domicilio.distrito_id,
+            direccion: updateDocenteDto.domicilio.direccion,
+            referencia: updateDocenteDto.domicilio.referencia,
+            mz: updateDocenteDto.domicilio.mz,
+            lote: updateDocenteDto.domicilio.lote,
+          },
+          create: {
+            docente_id: id,
+            departamento_id: updateDocenteDto.domicilio.departamento_id || 0,
+            provincia_id: updateDocenteDto.domicilio.provincia_id || 0,
+            distrito_id: updateDocenteDto.domicilio.distrito_id || 0,
+            direccion: updateDocenteDto.domicilio.direccion,
+            referencia: updateDocenteDto.domicilio.referencia,
+            mz: updateDocenteDto.domicilio.mz,
+            lote: updateDocenteDto.domicilio.lote,
+          },
+        });
       }
 
       // 🔹 Actualizar Formación Académica (1:N)
@@ -274,7 +272,7 @@ export class DocenteService {
               universidad: formacion.universidad,
               especialidad: formacion.especialidad,
               pais: formacion.pais,
-              resolucion_sunedu: formacion.revalidacion,
+              resolucion_sunedu: formacion.resolucion_sunedu,
             },
             create: {
               docente_id: id,
@@ -282,7 +280,7 @@ export class DocenteService {
               universidad: formacion.universidad,
               especialidad: formacion.especialidad,
               pais: formacion.pais,
-              resolucion_sunedu: formacion.revalidacion,
+              resolucion_sunedu: formacion.resolucion_sunedu,
             },
           });
         }
@@ -366,7 +364,7 @@ export class DocenteService {
           await this.prismaService.articuloCientifico.upsert({
             where: { id: Number(articulo.id) || 0 },
             update: {
-              titulo_articulo: articulo.nombre_articulo,
+              titulo_articulo: articulo.titulo_articulo,
               nombre_revista: articulo.nombre_revista,
               indizado: articulo.indizado,
               año: articulo.año,
@@ -374,7 +372,7 @@ export class DocenteService {
             },
             create: {
               docente_id: id,
-              titulo_articulo: articulo.nombre_articulo,
+              titulo_articulo: articulo.titulo_articulo,
               nombre_revista: articulo.nombre_revista,
               indizado: articulo.indizado,
               año: articulo.año,
@@ -410,15 +408,15 @@ export class DocenteService {
           await this.prismaService.proyectoInvestigacion.upsert({
             where: { id: Number(proyecto.id) || 0 },
             update: {
-              nombre: proyecto.proyecto,
+              nombre: proyecto.nombre,
               entidad_financiadora: proyecto.entidad_financiera,
-              año: proyecto.año_adjudicacion,
+              año: proyecto.año,
             },
             create: {
               docente_id: id,
-              nombre: proyecto.proyecto,
+              nombre: proyecto.nombre,
               entidad_financiadora: proyecto.entidad_financiera,
-              año: proyecto.año_adjudicacion,
+              año: proyecto.año,
             },
           });
         }
@@ -432,17 +430,17 @@ export class DocenteService {
             update: {
               titulo_tesis: asesoria.titulo_tesis,
               universidad: asesoria.universidad,
-              nivel: asesoria.nivel_tesis,
+              nivel: asesoria.nivel,
               año: asesoria.año,
-              tipo: 0, // Asesor (0) o Jurado (1)
+              tipo: asesoria.tipo, // Asesor (0) o Jurado (1)
             },
             create: {
               docente_id: id,
               titulo_tesis: asesoria.titulo_tesis,
               universidad: asesoria.universidad,
-              nivel: asesoria.nivel_tesis,
+              nivel: asesoria.nivel,
               año: asesoria.año,
-              tipo: 0, // Asesor (0) o Jurado (1)
+              tipo: asesoria.tipo || 0, // Asesor (0) o Jurado (1)
             },
           });
         }

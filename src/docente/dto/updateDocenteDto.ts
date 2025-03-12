@@ -10,6 +10,286 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
+export class ContactoEmergenciaDto {
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  id?: number;
+
+  @IsOptional()
+  @IsString()
+  nombre: string;
+
+  @IsOptional()
+  @IsString()
+  relacion: string;
+
+  @IsOptional()
+  @IsString()
+  @Length(9, 9)
+  telefono_1: string;
+
+  @IsOptional()
+  @IsString()
+  @Length(9, 9)
+  telefono_2?: string;
+}
+
+export class DomicilioDto {
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  id?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  departamento_id: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  provincia_id: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  distrito_id: number;
+
+  @IsOptional()
+  @IsString()
+  direccion: string;
+
+  @IsOptional()
+  @IsString()
+  referencia: string;
+
+  @IsOptional()
+  @IsString()
+  mz: string;
+
+  @IsOptional()
+  @IsString()
+  lote: string;
+}
+
+export class FormacionAcademicaDto {
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  id?: number;
+
+  @IsOptional()
+  @IsString()
+  grado_academico: string;
+
+  @IsOptional()
+  @IsString()
+  universidad: string;
+
+  @IsOptional()
+  @IsString()
+  especialidad: string;
+
+  @IsOptional()
+  @IsString()
+  pais: string;
+
+  @IsOptional()
+  @IsString()
+  resolucion_sunedu: string;
+}
+
+export class TituloProfesionalDto {
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  id?: number;
+
+  @IsOptional()
+  @IsString()
+  titulo: string;
+
+  @IsOptional()
+  @IsString()
+  universidad: string;
+
+  @IsOptional()
+  @IsString()
+  especialidad: string;
+}
+
+export class FormacionComplementariaDto {
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  id?: number;
+
+  @IsOptional()
+  @IsString()
+  denominacion?: string;
+
+  @IsOptional()
+  @IsString()
+  especialidad?: string;
+
+  @IsOptional()
+  @IsString()
+  institucion?: string;
+}
+
+export class ExperienciaDocenteDto {
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  id?: number;
+
+  @IsOptional()
+  @IsString()
+  nombre_universidad?: string;
+
+  @IsOptional()
+  @IsString()
+  curso_dictado?: string;
+
+  @IsOptional()
+  @IsString()
+  semestre?: string;
+
+  @IsOptional()
+  @IsString()
+  pais?: string;
+
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  tipo_experiencia?: number;
+}
+
+export class ArticuloCientificoDto {
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  id?: number;
+
+  @IsOptional()
+  @IsString()
+  titulo_articulo?: string;
+
+  @IsOptional()
+  @IsString()
+  nombre_revista?: string;
+
+  @IsOptional()
+  @IsString()
+  indizado?: string;
+
+  @IsOptional()
+  @IsString()
+  año?: string;
+
+  @IsOptional()
+  @IsString()
+  enlace?: string;
+}
+
+export class LibroDto {
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  id?: number;
+
+  @IsOptional()
+  @IsString()
+  libro_titulo?: string;
+
+  @IsOptional()
+  @IsString()
+  nombre_editorial?: string;
+
+  @IsOptional()
+  @IsString()
+  año?: string;
+}
+
+export class ProyectoInvestigacionDto {
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  id?: number;
+
+  @IsOptional()
+  @IsString()
+  nombre?: string;
+
+  @IsOptional()
+  @IsString()
+  entidad_financiera?: string;
+
+  @IsOptional()
+  @IsString()
+  año?: string;
+}
+
+export class AsesoriaJuradoDto {
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  id?: number;
+
+  @IsOptional()
+  @IsString()
+  titulo_tesis?: string;
+
+  @IsOptional()
+  @IsString()
+  universidad?: string;
+
+  @IsOptional()
+  @IsString()
+  nivel?: string;
+
+  @IsOptional()
+  @IsString()
+  año?: string;
+
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  tipo?: number;
+}
+
+export class OtrosDto {
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  id?: number;
+
+  @IsOptional()
+  @IsString()
+  idioma?: string;
+
+  @IsOptional()
+  @IsString()
+  nivel_idioma?: string;
+
+  @IsOptional()
+  @IsString()
+  office?: string;
+
+  @IsOptional()
+  @IsString()
+  nivel_office?: string;
+
+  @IsOptional()
+  @IsString()
+  learning?: string;
+
+  @IsOptional()
+  @IsString()
+  nivel_learning?: string;
+}
+
 export class UpdateDocenteDto {
   // Información Personal Docente
   @IsOptional()
@@ -50,22 +330,16 @@ export class UpdateDocenteDto {
   @Length(7, 7)
   telefono_fijo?: string;
 
-  // Contacto de Emergencia
   @IsOptional()
-  contactoEmergencia?: {
-    id?: number;
-    nombre: string;
-    relacion: string;
-    telefono_1: string;
-    telefono_2?: string;
-  };
+  @ValidateNested()
+  @Type(() => ContactoEmergenciaDto)
+  contactoEmergencia: ContactoEmergenciaDto;
 
   // Domicilio del Docente
   @IsOptional()
-  @IsArray()
-  @ValidateNested({ each: true })
+  @ValidateNested()
   @Type(() => DomicilioDto)
-  domicilios?: DomicilioDto[];
+  domicilio: DomicilioDto;
 
   // Formación Académica
   @IsOptional()
@@ -136,231 +410,4 @@ export class UpdateDocenteDto {
   @ValidateNested({ each: true })
   @Type(() => OtrosDto)
   otros?: OtrosDto[];
-}
-
-// **📌 Subclases para Relaciones Anidadas**
-
-export class DomicilioDto {
-  @IsOptional()
-  id?: number;
-
-  @IsOptional()
-  @IsNumber()
-  @Type(() => Number)
-  departamento_id?: number;
-
-  @IsOptional()
-  @IsNumber()
-  @Type(() => Number)
-  provincia_id?: number;
-
-  @IsOptional()
-  @IsNumber()
-  @Type(() => Number)
-  distrito_id?: number;
-
-  @IsOptional()
-  @IsString()
-  direccion?: string;
-
-  @IsOptional()
-  @IsString()
-  referencia?: string;
-
-  @IsOptional()
-  @IsString()
-  mz?: string;
-
-  @IsOptional()
-  @IsString()
-  lote?: string;
-}
-
-export class FormacionAcademicaDto {
-  @IsOptional()
-  id?: number;
-
-  @IsOptional()
-  @IsString()
-  grado_academico?: string;
-
-  @IsOptional()
-  @IsString()
-  universidad?: string;
-
-  @IsOptional()
-  @IsString()
-  especialidad?: string;
-
-  @IsOptional()
-  @IsString()
-  pais?: string;
-
-  @IsOptional()
-  @IsString()
-  revalidacion?: string;
-}
-
-export class TituloProfesionalDto {
-  @IsOptional()
-  id?: number;
-
-  @IsOptional()
-  @IsString()
-  titulo?: string;
-
-  @IsOptional()
-  @IsString()
-  universidad?: string;
-
-  @IsOptional()
-  @IsString()
-  especialidad?: string;
-}
-
-export class FormacionComplementariaDto {
-  @IsOptional()
-  id?: number;
-
-  @IsOptional()
-  @IsString()
-  denominacion?: string;
-
-  @IsOptional()
-  @IsString()
-  especialidad?: string;
-
-  @IsOptional()
-  @IsString()
-  institucion?: string;
-}
-
-export class ExperienciaDocenteDto {
-  @IsOptional()
-  id?: number;
-
-  @IsOptional()
-  @IsString()
-  nombre_universidad?: string;
-
-  @IsOptional()
-  @IsString()
-  curso_dictado?: string;
-
-  @IsOptional()
-  @IsString()
-  semestre?: string;
-
-  @IsOptional()
-  @IsString()
-  pais?: string;
-}
-
-export class ArticuloCientificoDto {
-  @IsOptional()
-  id?: number;
-
-  @IsOptional()
-  @IsString()
-  nombre_articulo?: string;
-
-  @IsOptional()
-  @IsString()
-  nombre_revista?: string;
-
-  @IsOptional()
-  @IsString()
-  indizado?: string;
-
-  @IsOptional()
-  @IsString()
-  año?: string;
-
-  @IsOptional()
-  @IsString()
-  enlace?: string;
-}
-
-export class LibroDto {
-  @IsOptional()
-  id?: number;
-
-  @IsOptional()
-  @IsString()
-  libro_titulo?: string;
-
-  @IsOptional()
-  @IsString()
-  nombre_editorial?: string;
-
-  @IsOptional()
-  @IsString()
-  año?: string;
-}
-
-export class ProyectoInvestigacionDto {
-  @IsOptional()
-  id?: number;
-
-  @IsOptional()
-  @IsString()
-  proyecto?: string;
-
-  @IsOptional()
-  @IsString()
-  entidad_financiera?: string;
-
-  @IsOptional()
-  @IsString()
-  año_adjudicacion?: string;
-}
-
-export class AsesoriaJuradoDto {
-  @IsOptional()
-  id?: number;
-
-  @IsOptional()
-  @IsString()
-  titulo_tesis?: string;
-
-  @IsOptional()
-  @IsString()
-  universidad?: string;
-
-  @IsOptional()
-  @IsString()
-  nivel_tesis?: string;
-
-  @IsOptional()
-  @IsString()
-  año?: string;
-}
-
-export class OtrosDto {
-  @IsOptional()
-  id?: number;
-
-  @IsOptional()
-  @IsString()
-  idioma?: string;
-
-  @IsOptional()
-  @IsString()
-  nivel_idioma?: string;
-
-  @IsOptional()
-  @IsString()
-  office?: string;
-
-  @IsOptional()
-  @IsString()
-  nivel_office?: string;
-
-  @IsOptional()
-  @IsString()
-  learning?: string;
-
-  @IsOptional()
-  @IsString()
-  nivel_learning?: string;
 }

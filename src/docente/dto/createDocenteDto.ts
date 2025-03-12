@@ -85,7 +85,7 @@ export class FormacionAcademicaDto {
 
   @IsNotEmpty()
   @IsString()
-  revalidacion: string;
+  resolucion_sunedu: string;
 }
 
 export class TituloProfesionalDto {
@@ -132,12 +132,16 @@ export class ExperienciaDocenteDto {
   @IsOptional()
   @IsString()
   pais?: string;
+
+  @IsOptional()
+  @IsNumber()
+  tipo_experiencia?: number;
 }
 
 export class ArticuloCientificoDto {
   @IsOptional()
   @IsString()
-  nombre_articulo?: string;
+  titulo_articulo?: string;
 
   @IsOptional()
   @IsString()
@@ -173,7 +177,7 @@ export class LibroDto {
 export class ProyectoInvestigacionDto {
   @IsOptional()
   @IsString()
-  proyecto?: string;
+  nombre?: string;
 
   @IsOptional()
   @IsString()
@@ -181,7 +185,7 @@ export class ProyectoInvestigacionDto {
 
   @IsOptional()
   @IsString()
-  año_adjudicacion?: string;
+  año?: string;
 }
 
 export class AsesoriaJuradoDto {
@@ -195,11 +199,15 @@ export class AsesoriaJuradoDto {
 
   @IsOptional()
   @IsString()
-  nivel_tesis?: string;
+  nivel?: string;
 
   @IsOptional()
   @IsString()
   año?: string;
+
+  @IsOptional()
+  @IsNumber()
+  tipo: number;
 }
 
 export class OtrosDto {
