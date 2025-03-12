@@ -44,6 +44,7 @@ CREATE TABLE `Distrito` (
 -- CreateTable
 CREATE TABLE `Docente` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `user_id` VARCHAR(191) NOT NULL,
     `nombres` VARCHAR(191) NOT NULL,
     `apellido_paterno` VARCHAR(191) NOT NULL,
     `apellido_materno` VARCHAR(191) NOT NULL,
@@ -57,6 +58,7 @@ CREATE TABLE `Docente` (
     `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updated_at` DATETIME(3) NOT NULL,
 
+    UNIQUE INDEX `Docente_user_id_key`(`user_id`),
     UNIQUE INDEX `Docente_email_key`(`email`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -70,6 +72,7 @@ CREATE TABLE `ContactoEmergencia` (
     `telefono_2` CHAR(9) NULL,
     `docente_id` INTEGER NOT NULL,
 
+    UNIQUE INDEX `ContactoEmergencia_docente_id_key`(`docente_id`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -85,6 +88,7 @@ CREATE TABLE `Domicilio` (
     `lote` VARCHAR(191) NULL,
     `docente_id` INTEGER NOT NULL,
 
+    UNIQUE INDEX `Domicilio_docente_id_key`(`docente_id`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -203,6 +207,9 @@ ALTER TABLE `Provincia` ADD CONSTRAINT `Provincia_departamento_id_fkey` FOREIGN 
 
 -- AddForeignKey
 ALTER TABLE `Distrito` ADD CONSTRAINT `Distrito_provincia_id_fkey` FOREIGN KEY (`provincia_id`) REFERENCES `Provincia`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Docente` ADD CONSTRAINT `Docente_user_id_fkey` FOREIGN KEY (`user_id`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `ContactoEmergencia` ADD CONSTRAINT `ContactoEmergencia_docente_id_fkey` FOREIGN KEY (`docente_id`) REFERENCES `Docente`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;

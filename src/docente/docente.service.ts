@@ -1,6 +1,7 @@
 import {
   ConflictException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -11,7 +12,7 @@ import { UpdateDocenteDto } from './dto/updateDocenteDto';
 export class DocenteService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async createDocente(createDocenteDto: CreateDocenteDto) {
+  async createDocente(createDocenteDto: CreateDocenteDto, user_id: string) {
     const docenteExistente = await this.prismaService.docente.findFirst({
       where: { email: createDocenteDto.email },
     });
@@ -22,6 +23,7 @@ export class DocenteService {
     try {
       const docente = await this.prismaService.docente.create({
         data: {
+          user_id: user_id,
           nombres: createDocenteDto.nombres,
           apellido_paterno: createDocenteDto.apellido_paterno,
           apellido_materno: createDocenteDto.apellido_materno,
@@ -33,31 +35,27 @@ export class DocenteService {
           telefono_fijo: createDocenteDto.telefono_fijo || '',
           estado: 0,
 
-          contactosEmergencia: {
-            create: [
-              {
-                nombre: createDocenteDto.contactoEmergencia.nombre,
-                relacion: createDocenteDto.contactoEmergencia.relacion,
-                telefono_1: createDocenteDto.contactoEmergencia.telefono_1,
-                telefono_2: createDocenteDto.contactoEmergencia.telefono_2,
-              },
-            ],
+          contactoEmergencia: {
+            create: {
+              nombre: createDocenteDto.contactoEmergencia.nombre,
+              relacion: createDocenteDto.contactoEmergencia.relacion,
+              telefono_1: createDocenteDto.contactoEmergencia.telefono_1,
+              telefono_2: createDocenteDto.contactoEmergencia.telefono_2,
+            },
           },
 
-          domicilios: {
-            create: [
-              {
-                departamento_id: Number(
-                  createDocenteDto.domicilio.departamento_id,
-                ),
-                provincia_id: Number(createDocenteDto.domicilio.provincia_id),
-                distrito_id: Number(createDocenteDto.domicilio.distrito_id),
-                direccion: createDocenteDto.domicilio.direccion,
-                referencia: createDocenteDto.domicilio.referencia,
-                mz: createDocenteDto.domicilio.mz,
-                lote: createDocenteDto.domicilio.lote,
-              },
-            ],
+          domicilio: {
+            create: {
+              departamento_id: Number(
+                createDocenteDto.domicilio.departamento_id,
+              ),
+              provincia_id: Number(createDocenteDto.domicilio.provincia_id),
+              distrito_id: Number(createDocenteDto.domicilio.distrito_id),
+              direccion: createDocenteDto.domicilio.direccion,
+              referencia: createDocenteDto.domicilio.referencia,
+              mz: createDocenteDto.domicilio.mz,
+              lote: createDocenteDto.domicilio.lote,
+            },
           },
 
           formacionesAcademicas: {
@@ -156,21 +154,6 @@ export class DocenteService {
       }
       throw new Error(
         'No se pudo registrar el docente por un error desconocido',
-      );
-    }
-  }
-
-  async getDocente() {
-    try {
-      const docentes = await this.prismaService.docente.findMany();
-      return { docentes };
-    } catch (error) {
-      if (error instanceof Error) {
-        console.error('❌ Error al obtener docentes:', error.message);
-        throw new Error(`No se pudo obtener los docentes: ${error.message}`);
-      }
-      throw new Error(
-        'No se pudo obtener los docentes por un error desconocido',
       );
     }
   }
@@ -459,6 +442,83 @@ export class DocenteService {
       }
       throw new Error(
         'No se pudo actualizar el docente por un error desconocido',
+      );
+    }
+  }
+
+  async getDocentes() {
+    try {
+      const docentes = await this.prismaService.docente.findMany();
+      return { docentes };
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error('❌ Error al obtener docentes:', error.message);
+        throw new Error(`No se pudo obtener los docentes: ${error.message}`);
+      }
+      throw new Error(
+        'No se pudo obtener los docentes por un error desconocido',
+      );
+    }
+  }
+
+  async getDocente(id: number) {
+    try {
+      const docente = await this.prismaService.docente.findUnique({
+        where: { id },
+        include: {
+          contactoEmergencia: true,
+          domicilio: true,
+          formacionesAcademicas: true,
+          titulosProfesionales: true,
+          formacionesComplementarias: true,
+          experienciasDocentes: true,
+          articulosCientificos: true,
+          libros: true,
+          proyectosInvestigacion: true,
+          asesoriasJurados: true,
+          otros: true,
+        },
+      });
+
+      if (!docente) {
+        throw new Error('Docente no encontrado');
+      }
+
+      return { docente };
+    } catch (error) {
+      console.error('❌ Error al obtener el docente:', error);
+      throw new Error(`No se pudo obtener el docente: ${error}`);
+    }
+  }
+
+  async getDocenteUser(user_id: string) {
+    try {
+      const docente = await this.prismaService.docente.findUnique({
+        where: { user_id },
+        include: {
+          contactoEmergencia: true,
+          domicilio: true,
+          formacionesAcademicas: true,
+          titulosProfesionales: true,
+          formacionesComplementarias: true,
+          experienciasDocentes: true,
+          articulosCientificos: true,
+          libros: true,
+          proyectosInvestigacion: true,
+          asesoriasJurados: true,
+          otros: true,
+        },
+      });
+
+      if (!docente) {
+        throw new NotFoundException('No se encontró información del docente.');
+      }
+
+      return docente;
+    } catch (error) {
+      console.error('❌ Error al obtener la información del docente:', error);
+      throw new InternalServerErrorException(
+        'Ocurrió un error al obtener la información del docente.',
       );
     }
   }

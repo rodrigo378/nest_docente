@@ -46,9 +46,6 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       });
     }
 
-    const payload = { sub: user.id, email: user.email };
-    const jwt = this.jwtService.sign(payload);
-
-    return { user, accessToken: jwt };
+    return user;
   }
 }

@@ -23,6 +23,7 @@ model User {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  Docente   Docente?
 }
 
 enum AuthProvider {
@@ -54,6 +55,8 @@ model Distrito {
 
 model Docente {
   id                    Int      @id @default(autoincrement())
+  user_id               String   @unique
+  user                  User     @relation(fields: [user_id], references: [id])
   nombres               String
   apellido_paterno      String
   apellido_materno      String
@@ -65,8 +68,9 @@ model Docente {
   telefono_fijo         String   @db.VarChar(7)
   estado                Int      @default(0) // 0 = Pendiente, 1 = Aprobado
 
-  contactosEmergencia        ContactoEmergencia[]
-  domicilios                 Domicilio[]
+  contactoEmergencia ContactoEmergencia? // Relación 1-1 (Obligatoria)
+  domicilio          Domicilio?
+
   formacionesAcademicas      FormacionAcademica[]
   titulosProfesionales       TituloProfesional[]
   formacionesComplementarias FormacionComplementaria[]
@@ -88,7 +92,7 @@ model ContactoEmergencia {
   telefono_1 String  @db.Char(9)
   telefono_2 String? @db.Char(9)
 
-  docente_id Int
+  docente_id Int     @unique // Relación 1-1, obligatorio
   docente    Docente @relation(fields: [docente_id], references: [id], onDelete: Cascade)
 }
 
@@ -102,7 +106,7 @@ model Domicilio {
   mz              String? // Nullable
   lote            String? // Nullable
 
-  docente_id Int
+  docente_id Int     @unique
   docente    Docente @relation(fields: [docente_id], references: [id], onDelete: Cascade)
 }
 
