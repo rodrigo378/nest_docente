@@ -45,12 +45,22 @@ export class DocenteController {
     return this.docenteService.getDocente(Number(id));
   }
 
-  @Patch(':id')
+  // @Patch(':id')
+  // @UseGuards(JwtAuthGuard)
+  // updateDocente(
+  //   @Param('id') id: string,
+  //   @Body() updateDocenteDto: UpdateDocenteDto,
+  // ) {
+  //   return this.docenteService.updateDocente(Number(id), updateDocenteDto);
+  // }
+
+  @Patch('updateuser')
   @UseGuards(JwtAuthGuard)
   updateDocente(
-    @Param('id') id: string,
     @Body() updateDocenteDto: UpdateDocenteDto,
+    @Req() req: AuthenticatedRequest, // Obtener el usuario autenticado
   ) {
-    return this.docenteService.updateDocente(Number(id), updateDocenteDto);
+    console.log('usuario autentificaste en el controlador: ', req.user);
+    return this.docenteService.updateDocenteuser(updateDocenteDto, req.user);
   }
 }

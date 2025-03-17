@@ -16,7 +16,7 @@ import { GoogleStrategy } from './strategies/google.strategy';
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         secret: configService.get<string>('JWT_SECRET') || 'MISSING_JWT_SECRET', // ✅ Asegurar que JWT_SECRET no es undefined
-        signOptions: { expiresIn: '1h' }, // ✅ Token válido por 1 hora
+        signOptions: { expiresIn: '24h' }, // ✅ Token válido por 1 hora
       }),
     }),
   ],

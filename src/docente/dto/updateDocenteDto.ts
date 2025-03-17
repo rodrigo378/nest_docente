@@ -146,7 +146,7 @@ export class ExperienciaDocenteDto {
 
   @IsOptional()
   @IsString()
-  nombre_universidad?: string;
+  institucion?: string;
 
   @IsOptional()
   @IsString()
