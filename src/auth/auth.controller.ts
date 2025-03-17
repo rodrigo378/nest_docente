@@ -1,9 +1,16 @@
-import { Body, Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Req,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SignupDto } from './dto/signupDto';
 import { AuthGuard } from '@nestjs/passport';
 import { Request, Response } from 'express';
-import { AuthenticatedUser } from 'src/types/AutenticatedUserGoogle.interface';
 import { SigninDto } from './dto/signinDto';
 
 @Controller('auth')
@@ -19,14 +26,16 @@ export class AuthController {
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
   googleAuthRedirect(@Req() req: Request, @Res() res: Response) {
-    console.log('usuario autentificado', req.user)
+    console.log('usuario autentificado', req.user);
     const user = req.user as { accessToken: string };
 
     if (!user || !user.accessToken) {
       return res.redirect(`http://localhost:4200/login?error=NoAccessToken`);
     }
-  
-    return res.redirect(`http://localhost:4200/login?token=${user.accessToken}`);
+
+    return res.redirect(
+      `http://localhost:4200/login?token=${user.accessToken}`,
+    );
 
     // 🔹 Redirigir al frontend con el token en la URL
     // return res.redirect(`http://localhost:4200/login?token=${user.accessToken}`);

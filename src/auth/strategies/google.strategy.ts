@@ -48,6 +48,6 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
 
     const token = this.jwtService.sign({ userId: user.id, email: user.email });
 
-    return {user, accessToken:token}
+    return { user, accessToken: token };
   }
 }
