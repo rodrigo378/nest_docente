@@ -9,6 +9,8 @@ import { ExcelController } from './excel/excel.controller';
 import { PrismaService } from './prisma/prisma.service';
 import { EspecialidadesController } from './especialidades/especialidades.controller';
 import { EspecialidadesService } from './especialidades/especialidades.service';
+import { Consultasdb2Service } from './consultasdb2/consultasdb2.service';
+import { Consultasdb2Controller } from './consultasdb2/consultasdb2.controller';
 
 @Module({
   imports: [
@@ -18,7 +20,7 @@ import { EspecialidadesService } from './especialidades/especialidades.service';
     UbicacionModule,
     DocenteModule,
   ],
-  controllers: [ExcelController, EspecialidadesController],
-  providers: [ExcelService, EspecialidadesService],
+  controllers: [ExcelController, EspecialidadesController, Consultasdb2Controller],
+  providers: [ExcelService, EspecialidadesService, Consultasdb2Service],
 })
 export class AppModule {}
