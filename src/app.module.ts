@@ -4,6 +4,11 @@ import { PrismaModule } from './prisma/prisma.module';
 import { ConfigModule } from '@nestjs/config';
 import { UbicacionModule } from './ubicacion/ubicacion.module';
 import { DocenteModule } from './docente/docente.module';
+import { ExcelService } from './excel/excel.service';
+import { ExcelController } from './excel/excel.controller';
+import { PrismaService } from './prisma/prisma.service';
+import { EspecialidadesController } from './especialidades/especialidades.controller';
+import { EspecialidadesService } from './especialidades/especialidades.service';
 
 @Module({
   imports: [
@@ -13,7 +18,7 @@ import { DocenteModule } from './docente/docente.module';
     UbicacionModule,
     DocenteModule,
   ],
-  controllers: [],
-  providers: [],
+  controllers: [ExcelController, EspecialidadesController],
+  providers: [ExcelService, EspecialidadesService],
 })
 export class AppModule {}

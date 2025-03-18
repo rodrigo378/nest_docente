@@ -210,3 +210,15 @@ model Otros {
   docente_id Int?
   docente    Docente? @relation(fields: [docente_id], references: [id], onDelete: SetNull)
 }
+
+model curso {
+  id        Int     @id @default(autoincrement())
+  n_codper  Int
+  c_codmod  String
+  c_codfac  String
+  c_codesp  String
+  c_codcur  String
+  c_nomcur  String
+  generales String
+}
+
