@@ -22,7 +22,10 @@ export class PrismaReadonlyService
       await this.$connect();
       console.log('✅ Prisma readonly segunda DB conectado correctamente');
     } catch (error) {
-      console.error('❌ Error al conectar a la segunda base de datos readonly:', error.message);
+      console.error(
+        '❌ Error al conectar a la segunda base de datos readonly:',
+        error,
+      );
       process.exit(1);
     }
   }
@@ -32,7 +35,10 @@ export class PrismaReadonlyService
       await this.$disconnect();
       console.log('🛑 Prisma readonly segunda BD desconectado correctamente');
     } catch (error) {
-      console.error('⚠️ Error al desconectar Prisma readonly segunda BD:', error.message);
+      console.error(
+        '⚠️ Error al desconectar Prisma readonly segunda BD:',
+        error,
+      );
     }
   }
 }

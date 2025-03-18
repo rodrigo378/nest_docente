@@ -5,6 +5,7 @@ import { ConfigModule } from '@nestjs/config';
 import { UbicacionModule } from './ubicacion/ubicacion.module';
 import { DocenteModule } from './docente/docente.module';
 import { EspecialidadesModule } from './especialidades/especialidades.module';
+import { HorarioModule } from './horario/horario.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { EspecialidadesModule } from './especialidades/especialidades.module';
     UbicacionModule,
     DocenteModule,
     EspecialidadesModule,
+    HorarioModule,
   ],
   controllers: [],
   providers: [],
