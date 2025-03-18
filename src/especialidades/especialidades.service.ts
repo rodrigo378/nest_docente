@@ -3,10 +3,7 @@ import { PrismaReadonlyService } from 'src/prisma/readonly.service';
 
 @Injectable()
 export class EspecialidadesService {
-
-constructor(
-    private readonly prismaReadonly: PrismaReadonlyService
-) {}
+  constructor(private readonly prismaReadonly: PrismaReadonlyService) {}
 
   async obtenerEspecialidades() {
     return await this.prismaReadonly.$queryRaw`
@@ -29,7 +26,7 @@ constructor(
       GROUP BY es.nomesp
     `;
   }
-  
+
   async obtenerCursos(c_codfac: string, c_ciclo: string) {
     return await this.prismaReadonly.$queryRaw`
       SELECT 
@@ -40,5 +37,4 @@ constructor(
       GROUP BY pe.c_nomcur
     `;
   }
-   
 }

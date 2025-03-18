@@ -4,13 +4,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { ConfigModule } from '@nestjs/config';
 import { UbicacionModule } from './ubicacion/ubicacion.module';
 import { DocenteModule } from './docente/docente.module';
-import { ExcelService } from './excel/excel.service';
-import { ExcelController } from './excel/excel.controller';
-import { PrismaService } from './prisma/prisma.service';
-import { EspecialidadesController } from './especialidades/especialidades.controller';
-import { EspecialidadesService } from './especialidades/especialidades.service';
-import { Consultasdb2Service } from './consultasdb2/consultasdb2.service';
-import { Consultasdb2Controller } from './consultasdb2/consultasdb2.controller';
+import { EspecialidadesModule } from './especialidades/especialidades.module';
 
 @Module({
   imports: [
@@ -19,8 +13,9 @@ import { Consultasdb2Controller } from './consultasdb2/consultasdb2.controller';
     ConfigModule.forRoot({ isGlobal: true }),
     UbicacionModule,
     DocenteModule,
+    EspecialidadesModule,
   ],
-  controllers: [ExcelController, EspecialidadesController, Consultasdb2Controller],
-  providers: [ExcelService, EspecialidadesService, Consultasdb2Service],
+  controllers: [],
+  providers: [],
 })
 export class AppModule {}

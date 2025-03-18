@@ -3,13 +3,13 @@ import { EspecialidadesService } from './especialidades.service';
 
 @Controller('especialidades')
 export class EspecialidadesController {
-  constructor(private readonly especialidadService: EspecialidadesService){}
+  constructor(private readonly especialidadService: EspecialidadesService) {}
 
-  @Get("especialidades")
-  async getEspecialidades(){
+  @Get('especialidades')
+  async getEspecialidades() {
     return await this.especialidadService.obtenerEspecialidades();
   }
-  
+
   // 🔹 Endpoint para obtener Carreras y Ciclos según Facultad
   @Get('carreras-ciclos')
   async getCarrerasYCiclos(@Query('c_codfac') c_codfac: string) {
@@ -21,7 +21,10 @@ export class EspecialidadesController {
 
   // 🔹 Endpoint para obtener Cursos según Facultad y Ciclo
   @Get('cursos')
-  async getCursos(@Query('c_codfac') c_codfac: string, @Query('c_ciclo') c_ciclo: string) {
+  async getCursos(
+    @Query('c_codfac') c_codfac: string,
+    @Query('c_ciclo') c_ciclo: string,
+  ) {
     if (!c_codfac || !c_ciclo) {
       return { error: 'Los parámetros c_codfac y c_ciclo son obligatorios' };
     }
