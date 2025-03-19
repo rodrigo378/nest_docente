@@ -25,7 +25,9 @@ export class CursoController {
     @Query('c_ciclo') c_ciclo: string,
   ) {
     if (!c_codfac || !c_codesp || !c_ciclo) {
-      return { error: 'Los parámetros c_codfac y c_ciclo son obligatorios' };
+      return {
+        error: 'Los parámetros c_codfac, c_codesp y c_ciclo son obligatorios',
+      };
     }
     return await this.cursoService.getCursos(c_codfac, c_codesp, c_ciclo);
   }

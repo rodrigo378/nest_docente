@@ -7,6 +7,60 @@ import { UpdateHorarioDto } from './dto/updateHorarioDto';
 export class HorarioService {
   constructor(private readonly prismaService: PrismaService) {}
 
+  private validarCrucesHorarios(
+    nuevosHorarios: {
+      dia: string;
+      h_inicio: string;
+      h_fin: string;
+      ciclo: string;
+      seccion: string;
+      curso: string;
+    }[],
+    existentesHorarios: {
+      dia: string;
+      h_inicio: string;
+      h_fin: string;
+      ciclo: string;
+      seccion: string;
+      curso: string;
+    }[],
+  ): boolean {
+    for (const nuevo of nuevosHorarios) {
+      const { dia, h_inicio, h_fin, ciclo, seccion, curso } = nuevo;
+
+      const inicioNuevo: Date = new Date(
+        `2025-01-01T${h_inicio.split('T')[1].substring(0, 8)}Z`,
+      );
+      const finNuevo: Date = new Date(
+        `2025-01-01T${h_fin.split('T')[1].substring(0, 8)}Z`,
+      );
+
+      for (const existente of existentesHorarios) {
+        if (
+          existente.dia === dia &&
+          existente.ciclo === ciclo &&
+          existente.seccion === seccion
+        ) {
+          const inicioExistente: Date = new Date(
+            `2025-01-01T${existente.h_inicio.split('T')[1].substring(0, 8)}Z`,
+          );
+          const finExistente: Date = new Date(
+            `2025-01-01T${existente.h_fin.split('T')[1].substring(0, 8)}Z`,
+          );
+
+          // Verifica si hay solapamiento
+          if (inicioNuevo < finExistente && finNuevo > inicioExistente) {
+            console.log(
+              `❌ Conflicto entre "${curso}" (${h_inicio} - ${h_fin}) y "${existente.curso}" (${existente.h_inicio} - ${existente.h_fin}) en el día ${dia}`,
+            );
+            return false;
+          }
+        }
+      }
+    }
+    return true; // ✅ No hay cruces
+  }
+
   async createHorario(createHorarioDto: CreateHorarioDto) {
     try {
       for (const horario of createHorarioDto.horarios) {
@@ -101,3 +155,13 @@ export class HorarioService {
     }
   }
 }
+
+// a1 a2
+// 10 12
+
+// b1 b2
+// 11 13
+
+// 10 < 13
+// a1 < b2
+// a1 < b1

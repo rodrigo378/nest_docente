@@ -13,6 +13,9 @@ export class CursoService {
     );
   }
 
+  getCarreras() {}
+
+  //asdasd
   async getCicloCarreras(c_codfac: string) {
     return await this.prismaReadonly.$queryRawUnsafe(
       `SELECT 
@@ -31,6 +34,7 @@ export class CursoService {
   async getCursos(c_codfac: string, c_codesp: string, c_ciclo: string) {
     return await this.prismaReadonly.$queryRawUnsafe(
       `SELECT DISTINCT 
+        c_codcur,
         c_nomcur,
         'n_ht' AS tipo_horas,
         n_ht AS horas,
@@ -50,6 +54,7 @@ export class CursoService {
       UNION ALL
   
       SELECT DISTINCT 
+        c_codcur,
         c_nomcur,
         'n_hp' AS tipo_horas,
         n_hp AS horas,
@@ -99,3 +104,17 @@ export class CursoService {
   //   );
   // }
 }
+
+// carreras
+// select
+// 	tp.c_codmod,
+// 	tp.c_codfac,
+// 	tp.c_codesp,
+//     tb.nomesp,
+//     tp.c_ciclo,
+//     tp.n_ciclo
+// from tb_plan_estudio_curso tp
+// inner join tb_especialidad tb on (tp.c_codfac  = tb.codfac and tp.c_codesp  = tb.codesp)
+// group by tp.c_codfac, tp.c_codesp, tp.c_ciclo, tp.n_ciclo, tp.c_codmod
+// -- order by tp.c_ciclo;
+// order by tb.nomesp, tp.n_ciclo -- , tp.c_codmod;
