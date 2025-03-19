@@ -7,7 +7,7 @@ export class HorarioService {
   constructor(private readonly prismaService: PrismaService) {}
 
   async createHorario(createHorarioDto: CreateHorarioDto) {
-    console.log();
+    console.log('createHorarioDto', createHorarioDto);
 
     return createHorarioDto;
   }

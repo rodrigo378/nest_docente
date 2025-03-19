@@ -1,0 +1,53 @@
+import { Injectable } from '@nestjs/common';
+import { PrismaReadonlyService } from 'src/prisma/readonly.service';
+
+@Injectable()
+export class CursoService {
+  constructor(private readonly prismaReadonly: PrismaReadonlyService) {}
+
+  async getEspecialidades() {
+    return await this.prismaReadonly.$queryRawUnsafe(
+      `SELECT codfac, codesp, nomesp, estado, c_abrevesp 
+      FROM tb_especialidad 
+      WHERE codfac IN ('S', 'E')`,
+    );
+  }
+
+  async getCicloCarreras(c_codfac: string) {
+    return await this.prismaReadonly.$queryRawUnsafe(
+      `SELECT 
+          es.nomesp AS especialidad,
+          GROUP_CONCAT(DISTINCT pe.c_ciclo ORDER BY pe.c_ciclo SEPARATOR ', ') AS ciclos
+      FROM tb_plan_estudio_curso pe
+      JOIN tb_especialidad es 
+          ON pe.c_codesp = es.codesp  
+          AND pe.c_codfac = es.codfac
+      WHERE pe.c_codfac = ?
+      GROUP BY es.nomesp;`,
+      c_codfac,
+    );
+  }
+
+  async getCursos(c_codfac: string, c_ciclo: string) {
+    return await this.prismaReadonly.$queryRawUnsafe(
+      `SELECT 
+          c_nomcur,
+          n_ht,
+          n_hp,
+          c_codmod,
+          CASE 
+              WHEN c_codmod = 1 THEN 'Presencial'
+              WHEN c_codmod = 2 THEN 'Semipresencial'
+              WHEN c_codmod = 3 THEN 'Virtual'
+              ELSE 'Desconocido'
+          END AS modalidad
+      FROM tb_plan_estudio_curso
+      WHERE c_codfac = ?
+        AND c_ciclo = ?
+        AND n_codper = 2025
+      GROUP BY c_nomcur, c_codmod, n_ht, n_hp;`,
+      c_codfac,
+      c_ciclo,
+    );
+  }
+}

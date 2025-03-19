@@ -4,8 +4,8 @@ import { PrismaModule } from './prisma/prisma.module';
 import { ConfigModule } from '@nestjs/config';
 import { UbicacionModule } from './ubicacion/ubicacion.module';
 import { DocenteModule } from './docente/docente.module';
-import { EspecialidadesModule } from './especialidades/especialidades.module';
 import { HorarioModule } from './horario/horario.module';
+import { CursoModule } from './curso/curso.module';
 
 @Module({
   imports: [
@@ -14,8 +14,8 @@ import { HorarioModule } from './horario/horario.module';
     ConfigModule.forRoot({ isGlobal: true }),
     UbicacionModule,
     DocenteModule,
-    EspecialidadesModule,
     HorarioModule,
+    CursoModule,
   ],
   controllers: [],
   providers: [],

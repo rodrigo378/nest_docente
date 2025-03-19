@@ -40,5 +40,5 @@ export class CreateHorarioDto {
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => HorarioDto)
-  eventos: HorarioDto[];
+  horarios: HorarioDto[];
 }
