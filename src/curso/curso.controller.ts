@@ -21,11 +21,12 @@ export class CursoController {
   @Get()
   async getCursos(
     @Query('c_codfac') c_codfac: string,
+    @Query('c_codesp') c_codesp: string,
     @Query('c_ciclo') c_ciclo: string,
   ) {
     if (!c_codfac || !c_ciclo) {
       return { error: 'Los parámetros c_codfac y c_ciclo son obligatorios' };
     }
-    return await this.cursoService.getCursos(c_codfac, c_ciclo);
+    return await this.cursoService.getCursos(c_codfac, c_codesp, c_ciclo);
   }
 }

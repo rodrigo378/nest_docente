@@ -28,7 +28,7 @@ export class CursoService {
     );
   }
 
-  async getCursos(c_codfac: string, c_ciclo: string) {
+  async getCursos(c_codfac: string, c_codesp: string, c_ciclo: string) {
     return await this.prismaReadonly.$queryRawUnsafe(
       `SELECT DISTINCT 
         c_nomcur,
@@ -42,7 +42,8 @@ export class CursoService {
           ELSE 'Desconocido'
         END AS modalidad
       FROM tb_plan_estudio_curso
-      WHERE c_codfac = ? 
+      WHERE c_codfac = ?
+        AND c_codesp = ?
         AND c_ciclo = ?
         AND n_codper = "2025"
   
@@ -60,15 +61,17 @@ export class CursoService {
           ELSE 'Desconocido'
         END AS modalidad
       FROM tb_plan_estudio_curso
-      WHERE c_codfac = ? 
+      WHERE c_codfac = ?
+        AND c_codesp = ?
         AND c_ciclo = ?
         AND n_codper = "2025"
-  
       ORDER BY c_nomcur, c_codmod, tipo_horas;
       `,
       c_codfac,
+      c_codesp,
       c_ciclo,
       c_codfac,
+      c_codesp,
       c_ciclo,
     );
   }
