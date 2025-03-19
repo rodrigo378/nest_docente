@@ -19,6 +19,10 @@ export class HorarioDto {
   @IsOptional()
   curso?: string;
 
+  @IsString()
+  @IsOptional()
+  dia?: string;
+
   @IsDateString()
   @IsOptional()
   h_inicio?: string;

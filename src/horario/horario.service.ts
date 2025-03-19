@@ -13,6 +13,7 @@ export class HorarioService {
         await this.prismaService.horario.create({
           data: {
             curso: horario.curso,
+            dia: horario.dia,
             h_inicio: new Date(horario.h_inicio),
             h_fin: new Date(horario.h_fin),
             color: horario.color,
@@ -52,6 +53,7 @@ export class HorarioService {
           await this.prismaService.horario.create({
             data: {
               curso: horario.curso || '',
+              dia: horario.dia || '',
               h_inicio: horario.h_inicio ? new Date(horario.h_inicio) : '',
               h_fin: horario.h_fin ? new Date(horario.h_fin) : '',
               color: horario.color || '',
@@ -67,6 +69,7 @@ export class HorarioService {
             where: { id: horario.id },
             data: {
               curso: horario.curso,
+              dia: horario.dia,
               h_inicio: horario.h_inicio
                 ? new Date(horario.h_inicio)
                 : undefined,

@@ -13,6 +13,10 @@ export class HorarioDto {
   @IsNotEmpty()
   curso: string;
 
+  @IsString()
+  @IsNotEmpty()
+  dia: string;
+
   @IsDateString()
   @IsNotEmpty()
   h_inicio: string;

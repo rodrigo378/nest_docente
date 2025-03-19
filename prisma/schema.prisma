@@ -265,6 +265,7 @@ model Permission {
 model Horario {
   id       Int      @id @default(autoincrement())
   curso    String
+  dia      String
   h_inicio DateTime
   h_fin    DateTime
   color    String
