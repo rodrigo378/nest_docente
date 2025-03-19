@@ -216,6 +216,59 @@ CREATE TABLE `curso` (
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
+-- CreateTable
+CREATE TABLE `Modulo` (
+    `id` BIGINT NOT NULL AUTO_INCREMENT,
+    `nombre` VARCHAR(255) NOT NULL,
+    `codigo` VARCHAR(255) NOT NULL,
+    `icono` TEXT NULL,
+    `estado` CHAR(1) NOT NULL DEFAULT 'A',
+    `createdAt` TIMESTAMP NULL,
+    `updatedAt` TIMESTAMP NULL,
+
+    UNIQUE INDEX `Modulo_codigo_key`(`codigo`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `Item` (
+    `id` BIGINT NOT NULL AUTO_INCREMENT,
+    `modulo_id` BIGINT NOT NULL,
+    `nombre` VARCHAR(255) NOT NULL,
+    `codigo` VARCHAR(255) NOT NULL,
+    `createdAt` TIMESTAMP NULL,
+    `updatedAt` TIMESTAMP NULL,
+
+    UNIQUE INDEX `Item_codigo_key`(`codigo`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `Permission` (
+    `id` BIGINT NOT NULL AUTO_INCREMENT,
+    `user_id` VARCHAR(191) NOT NULL,
+    `item_id` BIGINT NOT NULL,
+    `createdAt` TIMESTAMP NULL,
+    `updatedAt` TIMESTAMP NULL,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `Horario` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `curso` VARCHAR(191) NOT NULL,
+    `h_inicio` DATETIME(3) NOT NULL,
+    `h_fin` DATETIME(3) NOT NULL,
+    `color` VARCHAR(191) NOT NULL,
+    `docente` VARCHAR(191) NOT NULL,
+    `ciclo` VARCHAR(191) NOT NULL,
+    `seccion` VARCHAR(191) NOT NULL,
+    `carrera` VARCHAR(191) NOT NULL,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
 -- AddForeignKey
 ALTER TABLE `Provincia` ADD CONSTRAINT `Provincia_departamento_id_fkey` FOREIGN KEY (`departamento_id`) REFERENCES `Departamento`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
@@ -257,3 +310,12 @@ ALTER TABLE `AsesoriaJurado` ADD CONSTRAINT `AsesoriaJurado_docente_id_fkey` FOR
 
 -- AddForeignKey
 ALTER TABLE `Otros` ADD CONSTRAINT `Otros_docente_id_fkey` FOREIGN KEY (`docente_id`) REFERENCES `Docente`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Item` ADD CONSTRAINT `Item_modulo_id_fkey` FOREIGN KEY (`modulo_id`) REFERENCES `Modulo`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Permission` ADD CONSTRAINT `Permission_user_id_fkey` FOREIGN KEY (`user_id`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Permission` ADD CONSTRAINT `Permission_item_id_fkey` FOREIGN KEY (`item_id`) REFERENCES `Item`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;

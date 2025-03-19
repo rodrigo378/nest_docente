@@ -263,13 +263,13 @@ model Permission {
 }
 
 model Horario {
-  id      BigInt   @id @default(autoincrement())
-  titulo  String
-  start   DateTime
-  end     DateTime
-  color   String
-  docente String
-  ciclo   String
-  seccion String
-  carrera String
+  id       Int      @id @default(autoincrement())
+  curso    String
+  h_inicio DateTime
+  h_fin    DateTime
+  color    String
+  docente  String
+  ciclo    String
+  seccion  String
+  carrera  String
 }

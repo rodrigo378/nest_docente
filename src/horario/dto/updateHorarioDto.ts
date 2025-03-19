@@ -4,48 +4,53 @@ import {
   IsHexColor,
   IsArray,
   ValidateNested,
-  IsNotEmpty,
+  IsOptional,
+  IsInt,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class HorarioDto {
+  @IsInt()
+  @IsOptional()
+  @Type(() => Number)
+  id?: number;
+
   @IsString()
-  @IsNotEmpty()
-  curso: string;
+  @IsOptional()
+  curso?: string;
 
   @IsDateString()
-  @IsNotEmpty()
-  h_inicio: string;
+  @IsOptional()
+  h_inicio?: string;
 
   @IsDateString()
-  @IsNotEmpty()
-  h_fin: string;
+  @IsOptional()
+  h_fin?: string;
 
   @IsHexColor()
-  @IsNotEmpty()
-  color: string;
+  @IsOptional()
+  color?: string;
 
   @IsString()
-  @IsNotEmpty()
-  docente: string;
+  @IsOptional()
+  docente?: string;
 
   @IsString()
-  @IsNotEmpty()
-  ciclo: string;
+  @IsOptional()
+  ciclo?: string;
 
   @IsString()
-  @IsNotEmpty()
-  seccion: string;
+  @IsOptional()
+  seccion?: string;
 
   @IsString()
-  @IsNotEmpty()
-  carrera: string;
+  @IsOptional()
+  carrera?: string;
 }
 
-export class CreateHorarioDto {
+export class UpdateHorarioDto {
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => HorarioDto)
-  @IsNotEmpty()
   horarios: HorarioDto[];
 }

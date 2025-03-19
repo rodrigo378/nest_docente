@@ -30,24 +30,69 @@ export class CursoService {
 
   async getCursos(c_codfac: string, c_ciclo: string) {
     return await this.prismaReadonly.$queryRawUnsafe(
-      `SELECT 
-          c_nomcur,
-          n_ht,
-          n_hp,
-          c_codmod,
-          CASE 
-              WHEN c_codmod = 1 THEN 'Presencial'
-              WHEN c_codmod = 2 THEN 'Semipresencial'
-              WHEN c_codmod = 3 THEN 'Virtual'
-              ELSE 'Desconocido'
-          END AS modalidad
+      `SELECT DISTINCT 
+        c_nomcur,
+        'n_ht' AS tipo_horas,
+        n_ht AS horas,
+        c_codmod,
+        CASE 
+          WHEN c_codmod = 1 THEN 'Presencial'
+          WHEN c_codmod = 2 THEN 'Semipresencial'
+          WHEN c_codmod = 3 THEN 'Virtual'
+          ELSE 'Desconocido'
+        END AS modalidad
       FROM tb_plan_estudio_curso
-      WHERE c_codfac = ?
+      WHERE c_codfac = ? 
         AND c_ciclo = ?
-        AND n_codper = 2025
-      GROUP BY c_nomcur, c_codmod, n_ht, n_hp;`,
+        AND n_codper = "2025"
+  
+      UNION ALL
+  
+      SELECT DISTINCT 
+        c_nomcur,
+        'n_hp' AS tipo_horas,
+        n_hp AS horas,
+        c_codmod,
+        CASE 
+          WHEN c_codmod = 1 THEN 'Presencial'
+          WHEN c_codmod = 2 THEN 'Semipresencial'
+          WHEN c_codmod = 3 THEN 'Virtual'
+          ELSE 'Desconocido'
+        END AS modalidad
+      FROM tb_plan_estudio_curso
+      WHERE c_codfac = ? 
+        AND c_ciclo = ?
+        AND n_codper = "2025"
+  
+      ORDER BY c_nomcur, c_codmod, tipo_horas;
+      `,
+      c_codfac,
+      c_ciclo,
       c_codfac,
       c_ciclo,
     );
   }
+
+  // async getCursos(c_codfac: string, c_ciclo: string) {
+  //   return await this.prismaReadonly.$queryRawUnsafe(
+  //     `SELECT
+  //         c_nomcur,
+  //         n_ht,
+  //         n_hp,
+  //         c_codmod,
+  //         CASE
+  //             WHEN c_codmod = 1 THEN 'Presencial'
+  //             WHEN c_codmod = 2 THEN 'Semipresencial'
+  //             WHEN c_codmod = 3 THEN 'Virtual'
+  //             ELSE 'Desconocido'
+  //         END AS modalidad
+  //     FROM tb_plan_estudio_curso
+  //     WHERE c_codfac = ?
+  //       AND c_ciclo = ?
+  //       AND n_codper = 2025
+  //     GROUP BY c_nomcur, c_codmod, n_ht, n_hp;`,
+  //     c_codfac,
+  //     c_ciclo,
+  //   );
+  // }
 }
