@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Post, Put, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+  Query,
+} from '@nestjs/common';
 import { HorarioService } from './horario.service';
 import { CreateHorarioDto } from './dto/createHorarioDto';
 import { UpdateHorarioDto } from './dto/updateHorarioDto';
@@ -26,5 +35,10 @@ export class HorarioController {
   @Put()
   async updateHorario(@Body() updateHorarioDto: UpdateHorarioDto) {
     return this.horarioService.updateHorario(updateHorarioDto);
+  }
+
+  @Delete(':id')
+  async deleteHorario(@Param('id') id: string) {
+    return this.horarioService.deleteHorario(Number(id));
   }
 }

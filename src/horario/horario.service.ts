@@ -87,4 +87,14 @@ export class HorarioService {
       throw new Error('Error al actualizar o crear los horarios');
     }
   }
+
+  async deleteHorario(id: number) {
+    try {
+      await this.prismaService.horario.delete({ where: { id } });
+      return { message: 'Horario borrado' };
+    } catch (error) {
+      console.error('❌ Error al borrar horario:', error);
+      throw new Error('Error al borrar los horario');
+    }
+  }
 }
