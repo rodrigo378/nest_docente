@@ -158,330 +158,19 @@ export class DocenteService {
     }
   }
 
-  // async updateDocente(id: number, updateDocenteDto: UpdateDocenteDto) {
-  //   // 🔍 Verificar si el docente existe
-  //   const docente = await this.prismaService.docente.findUnique({
-  //     where: { id },
-  //   });
-
-  //   if (!docente) {
-  //     throw new NotFoundException('Docente no encontrado');
-  //   }
-  //   try {
-  //     // 🔹 Actualizar datos del docente
-  //     const updatedDocente = await this.prismaService.docente.update({
-  //       where: { id },
-  //       data: {
-  //         nombres: updateDocenteDto.nombres,
-  //         apellido_paterno: updateDocenteDto.apellido_paterno,
-  //         apellido_materno: updateDocenteDto.apellido_materno,
-  //         tipo_identificacion: updateDocenteDto.tipo_identificacion,
-  //         numero_identificacion: updateDocenteDto.numero_identificacion,
-  //         fecha_nacimiento: updateDocenteDto.fecha_nacimiento
-  //           ? new Date(updateDocenteDto.fecha_nacimiento)
-  //           : undefined,
-  //         email: updateDocenteDto.email,
-  //         celular: updateDocenteDto.celular,
-  //         telefono_fijo: updateDocenteDto.telefono_fijo,
-  //       },
-  //     });
-
-  //     // 🔹 Actualizar o crear Contacto de Emergencia (1:1)
-  //     if (updateDocenteDto.contactoEmergencia) {
-  //       const existingContacto = await this.prismaService.contactoEmergencia.findUnique({
-  //         where: { docente_id: id },
-  //       });
-      
-  //       if (existingContacto) {
-  //         // Si ya existe, actualizar el contacto
-  //         await this.prismaService.contactoEmergencia.update({
-  //           where: { docente_id: id },
-  //           data: {
-  //             nombre: updateDocenteDto.contactoEmergencia.nombre,
-  //             relacion: updateDocenteDto.contactoEmergencia.relacion,
-  //             telefono_1: updateDocenteDto.contactoEmergencia.telefono_1,
-  //             telefono_2: updateDocenteDto.contactoEmergencia.telefono_2,
-  //           },
-  //         });
-  //       } else {
-  //         // Si no existe, crearlo
-  //         await this.prismaService.contactoEmergencia.create({
-  //           data: {
-  //             docente_id: id,
-  //             nombre: updateDocenteDto.contactoEmergencia.nombre,
-  //             relacion: updateDocenteDto.contactoEmergencia.relacion,
-  //             telefono_1: updateDocenteDto.contactoEmergencia.telefono_1,
-  //             telefono_2: updateDocenteDto.contactoEmergencia.telefono_2,
-  //           },
-  //         });
-  //       }
-  //     }
-      
-  //     // 🔹 Actualizar Domicilios (1:N)
-  //     if (updateDocenteDto.domicilio) {
-  //       const existingDomicilio = await this.prismaService.domicilio.findUnique({
-  //         where: { docente_id: id },
-  //       });
-      
-  //       if (existingDomicilio) {
-  //         // Si ya existe, actualizar el domicilio
-  //         await this.prismaService.domicilio.update({
-  //           where: { id: existingDomicilio.id },
-  //           data: {
-  //             departamento_id: updateDocenteDto.domicilio.departamento_id,
-  //             provincia_id: updateDocenteDto.domicilio.provincia_id,
-  //             distrito_id: updateDocenteDto.domicilio.distrito_id,
-  //             direccion: updateDocenteDto.domicilio.direccion,
-  //             referencia: updateDocenteDto.domicilio.referencia,
-  //             mz: updateDocenteDto.domicilio.mz,
-  //             lote: updateDocenteDto.domicilio.lote,
-  //           },
-  //         });
-  //       } else {
-  //         // Si no existe, crearlo
-  //         await this.prismaService.domicilio.create({
-  //           data: {
-  //             docente_id: id,
-  //             departamento_id: updateDocenteDto.domicilio.departamento_id || 0,
-  //             provincia_id: updateDocenteDto.domicilio.provincia_id || 0,
-  //             distrito_id: updateDocenteDto.domicilio.distrito_id || 0,
-  //             direccion: updateDocenteDto.domicilio.direccion,
-  //             referencia: updateDocenteDto.domicilio.referencia,
-  //             mz: updateDocenteDto.domicilio.mz,
-  //             lote: updateDocenteDto.domicilio.lote,
-  //           },
-  //         });
-  //       }
-  //     }
-      
-  //     // 🔹 Actualizar Formación Académica (1:N)
-  //     if (updateDocenteDto.formacionAcademica?.length) {
-  //       for (const formacion of updateDocenteDto.formacionAcademica) {
-  //         await this.prismaService.formacionAcademica.upsert({
-  //           where: { id: Number(formacion.id) || 0 },
-  //           update: {
-  //             grado_academico: formacion.grado_academico,
-  //             universidad: formacion.universidad,
-  //             especialidad: formacion.especialidad,
-  //             pais: formacion.pais,
-  //             resolucion_sunedu: formacion.resolucion_sunedu,
-  //           },
-  //           create: {
-  //             docente_id: id,
-  //             grado_academico: formacion.grado_academico,
-  //             universidad: formacion.universidad,
-  //             especialidad: formacion.especialidad,
-  //             pais: formacion.pais,
-  //             resolucion_sunedu: formacion.resolucion_sunedu,
-  //           },
-  //         });
-  //       }
-  //     }
-
-  //     if (updateDocenteDto.titulosProfesionales?.length) {
-  //       for (const titulo of updateDocenteDto.titulosProfesionales) {
-  //         await this.prismaService.tituloProfesional.upsert({
-  //           where: { id: Number(titulo.id) || 0 },
-  //           update: {
-  //             titulo: titulo.titulo,
-  //             universidad: titulo.universidad,
-  //             especialidad: titulo.especialidad,
-  //           },
-  //           create: {
-  //             docente_id: id,
-  //             titulo: titulo.titulo,
-  //             universidad: titulo.universidad,
-  //             especialidad: titulo.especialidad,
-  //           },
-  //         });
-  //       }
-  //     }
-
-  //     // 🔹 Actualizar Formación Complementaria (1:N)
-  //     if (updateDocenteDto.formacionComplementaria?.length) {
-  //       for (const formacion of updateDocenteDto.formacionComplementaria) {
-  //         await this.prismaService.formacionComplementaria.upsert({
-  //           where: { id: Number(formacion.id) || 0 },
-  //           update: {
-  //             denominacion: formacion.denominacion,
-  //             especialidad: formacion.especialidad,
-  //             institucion: formacion.institucion,
-  //           },
-  //           create: {
-  //             docente_id: id,
-  //             denominacion: formacion.denominacion,
-  //             especialidad: formacion.especialidad,
-  //             institucion: formacion.institucion,
-  //           },
-  //         });
-  //       }
-  //     }
-
-  //     // 🔹 Actualizar Experiencia Docente (1:N)
-  //     for (const experiencia of updateDocenteDto.experienciaDocente || []) {
-  //       await this.prismaService.experienciaDocente.upsert({
-  //         where: { id: Number(experiencia.id) || 0 },
-  //         update: {
-  //           institucion: experiencia.institucion,
-  //           curso_dictado: experiencia.curso_dictado,
-  //           semestre: experiencia.semestre,
-  //           pais: experiencia.pais,
-  //           tipo_experiencia: experiencia.tipo_experiencia,
-  //         },
-  //         create: {
-  //           docente_id: id,
-  //           institucion: experiencia.institucion,
-  //           curso_dictado: experiencia.curso_dictado,
-  //           semestre: experiencia.semestre,
-  //           pais: experiencia.pais,
-  //           tipo_experiencia: experiencia.tipo_experiencia || 0,
-  //         },
-  //       });
-  //     }
-
-  //     // 🔹 Actualizar Artículos Científicos (1:N)
-  //     if (updateDocenteDto.articuloCientifico?.length) {
-  //       for (const articulo of updateDocenteDto.articuloCientifico) {
-  //         await this.prismaService.articuloCientifico.upsert({
-  //           where: { id: Number(articulo.id) || 0 },
-  //           update: {
-  //             titulo_articulo: articulo.titulo_articulo,
-  //             nombre_revista: articulo.nombre_revista,
-  //             indizado: articulo.indizado,
-  //             año: articulo.año,
-  //             enlace: articulo.enlace,
-  //           },
-  //           create: {
-  //             docente_id: id,
-  //             titulo_articulo: articulo.titulo_articulo,
-  //             nombre_revista: articulo.nombre_revista,
-  //             indizado: articulo.indizado,
-  //             año: articulo.año,
-  //             enlace: articulo.enlace,
-  //           },
-  //         });
-  //       }
-  //     }
-
-  //     // 🔹 Actualizar Libros (1:N)
-  //     if (updateDocenteDto.libros?.length) {
-  //       for (const libro of updateDocenteDto.libros) {
-  //         await this.prismaService.libro.upsert({
-  //           where: { id: Number(libro.id) || 0 },
-  //           update: {
-  //             titulo: libro.libro_titulo,
-  //             nombre_editorial: libro.nombre_editorial,
-  //             año: libro.año,
-  //           },
-  //           create: {
-  //             docente_id: id,
-  //             titulo: libro.libro_titulo,
-  //             nombre_editorial: libro.nombre_editorial,
-  //             año: libro.año,
-  //           },
-  //         });
-  //       }
-  //     }
-
-  //     // 🔹 Actualizar Proyectos de Investigación (1:N)
-  //     if (updateDocenteDto.proyectoInvestigacion?.length) {
-  //       for (const proyecto of updateDocenteDto.proyectoInvestigacion) {
-  //         await this.prismaService.proyectoInvestigacion.upsert({
-  //           where: { id: Number(proyecto.id) || 0 },
-  //           update: {
-  //             nombre: proyecto.nombre,
-  //             entidad_financiadora: proyecto.entidad_financiera,
-  //             año: proyecto.año,
-  //           },
-  //           create: {
-  //             docente_id: id,
-  //             nombre: proyecto.nombre,
-  //             entidad_financiadora: proyecto.entidad_financiera,
-  //             año: proyecto.año,
-  //           },
-  //         });
-  //       }
-  //     }
-
-  //     // 🔹 Actualizar Asesorías y Jurados (1:N)
-  //     if (updateDocenteDto.asesoriaJurado?.length) {
-  //       for (const asesoria of updateDocenteDto.asesoriaJurado) {
-  //         await this.prismaService.asesoriaJurado.upsert({
-  //           where: { id: Number(asesoria.id) || 0 },
-  //           update: {
-  //             titulo_tesis: asesoria.titulo_tesis,
-  //             universidad: asesoria.universidad,
-  //             nivel: asesoria.nivel,
-  //             año: asesoria.año,
-  //             tipo: asesoria.tipo, // Asesor (0) o Jurado (1)
-  //           },
-  //           create: {
-  //             docente_id: id,
-  //             titulo_tesis: asesoria.titulo_tesis,
-  //             universidad: asesoria.universidad,
-  //             nivel: asesoria.nivel,
-  //             año: asesoria.año,
-  //             tipo: asesoria.tipo || 0, // Asesor (0) o Jurado (1)
-  //           },
-  //         });
-  //       }
-  //     }
-
-  //     // 🔹 Actualizar Otros Conocimientos (1:N)
-  //     if (updateDocenteDto.otros?.length) {
-  //       for (const otro of updateDocenteDto.otros) {
-  //         await this.prismaService.otros.upsert({
-  //           where: { id: Number(otro.id) || 0 },
-  //           update: {
-  //             idioma: otro.idioma,
-  //             nivel_idioma: otro.nivel_idioma,
-  //             office: otro.office,
-  //             nivel_office: otro.nivel_office,
-  //             elearning: otro.learning,
-  //             nivel_elearning: otro.nivel_learning,
-  //           },
-  //           create: {
-  //             docente_id: id,
-  //             idioma: otro.idioma,
-  //             nivel_idioma: otro.nivel_idioma,
-  //             office: otro.office,
-  //             nivel_office: otro.nivel_office,
-  //             elearning: otro.learning,
-  //             nivel_elearning: otro.nivel_learning,
-  //           },
-  //         });
-  //       }
-  //     }
-
-  //     return {
-  //       message: '✅ Docente actualizado exitosamente',
-  //       data: updatedDocente,
-  //     };
-  //   } catch (error: unknown) {
-  //     if (error instanceof Error) {
-  //       console.error('❌ Error al actualizar docente:', error.message);
-  //       throw new Error(`No se pudo actualizar el docente: ${error.message}`);
-  //     }
-  //     throw new Error(
-  //       'No se pudo actualizar el docente por un error desconocido',
-  //     );
-  //   }
-  // }
-
-  async updateDocenteuser(updateDocenteDto: UpdateDocenteDto, user: any) {
-    // 🔍 Obtener el docente del usuario autenticado
+  async updateDocente(id: number, updateDocenteDto: UpdateDocenteDto) {
+    // 🔍 Verificar si el docente existe
     const docente = await this.prismaService.docente.findUnique({
-      where: { user_id: user.id },
+      where: { id },
     });
-  
+
     if (!docente) {
       throw new NotFoundException('Docente no encontrado');
     }
-  
     try {
-      // 🔹 Actualizar datos del docente autenticado
+      // 🔹 Actualizar datos del docente
       const updatedDocente = await this.prismaService.docente.update({
-        where: { id: docente.id },
+        where: { id },
         data: {
           nombres: updateDocenteDto.nombres,
           apellido_paterno: updateDocenteDto.apellido_paterno,
@@ -497,6 +186,52 @@ export class DocenteService {
         },
       });
 
+      // 🔹 Actualizar o crear Contacto de Emergencia (1:1)
+      if (updateDocenteDto.contactoEmergencia) {
+        await this.prismaService.contactoEmergencia.upsert({
+          where: { id: Number(updateDocenteDto.contactoEmergencia.id) || 0 },
+          update: {
+            nombre: updateDocenteDto.contactoEmergencia.nombre,
+            relacion: updateDocenteDto.contactoEmergencia.relacion,
+            telefono_1: updateDocenteDto.contactoEmergencia.telefono_1,
+            telefono_2: updateDocenteDto.contactoEmergencia.telefono_2,
+          },
+          create: {
+            docente_id: id,
+            nombre: updateDocenteDto.contactoEmergencia.nombre,
+            relacion: updateDocenteDto.contactoEmergencia.relacion,
+            telefono_1: updateDocenteDto.contactoEmergencia.telefono_1,
+            telefono_2: updateDocenteDto.contactoEmergencia.telefono_2,
+          },
+        });
+      }
+
+      // 🔹 Actualizar Domicilios (1:N)
+      if (updateDocenteDto.domicilio) {
+        await this.prismaService.domicilio.upsert({
+          where: { id: Number(updateDocenteDto.domicilio.id) || 0 },
+          update: {
+            departamento_id: updateDocenteDto.domicilio.departamento_id,
+            provincia_id: updateDocenteDto.domicilio.provincia_id,
+            distrito_id: updateDocenteDto.domicilio.distrito_id,
+            direccion: updateDocenteDto.domicilio.direccion,
+            referencia: updateDocenteDto.domicilio.referencia,
+            mz: updateDocenteDto.domicilio.mz,
+            lote: updateDocenteDto.domicilio.lote,
+          },
+          create: {
+            docente_id: id,
+            departamento_id: updateDocenteDto.domicilio.departamento_id || 0,
+            provincia_id: updateDocenteDto.domicilio.provincia_id || 0,
+            distrito_id: updateDocenteDto.domicilio.distrito_id || 0,
+            direccion: updateDocenteDto.domicilio.direccion,
+            referencia: updateDocenteDto.domicilio.referencia,
+            mz: updateDocenteDto.domicilio.mz,
+            lote: updateDocenteDto.domicilio.lote,
+          },
+        });
+      }
+
       // 🔹 Actualizar Formación Académica (1:N)
       if (updateDocenteDto.formacionAcademica?.length) {
         for (const formacion of updateDocenteDto.formacionAcademica) {
@@ -510,7 +245,7 @@ export class DocenteService {
               resolucion_sunedu: formacion.resolucion_sunedu,
             },
             create: {
-              docente_id: docente.id, // 👈 Ahora usa el docente autenticado
+              docente_id: id,
               grado_academico: formacion.grado_academico,
               universidad: formacion.universidad,
               especialidad: formacion.especialidad,
@@ -521,7 +256,6 @@ export class DocenteService {
         }
       }
 
-      // 🔹 Actualizar Títulos Profesionales (1:N)
       if (updateDocenteDto.titulosProfesionales?.length) {
         for (const titulo of updateDocenteDto.titulosProfesionales) {
           await this.prismaService.tituloProfesional.upsert({
@@ -532,7 +266,7 @@ export class DocenteService {
               especialidad: titulo.especialidad,
             },
             create: {
-              docente_id: docente.id,
+              docente_id: id,
               titulo: titulo.titulo,
               universidad: titulo.universidad,
               especialidad: titulo.especialidad,
@@ -552,7 +286,7 @@ export class DocenteService {
               institucion: formacion.institucion,
             },
             create: {
-              docente_id: docente.id,
+              docente_id: id,
               denominacion: formacion.denominacion,
               especialidad: formacion.especialidad,
               institucion: formacion.institucion,
@@ -560,20 +294,21 @@ export class DocenteService {
           });
         }
       }
-       // 🔹 Actualizar Experiencia Docente (1:N)
+
+      // 🔹 Actualizar Experiencia Docente (1:N)
       for (const experiencia of updateDocenteDto.experienciaDocente || []) {
         await this.prismaService.experienciaDocente.upsert({
           where: { id: Number(experiencia.id) || 0 },
           update: {
-            institucion: experiencia.institucion,
+            institucion: experiencia.nombre_universidad,
             curso_dictado: experiencia.curso_dictado,
             semestre: experiencia.semestre,
             pais: experiencia.pais,
             tipo_experiencia: experiencia.tipo_experiencia,
           },
           create: {
-            docente_id: docente.id, // 👈 Ahora usa el docente autenticado
-            institucion: experiencia.institucion,
+            docente_id: id,
+            institucion: experiencia.nombre_universidad,
             curso_dictado: experiencia.curso_dictado,
             semestre: experiencia.semestre,
             pais: experiencia.pais,
@@ -595,7 +330,7 @@ export class DocenteService {
               enlace: articulo.enlace,
             },
             create: {
-              docente_id: docente.id,
+              docente_id: id,
               titulo_articulo: articulo.titulo_articulo,
               nombre_revista: articulo.nombre_revista,
               indizado: articulo.indizado,
@@ -617,7 +352,7 @@ export class DocenteService {
               año: libro.año,
             },
             create: {
-              docente_id: docente.id,
+              docente_id: id,
               titulo: libro.libro_titulo,
               nombre_editorial: libro.nombre_editorial,
               año: libro.año,
@@ -625,49 +360,50 @@ export class DocenteService {
           });
         }
       }
-          // 🔹 Actualizar Proyectos de Investigación (1:N)
-    if (updateDocenteDto.proyectoInvestigacion?.length) {
-      for (const proyecto of updateDocenteDto.proyectoInvestigacion) {
-        await this.prismaService.proyectoInvestigacion.upsert({
-          where: { id: Number(proyecto.id) || 0 },
-          update: {
-            nombre: proyecto.nombre,
-            entidad_financiadora: proyecto.entidad_financiera,
-            año: proyecto.año,
-          },
-          create: {
-            docente_id: docente.id,
-            nombre: proyecto.nombre,
-            entidad_financiadora: proyecto.entidad_financiera,
-            año: proyecto.año,
-          },
-        });
-      }
-    }
 
-    // 🔹 Actualizar Asesorías y Jurados (1:N)
-    if (updateDocenteDto.asesoriaJurado?.length) {
-      for (const asesoria of updateDocenteDto.asesoriaJurado) {
-        await this.prismaService.asesoriaJurado.upsert({
-          where: { id: Number(asesoria.id) || 0 },
-          update: {
-            titulo_tesis: asesoria.titulo_tesis,
-            universidad: asesoria.universidad,
-            nivel: asesoria.nivel,
-            año: asesoria.año,
-            tipo: asesoria.tipo, // Asesor (0) o Jurado (1)
-          },
-          create: {
-            docente_id: docente.id,
-            titulo_tesis: asesoria.titulo_tesis,
-            universidad: asesoria.universidad,
-            nivel: asesoria.nivel,
-            año: asesoria.año,
-            tipo: asesoria.tipo || 0, // Asesor (0) o Jurado (1)
-          },
-        });
+      // 🔹 Actualizar Proyectos de Investigación (1:N)
+      if (updateDocenteDto.proyectoInvestigacion?.length) {
+        for (const proyecto of updateDocenteDto.proyectoInvestigacion) {
+          await this.prismaService.proyectoInvestigacion.upsert({
+            where: { id: Number(proyecto.id) || 0 },
+            update: {
+              nombre: proyecto.nombre,
+              entidad_financiadora: proyecto.entidad_financiera,
+              año: proyecto.año,
+            },
+            create: {
+              docente_id: id,
+              nombre: proyecto.nombre,
+              entidad_financiadora: proyecto.entidad_financiera,
+              año: proyecto.año,
+            },
+          });
+        }
       }
-    }
+
+      // 🔹 Actualizar Asesorías y Jurados (1:N)
+      if (updateDocenteDto.asesoriaJurado?.length) {
+        for (const asesoria of updateDocenteDto.asesoriaJurado) {
+          await this.prismaService.asesoriaJurado.upsert({
+            where: { id: Number(asesoria.id) || 0 },
+            update: {
+              titulo_tesis: asesoria.titulo_tesis,
+              universidad: asesoria.universidad,
+              nivel: asesoria.nivel,
+              año: asesoria.año,
+              tipo: asesoria.tipo, // Asesor (0) o Jurado (1)
+            },
+            create: {
+              docente_id: id,
+              titulo_tesis: asesoria.titulo_tesis,
+              universidad: asesoria.universidad,
+              nivel: asesoria.nivel,
+              año: asesoria.año,
+              tipo: asesoria.tipo || 0, // Asesor (0) o Jurado (1)
+            },
+          });
+        }
+      }
 
       // 🔹 Actualizar Otros Conocimientos (1:N)
       if (updateDocenteDto.otros?.length) {
@@ -683,7 +419,7 @@ export class DocenteService {
               nivel_elearning: otro.nivel_learning,
             },
             create: {
-              docente_id: docente.id,
+              docente_id: id,
               idioma: otro.idioma,
               nivel_idioma: otro.nivel_idioma,
               office: otro.office,
@@ -694,7 +430,7 @@ export class DocenteService {
           });
         }
       }
-  
+
       return {
         message: '✅ Docente actualizado exitosamente',
         data: updatedDocente,
@@ -704,8 +440,10 @@ export class DocenteService {
         console.error('❌ Error al actualizar docente:', error.message);
         throw new Error(`No se pudo actualizar el docente: ${error.message}`);
       }
-      throw new Error('No se pudo actualizar el docente por un error desconocido');
-    }    
+      throw new Error(
+        'No se pudo actualizar el docente por un error desconocido',
+      );
+    }
   }
 
   async getDocentes() {

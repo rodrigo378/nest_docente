@@ -9,9 +9,6 @@ import { Type } from 'class-transformer';
 
 export class HorarioDto {
   @IsString()
-  id: string;
-
-  @IsString()
   title: string;
 
   @IsDateString()
