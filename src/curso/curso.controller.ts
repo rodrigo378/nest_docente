@@ -10,12 +10,25 @@ export class CursoController {
     return await this.cursoService.getEspecialidades();
   }
 
-  @Get('carreras-ciclos')
-  async getCarrerasYCiclos(@Query('c_codfac') c_codfac: string) {
-    if (!c_codfac) {
-      return { error: 'El parámetro c_codfac es obligatorio' };
+  // @Get('carreras-ciclos')
+  // async getCarrerasYCiclos(@Query('c_codfac') c_codfac: string) {
+  //   if (!c_codfac) {
+  //     return { error: 'El parámetro c_codfac es obligatorio' };
+  //   }
+  //   return await this.cursoService.getCicloCarreras(c_codfac);
+  // }
+
+  @Get('/carreras-ciclo')
+  async getCarreras(
+    @Query('n_ciclo') c_ciclo: string,
+    @Query('c_codfac') c_codfac: string,
+  ) {
+    if (!c_codfac || !c_ciclo) {
+      return {
+        error: 'Los parámetros c_codfac y c_ciclo son obligatorios',
+      };
     }
-    return await this.cursoService.getCicloCarreras(c_codfac);
+    return await this.cursoService.getCarreras(Number(c_ciclo), c_codfac);
   }
 
   @Get()
