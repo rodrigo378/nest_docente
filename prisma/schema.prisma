@@ -212,18 +212,6 @@ model Otros {
   docente    Docente? @relation(fields: [docente_id], references: [id], onDelete: SetNull)
 }
 
-// se borra
-model curso {
-  id        Int    @id @default(autoincrement())
-  n_codper  Int
-  c_codmod  String
-  c_codfac  String
-  c_codesp  String
-  c_codcur  String
-  c_nomcur  String
-  generales String
-}
-
 model Modulo {
   id        BigInt    @id @default(autoincrement())
   nombre    String    @db.VarChar(255)
@@ -262,15 +250,34 @@ model Permission {
   item Item @relation(fields: [itemId], references: [id])
 }
 
+model Turno {
+  id       Int    @id @default(autoincrement())
+  n_codper Int
+  n_codpla Int
+  c_codfac String
+  nom_fac  String
+  c_codesp String
+  nomesp   String
+  c_grpcur String
+  c_codmod String
+  c_nommod String
+  n_ciclo  Int
+  estado   Int    @default(1)
+
+  Horario Horario[]
+}
+
 model Horario {
   id       Int      @id @default(autoincrement())
-  curso    String
+  c_codcur String
+  c_nomcur String
   dia      String
   h_inicio DateTime
   h_fin    DateTime
-  color    String
-  docente  String
-  ciclo    String
-  seccion  String
-  carrera  String
+  c_color  String
+  c_coddoc String?
+  c_nomdoc String?
+
+  turno_id Int
+  turno    Turno @relation(fields: [turno_id], references: [id], onDelete: Cascade)
 }

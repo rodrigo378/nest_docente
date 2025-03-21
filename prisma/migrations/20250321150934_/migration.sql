@@ -203,20 +203,6 @@ CREATE TABLE `Otros` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `curso` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `n_codper` INTEGER NOT NULL,
-    `c_codmod` VARCHAR(191) NOT NULL,
-    `c_codfac` VARCHAR(191) NOT NULL,
-    `c_codesp` VARCHAR(191) NOT NULL,
-    `c_codcur` VARCHAR(191) NOT NULL,
-    `c_nomcur` VARCHAR(191) NOT NULL,
-    `generales` VARCHAR(191) NOT NULL,
-
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
 CREATE TABLE `Modulo` (
     `id` BIGINT NOT NULL AUTO_INCREMENT,
     `nombre` VARCHAR(255) NOT NULL,
@@ -255,16 +241,35 @@ CREATE TABLE `Permission` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
+CREATE TABLE `Turno` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `n_codper` INTEGER NOT NULL,
+    `n_codpla` INTEGER NOT NULL,
+    `c_codfac` VARCHAR(191) NOT NULL,
+    `nom_fac` VARCHAR(191) NOT NULL,
+    `c_codesp` VARCHAR(191) NOT NULL,
+    `nomesp` VARCHAR(191) NOT NULL,
+    `c_grpcur` VARCHAR(191) NOT NULL,
+    `c_codmod` VARCHAR(191) NOT NULL,
+    `c_nommod` VARCHAR(191) NOT NULL,
+    `n_ciclo` INTEGER NOT NULL,
+    `estado` INTEGER NOT NULL DEFAULT 1,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
 CREATE TABLE `Horario` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `curso` VARCHAR(191) NOT NULL,
+    `c_codcur` VARCHAR(191) NOT NULL,
+    `c_nomcur` VARCHAR(191) NOT NULL,
+    `dia` VARCHAR(191) NOT NULL,
     `h_inicio` DATETIME(3) NOT NULL,
     `h_fin` DATETIME(3) NOT NULL,
-    `color` VARCHAR(191) NOT NULL,
-    `docente` VARCHAR(191) NOT NULL,
-    `ciclo` VARCHAR(191) NOT NULL,
-    `seccion` VARCHAR(191) NOT NULL,
-    `carrera` VARCHAR(191) NOT NULL,
+    `c_color` VARCHAR(191) NOT NULL,
+    `c_coddoc` VARCHAR(191) NULL,
+    `c_nomdoc` VARCHAR(191) NULL,
+    `turno_id` INTEGER NOT NULL,
 
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -319,3 +324,6 @@ ALTER TABLE `Permission` ADD CONSTRAINT `Permission_user_id_fkey` FOREIGN KEY (`
 
 -- AddForeignKey
 ALTER TABLE `Permission` ADD CONSTRAINT `Permission_item_id_fkey` FOREIGN KEY (`item_id`) REFERENCES `Item`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Horario` ADD CONSTRAINT `Horario_turno_id_fkey` FOREIGN KEY (`turno_id`) REFERENCES `Turno`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
