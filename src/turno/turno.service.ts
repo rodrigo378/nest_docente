@@ -37,6 +37,7 @@ export class TurnoService {
     }
     return turno;
   }
+
   async updateTurno(id: number, updateTurnoDto: UpdateTurnoDto) {
     const turno = await this.prismaService.turno.findFirst({ where: { id } });
 
