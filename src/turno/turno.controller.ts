@@ -4,17 +4,19 @@ import {
   Get,
   Param,
   ParseIntPipe,
+  Post,
   Put,
   Query,
 } from '@nestjs/common';
 import { TurnoService } from './turno.service';
 import { UpdateTurnoDto } from './dto/updateTurnoDto';
+import { CreateHorarioDto } from './dto/createHorarioDto';
 
-@Controller('turno')
+@Controller('')
 export class TurnoController {
   constructor(private readonly turnoService: TurnoService) {}
 
-  @Get('')
+  @Get('/turno')
   getTurnos(
     @Query('c_codfac') c_codfac?: string,
     @Query('c_codesp') c_codesp?: string,
@@ -31,11 +33,22 @@ export class TurnoController {
     );
   }
 
-  @Put('/:id')
+  @Put('/turno/:id')
   async updateTurno(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateTurnoDto: UpdateTurnoDto,
   ) {
     return await this.turnoService.updateTurno(id, updateTurnoDto);
+  }
+
+  // horarios
+  @Post('/horario')
+  createHorario(@Body() createHorarioDto: CreateHorarioDto) {
+    return this.turnoService.createHorario(createHorarioDto);
+  }
+
+  @Get('/horario/:turno_id')
+  getHorarios(@Param('turno_id') turno_id: string) {
+    return this.turnoService.getHorario(Number(turno_id));
   }
 }

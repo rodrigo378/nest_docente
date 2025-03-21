@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UpdateTurnoDto } from './dto/updateTurnoDto';
+import { CreateHorarioDto } from './dto/createHorarioDto';
 
 @Injectable()
 export class TurnoService {
@@ -37,6 +38,57 @@ export class TurnoService {
     });
 
     return newTurno;
+  }
+
+  //Horarios
+  async createHorario(createHorarioDto: CreateHorarioDto) {
+    try {
+      for (const horario of createHorarioDto.horarios) {
+        const {
+          c_codcur,
+          c_nomcur,
+          dia,
+          h_inicio,
+          h_fin,
+          c_color,
+          c_coddoc,
+          c_nomdoc,
+          turno_id,
+        } = horario;
+
+        await this.prismaService.horario.create({
+          data: {
+            c_codcur,
+            c_nomcur,
+            dia,
+            h_inicio: new Date(h_inicio),
+            h_fin: new Date(h_fin),
+            c_color,
+            c_coddoc: c_coddoc || null,
+            c_nomdoc: c_nomdoc || null,
+            turno_id,
+          },
+        });
+      }
+
+      return {
+        message: '✅ Horarios creados con éxito',
+        cantidad: createHorarioDto.horarios.length,
+      };
+    } catch (error) {
+      console.error('❌ Error al crear horarios:', error);
+      throw new Error('Error al crear los horarios');
+    }
+  }
+
+  async getHorario(turno_id: number) {
+    const horarios = await this.prismaService.horario.findMany({
+      where: { turno_id: turno_id },
+    });
+    if (!horarios) {
+      throw new NotFoundException('Este turno_id no existe');
+    }
+    return horarios;
   }
 }
 
