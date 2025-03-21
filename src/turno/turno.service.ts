@@ -25,6 +25,17 @@ export class TurnoService {
     });
   }
 
+  async getTurno(id: number) {
+    const turno = await this.prismaService.turno.findFirst({
+      where: { id },
+    });
+
+    if (!turno) {
+      throw new NotFoundException('Este turno no existe');
+    }
+    return turno;
+  }
+
   async updateTurno(id: number, updateTurnoDto: UpdateTurnoDto) {
     const turno = await this.prismaService.turno.findFirst({ where: { id } });
 
