@@ -280,4 +280,14 @@ model Horario {
 
   turno_id Int
   turno    Turno @relation(fields: [turno_id], references: [id], onDelete: Cascade)
+
+  aula_id Int
+  aula    Aula @relation(fields: [aula_id], references: [id], onDelete: Cascade)
+}
+
+model Aula {
+  id      Int       @id @default(autoincrement())
+  n_aulo  String
+  aforo   Int
+  Horario Horario[]
 }

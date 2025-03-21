@@ -47,6 +47,11 @@ export class HorarioDto {
   @IsInt()
   @IsNotEmpty()
   turno_id: number;
+
+  @Type(() => Number)
+  @IsInt()
+  @IsNotEmpty()
+  aula_id: number;
 }
 
 export class CreateHorarioDto {

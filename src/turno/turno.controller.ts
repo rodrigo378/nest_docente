@@ -11,6 +11,7 @@ import {
 import { TurnoService } from './turno.service';
 import { UpdateTurnoDto } from './dto/updateTurnoDto';
 import { CreateHorarioDto } from './dto/createHorarioDto';
+import { VerificarAulaDto } from './dto/verificarAulaDto';
 
 @Controller('')
 export class TurnoController {
@@ -33,6 +34,11 @@ export class TurnoController {
     );
   }
 
+  @Get('/turno/:id')
+  getTurno(@Param('id') id: number) {
+    return this.turnoService.getTurno(Number(id));
+  }
+
   @Put('/turno/:id')
   updateTurno(
     @Param('id', ParseIntPipe) id: number,
@@ -50,5 +56,10 @@ export class TurnoController {
   @Get('/horario/:turno_id')
   getHorarios(@Param('turno_id') turno_id: string) {
     return this.turnoService.getHorario(Number(turno_id));
+  }
+
+  @Post('/aula/verificar')
+  verificarAula(@Body() verificarAulaDto: VerificarAulaDto) {
+    return this.turnoService.verificarAula(verificarAulaDto);
   }
 }

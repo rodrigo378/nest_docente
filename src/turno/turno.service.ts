@@ -2,6 +2,8 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UpdateTurnoDto } from './dto/updateTurnoDto';
 import { CreateHorarioDto } from './dto/createHorarioDto';
+import { VerificarAulaDto } from './dto/verificarAulaDto';
+import { Horario } from '@prisma/client';
 
 @Injectable()
 export class TurnoService {
@@ -25,6 +27,16 @@ export class TurnoService {
     });
   }
 
+  async getTurno(id: number) {
+    const turno = await this.prismaService.turno.findFirst({
+      where: { id },
+    });
+
+    if (!turno) {
+      throw new NotFoundException('Este turno no existe');
+    }
+    return turno;
+  }
   async updateTurno(id: number, updateTurnoDto: UpdateTurnoDto) {
     const turno = await this.prismaService.turno.findFirst({ where: { id } });
 
@@ -54,6 +66,7 @@ export class TurnoService {
           c_coddoc,
           c_nomdoc,
           turno_id,
+          aula_id,
         } = horario;
 
         await this.prismaService.horario.create({
@@ -67,6 +80,7 @@ export class TurnoService {
             c_coddoc: c_coddoc || null,
             c_nomdoc: c_nomdoc || null,
             turno_id,
+            aula_id,
           },
         });
       }
@@ -90,7 +104,74 @@ export class TurnoService {
     }
     return horarios;
   }
+
+  parseHora = (hora: string): Date => {
+    const [h, m] = hora.split(':').map(Number);
+    const d = new Date();
+    d.setHours(h, m, 0, 0);
+    return d;
+  };
+
+  async verificarAula(verificarAulaDto: VerificarAulaDto) {
+    const { aula_id, dia, h_inicio, h_fin } = verificarAulaDto;
+
+    const horarios = await this.prismaService.horario.findMany({
+      where: { aula_id, dia },
+    });
+
+    const conflictos: { mensaje: string; horario: Horario }[] = [];
+
+    for (const horario of horarios) {
+      const horaInicio = horario.h_inicio.toLocaleTimeString('es-PE', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+        timeZone: 'UTC',
+      });
+
+      const horaFin = horario.h_fin.toLocaleTimeString('es-PE', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+        timeZone: 'UTC',
+      });
+
+      const inicioNuevo = this.parseHora(h_inicio);
+      const finNuevo = this.parseHora(h_fin);
+      const inicioExistente = this.parseHora(horaInicio);
+      const finExistente = this.parseHora(horaFin);
+
+      if (inicioNuevo < finExistente && finNuevo > inicioExistente) {
+        conflictos.push({
+          mensaje: `⛔ Conflicto con el curso "${horario.c_nomcur}" del docente "${horario.c_nomdoc || 'Sin asignar'}" (${horaInicio} - ${horaFin})`,
+          horario,
+        });
+      }
+    }
+
+    if (conflictos.length > 0) {
+      return {
+        success: false,
+        conflicto: true,
+        mensaje: `❌ Se encontraron ${conflictos.length} conflictos de horario.`,
+        conflictos,
+      };
+    }
+
+    return {
+      success: true,
+      conflicto: false,
+      mensaje: '✅ El aula está disponible en ese horario.',
+    };
+  }
 }
+
+// a1   a2
+// 8:00 a 10:00
+// b1   b2
+// 9:30 a 12:30
+// a1 < b2 and a2 > b1
+// 8:00 < 12:30 and 10:00 > 9:30
 
 // GENERAR TURNO
 // SELECT
