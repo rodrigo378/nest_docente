@@ -54,33 +54,35 @@ export class CursoService {
   async getCursos(getCursoDto: GetCursoDto) {
     return await this.prismaReadonly.$queryRawUnsafe(
       `select
-        n_codper,
-        c_codmod,
-        c_codfac,
-        c_codesp,
-        n_ciclo,
-        c_ciclo,
-        c_codcur,
-        c_nomcur,
-        n_ht,
-        n_hp
-      FROM tb_plan_estudio_curso
-      where n_codper in (2023, 2025)
-      and c_codfac = ?
-      and c_codesp = ?
-      and n_ciclo = ?
+        tp.n_codper,
+        tp.c_codmod,
+        tb.c_nommod,
+        tp.c_codfac,
+        tp.c_codesp,
+        tp.n_ciclo,
+        tp.c_ciclo,
+        tp.c_codcur,
+        tp.c_nomcur,
+        tp.n_ht,
+        tp.n_hp
+      FROM tb_plan_estudio_curso tp
+      inner join tb_modalidad tb on tb.c_codmod = tp.c_codmod
+      where tp.n_codper in (2023, 2025)
+      and tp.c_codfac = ?
+      and tp.c_codesp = ?
+      and tp.n_ciclo = ?
       group by
-        n_codper,
-        c_codmod,
-        c_codfac,
-        c_codesp,
-        c_codcur,
-        c_nomcur,
-        n_ciclo,
-        c_ciclo,
-        n_ht,
-        n_hp
-      order by c_nomcur;
+        tp.n_codper,
+        tp.c_codmod,
+        tp.c_codfac,
+        tp.c_codesp,
+        tp.c_codcur,
+        tp.c_nomcur,
+        tp.n_ciclo,
+        tp.c_ciclo,
+        tp.n_ht,
+        tp.n_hp
+      order by tp.c_nomcur;
       `,
       getCursoDto.c_codfac,
       getCursoDto.c_codesp,
