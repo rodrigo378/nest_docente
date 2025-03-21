@@ -34,11 +34,11 @@ export class TurnoController {
   }
 
   @Put('/turno/:id')
-  async updateTurno(
+  updateTurno(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateTurnoDto: UpdateTurnoDto,
   ) {
-    return await this.turnoService.updateTurno(id, updateTurnoDto);
+    return this.turnoService.updateTurno(id, updateTurnoDto);
   }
 
   // horarios

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Query } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { CursoService } from './curso.service';
 import { GetCursoDto } from './dto/getCursoDto';
 
@@ -32,7 +32,7 @@ export class CursoController {
     return await this.cursoService.getCarreras(Number(c_ciclo), c_codfac);
   }
 
-  @Get()
+  @Post()
   async getCursos(@Body() getCursosDto: GetCursoDto) {
     return await this.cursoService.getCursos(getCursosDto);
   }
