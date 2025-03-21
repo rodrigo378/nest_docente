@@ -1,5 +1,14 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseIntPipe,
+  Put,
+  Query,
+} from '@nestjs/common';
 import { TurnoService } from './turno.service';
+import { UpdateTurnoDto } from './dto/updateTurnoDto';
 
 @Controller('turno')
 export class TurnoController {
@@ -20,5 +29,13 @@ export class TurnoController {
       Number(n_ciclo),
       Number(estado),
     );
+  }
+
+  @Put('/:id')
+  async updateTurno(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateTurnoDto: UpdateTurnoDto,
+  ) {
+    return await this.turnoService.updateTurno(id, updateTurnoDto);
   }
 }

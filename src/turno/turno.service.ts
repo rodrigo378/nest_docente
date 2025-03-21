@@ -1,5 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { UpdateTurnoDto } from './dto/updateTurnoDto';
 
 @Injectable()
 export class TurnoService {
@@ -21,6 +22,21 @@ export class TurnoService {
         ...(estado && { estado }),
       },
     });
+  }
+
+  async updateTurno(id: number, updateTurnoDto: UpdateTurnoDto) {
+    const turno = await this.prismaService.turno.findFirst({ where: { id } });
+
+    if (!turno) {
+      throw new NotFoundException('Este turno no existe');
+    }
+
+    const newTurno = await this.prismaService.turno.update({
+      where: { id },
+      data: { estado: updateTurnoDto.estado },
+    });
+
+    return newTurno;
   }
 }
 

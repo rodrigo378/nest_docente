@@ -1,5 +1,6 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Body, Controller, Get, Query } from '@nestjs/common';
 import { CursoService } from './curso.service';
+import { GetCursoDto } from './dto/getCursoDto';
 
 @Controller('curso')
 export class CursoController {
@@ -32,16 +33,7 @@ export class CursoController {
   }
 
   @Get()
-  async getCursos(
-    @Query('c_codfac') c_codfac: string,
-    @Query('c_codesp') c_codesp: string,
-    @Query('c_ciclo') c_ciclo: string,
-  ) {
-    if (!c_codfac || !c_codesp || !c_ciclo) {
-      return {
-        error: 'Los parámetros c_codfac, c_codesp y c_ciclo son obligatorios',
-      };
-    }
-    return await this.cursoService.getCursos(c_codfac, c_codesp, c_ciclo);
+  async getCursos(@Body() getCursosDto: GetCursoDto) {
+    return await this.cursoService.getCursos(getCursosDto);
   }
 }

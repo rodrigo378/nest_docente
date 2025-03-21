@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaReadonlyService } from 'src/prisma/readonly.service';
+import { GetCursoDto } from './dto/getCursoDto';
 
 @Injectable()
 export class CursoService {
@@ -50,53 +51,40 @@ export class CursoService {
     );
   }
 
-  async getCursos(c_codfac: string, c_codesp: string, c_ciclo: string) {
+  async getCursos(getCursoDto: GetCursoDto) {
     return await this.prismaReadonly.$queryRawUnsafe(
-      `SELECT DISTINCT 
+      `select
+        n_codper,
+        c_codmod,
+        c_codfac,
+        c_codesp,
+        n_ciclo,
+        c_ciclo,
         c_codcur,
         c_nomcur,
-        'n_ht' AS tipo_horas,
-        n_ht AS horas,
-        c_codmod,
-        CASE 
-          WHEN c_codmod = 1 THEN 'Presencial'
-          WHEN c_codmod = 2 THEN 'Semipresencial'
-          WHEN c_codmod = 3 THEN 'Virtual'
-          ELSE 'Desconocido'
-        END AS modalidad
+        n_ht,
+        n_hp
       FROM tb_plan_estudio_curso
-      WHERE c_codfac = ?
-        AND c_codesp = ?
-        AND c_ciclo = ?
-        AND n_codper = "2025"
-  
-      UNION ALL
-  
-      SELECT DISTINCT 
+      where n_codper in (2023, 2025)
+      and c_codfac = ?
+      and c_codesp = ?
+      and n_ciclo = ?
+      group by
+        n_codper,
+        c_codmod,
+        c_codfac,
+        c_codesp,
         c_codcur,
         c_nomcur,
-        'n_hp' AS tipo_horas,
-        n_hp AS horas,
-        c_codmod,
-        CASE 
-          WHEN c_codmod = 1 THEN 'Presencial'
-          WHEN c_codmod = 2 THEN 'Semipresencial'
-          WHEN c_codmod = 3 THEN 'Virtual'
-          ELSE 'Desconocido'
-        END AS modalidad
-      FROM tb_plan_estudio_curso
-      WHERE c_codfac = ?
-        AND c_codesp = ?
-        AND c_ciclo = ?
-        AND n_codper = "2025"
-      ORDER BY c_nomcur, c_codmod, tipo_horas;
+        n_ciclo,
+        c_ciclo,
+        n_ht,
+        n_hp
+      order by c_nomcur;
       `,
-      c_codfac,
-      c_codesp,
-      c_ciclo,
-      c_codfac,
-      c_codesp,
-      c_ciclo,
+      getCursoDto.c_codfac,
+      getCursoDto.c_codesp,
+      getCursoDto.n_ciclo,
     );
   }
 
