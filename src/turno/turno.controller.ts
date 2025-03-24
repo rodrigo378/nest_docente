@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseIntPipe,
@@ -11,6 +12,8 @@ import {
 import { TurnoService } from './turno.service';
 import { UpdateTurnoDto } from './dto/updateTurnoDto';
 import { CreateHorarioDto } from './dto/createHorarioDto';
+import { UpsertManyHorarioDto } from './dto/updateHorarioDto';
+import { CreateTurnoDto } from './dto/createTurnoDto';
 import { VerificarAulaDto } from './dto/verificarAulaDto';
 
 @Controller('')
@@ -47,16 +50,36 @@ export class TurnoController {
     return this.turnoService.updateTurno(id, updateTurnoDto);
   }
 
+  @Post('/turno')
+  createTurno(@Body() createTurnoDto: CreateTurnoDto) {
+    return this.turnoService.createTurno(createTurnoDto);
+  }
+
+  @Delete('/turno/:id')
+  deleteTurno(@Param('id', ParseIntPipe) id: number) {
+    return this.turnoService.deleteTurno(id);
+  }
+
   // horarios
   @Post('/horario')
   createHorario(@Body() createHorarioDto: CreateHorarioDto) {
     return this.turnoService.createHorario(createHorarioDto);
   }
 
-  @Get('/horario/:turno_id')
-  getHorarios(@Param('turno_id') turno_id: string) {
-    return this.turnoService.getHorario(Number(turno_id));
+  @Put('/horario')
+  updateHorario(@Body() updateHorarioDto: UpsertManyHorarioDto) {
+    return this.turnoService.updateHorario(updateHorarioDto);
   }
+
+  @Get('/horario/:turno_id')
+  getHorarios(@Param('turno_id', ParseIntPipe) turno_id: number) {
+    return this.turnoService.getHorario(turno_id);
+  }
+
+  // @Delete('/horario/:id')
+  // deleteHorario(@Param('id', ParseIntPipe) id: number) {
+  //   return this.turnoService.deleteHorario(id);
+  // }
 
   @Post('/aula/verificar')
   verificarAula(@Body() verificarAulaDto: VerificarAulaDto) {

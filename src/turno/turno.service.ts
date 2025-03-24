@@ -1,7 +1,13 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UpdateTurnoDto } from './dto/updateTurnoDto';
 import { CreateHorarioDto } from './dto/createHorarioDto';
+import { UpsertManyHorarioDto } from './dto/updateHorarioDto';
+import { CreateTurnoDto } from './dto/createTurnoDto';
 import { VerificarAulaDto } from './dto/verificarAulaDto';
 import { Horario } from '@prisma/client';
 
@@ -38,8 +44,6 @@ export class TurnoService {
     return turno;
   }
 
-  async createTurno() {}
-
   async updateTurno(id: number, updateTurnoDto: UpdateTurnoDto) {
     const turno = await this.prismaService.turno.findFirst({ where: { id } });
 
@@ -53,6 +57,48 @@ export class TurnoService {
     });
 
     return newTurno;
+  }
+
+  async createTurno(createTurnoDto: CreateTurnoDto) {
+    try {
+      const newTurno = await this.prismaService.turno.create({
+        data: {
+          ...createTurnoDto,
+        },
+      });
+
+      return {
+        success: true,
+        mensaje: '✅ Turno creado correctamente',
+        turno: newTurno,
+      };
+    } catch (error) {
+      console.error('❌ Error al crear el turno:', error);
+      throw new InternalServerErrorException('Error al crear el turno');
+    }
+  }
+
+  async deleteTurno(id: number) {
+    try {
+      const turnoExistente = await this.prismaService.turno.findUnique({
+        where: { id },
+      });
+
+      if (!turnoExistente) {
+        throw new NotFoundException('⚠️ Este turno no existe');
+      }
+      await this.prismaService.turno.delete({
+        where: { id },
+      });
+
+      return {
+        success: true,
+        mensaje: '✅ Turno eliminado correctamente',
+      };
+    } catch (error) {
+      console.error('Error al eliminar el horario:', error);
+      throw new InternalServerErrorException('❌ Error al eliminar el horario');
+    }
   }
 
   //Horarios
@@ -98,6 +144,78 @@ export class TurnoService {
       console.error('❌ Error al crear horarios:', error);
       throw new Error('Error al crear los horarios');
     }
+  }
+
+  async updateHorario(dto: UpsertManyHorarioDto) {
+    const resultados: { tipo: string; horario: any }[] = [];
+
+    for (const horario of dto.horarios) {
+      const {
+        id,
+        c_codcur,
+        c_nomcur,
+        dia,
+        h_inicio,
+        h_fin,
+        n_horas,
+        c_color,
+        c_coddoc,
+        c_nomdoc,
+        turno_id,
+        aula_id,
+      } = horario;
+
+      if (id) {
+        // 🔁 Si tiene ID: intentar actualizar
+        const existe = await this.prismaService.horario.findUnique({
+          where: { id },
+        });
+
+        if (existe) {
+          const actualizado = await this.prismaService.horario.update({
+            where: { id },
+            data: {
+              c_codcur,
+              c_nomcur,
+              dia,
+              h_inicio,
+              h_fin,
+              n_horas,
+              c_color,
+              c_coddoc,
+              c_nomdoc,
+              turno_id,
+            },
+          });
+          resultados.push({ tipo: 'actualizado', horario: actualizado });
+          continue;
+        }
+      }
+
+      // ➕ Si no tiene ID o no existe: crear nuevo
+      const creado = await this.prismaService.horario.create({
+        data: {
+          c_codcur,
+          c_nomcur,
+          dia,
+          h_inicio,
+          h_fin,
+          n_horas,
+          c_color,
+          c_coddoc,
+          c_nomdoc,
+          turno_id,
+          aula_id,
+        },
+      });
+      resultados.push({ tipo: 'creado', horario: creado });
+    }
+
+    return {
+      success: true,
+      mensaje: '✔️ Horarios procesados correctamente',
+      resultados,
+    };
   }
 
   async getHorario(turno_id: number) {
