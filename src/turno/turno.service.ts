@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UpdateTurnoDto } from './dto/updateTurnoDto';
 import { CreateHorarioDto } from './dto/createHorarioDto';
+import { UpsertManyHorarioDto } from './dto/updateHorarioDto';
 
 @Injectable()
 export class TurnoService {
@@ -92,6 +93,76 @@ export class TurnoService {
       console.error('❌ Error al crear horarios:', error);
       throw new Error('Error al crear los horarios');
     }
+  }
+
+  async updateHorario(dto: UpsertManyHorarioDto) {
+    const resultados: { tipo: string; horario: any }[] = [];
+
+    for (const horario of dto.horarios) {
+      const {
+        id,
+        c_codcur,
+        c_nomcur,
+        dia,
+        h_inicio,
+        h_fin,
+        n_horas,
+        c_color,
+        c_coddoc,
+        c_nomdoc,
+        turno_id,
+      } = horario;
+
+      if (id) {
+        // 🔁 Si tiene ID: intentar actualizar
+        const existe = await this.prismaService.horario.findUnique({
+          where: { id },
+        });
+
+        if (existe) {
+          const actualizado = await this.prismaService.horario.update({
+            where: { id },
+            data: {
+              c_codcur,
+              c_nomcur,
+              dia,
+              h_inicio,
+              h_fin,
+              n_horas,
+              c_color,
+              c_coddoc,
+              c_nomdoc,
+              turno_id,
+            },
+          });
+          resultados.push({ tipo: 'actualizado', horario: actualizado });
+          continue;
+        }
+      }
+
+      // ➕ Si no tiene ID o no existe: crear nuevo
+      const creado = await this.prismaService.horario.create({
+        data: {
+          c_codcur,
+          c_nomcur,
+          dia,
+          h_inicio,
+          h_fin,
+          n_horas,
+          c_color,
+          c_coddoc,
+          c_nomdoc,
+          turno_id,
+        },
+      });
+      resultados.push({ tipo: 'creado', horario: creado });
+    }
+
+    return {
+      success: true,
+      mensaje: '✔️ Horarios procesados correctamente',
+      resultados,
+    };
   }
 
   async getHorario(turno_id: number) {
