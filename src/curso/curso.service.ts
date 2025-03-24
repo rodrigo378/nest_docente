@@ -71,6 +71,7 @@ export class CursoService {
       and tp.c_codfac = ?
       and tp.c_codesp = ?
       and tp.n_ciclo = ?
+      and tp.c_codmod = ?
       group by
         tp.n_codper,
         tp.c_codmod,
@@ -87,6 +88,7 @@ export class CursoService {
       getCursoDto.c_codfac,
       getCursoDto.c_codesp,
       getCursoDto.n_ciclo,
+      getCursoDto.c_codmod,
     );
   }
 

@@ -12,4 +12,8 @@ export class GetCursoDto {
   @IsNotEmpty({ message: 'El n_ciclo es obligatorio' })
   @IsString()
   n_ciclo: string;
+
+  @IsNotEmpty({ message: 'El c_codmod es obligatorio' })
+  @IsString()
+  c_codmod: string;
 }
