@@ -35,8 +35,8 @@ export class TurnoController {
   }
 
   @Get('/turno/:id')
-  getTurno(@Param('id') id: number) {
-    return this.turnoService.getTurno(Number(id));
+  getTurno(@Param('id', ParseIntPipe) id: number) {
+    return this.turnoService.getTurno(id);
   }
 
   @Put('/turno/:id')

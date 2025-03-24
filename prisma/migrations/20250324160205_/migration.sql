@@ -266,10 +266,21 @@ CREATE TABLE `Horario` (
     `dia` VARCHAR(191) NOT NULL,
     `h_inicio` DATETIME(3) NOT NULL,
     `h_fin` DATETIME(3) NOT NULL,
+    `n_horas` INTEGER NOT NULL,
     `c_color` VARCHAR(191) NOT NULL,
     `c_coddoc` VARCHAR(191) NULL,
     `c_nomdoc` VARCHAR(191) NULL,
     `turno_id` INTEGER NOT NULL,
+    `aula_id` INTEGER NOT NULL,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `Aula` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `n_aulo` VARCHAR(191) NOT NULL,
+    `aforo` INTEGER NOT NULL,
 
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -327,3 +338,6 @@ ALTER TABLE `Permission` ADD CONSTRAINT `Permission_item_id_fkey` FOREIGN KEY (`
 
 -- AddForeignKey
 ALTER TABLE `Horario` ADD CONSTRAINT `Horario_turno_id_fkey` FOREIGN KEY (`turno_id`) REFERENCES `Turno`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Horario` ADD CONSTRAINT `Horario_aula_id_fkey` FOREIGN KEY (`aula_id`) REFERENCES `Aula`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;

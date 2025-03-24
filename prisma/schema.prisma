@@ -274,6 +274,7 @@ model Horario {
   dia      String
   h_inicio DateTime
   h_fin    DateTime
+  n_horas  Int
   c_color  String
   c_coddoc String?
   c_nomdoc String?
