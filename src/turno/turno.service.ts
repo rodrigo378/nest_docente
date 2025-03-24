@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UpdateTurnoDto } from './dto/updateTurnoDto';
 import { CreateHorarioDto } from './dto/createHorarioDto';
@@ -51,6 +55,8 @@ export class TurnoService {
 
     return newTurno;
   }
+
+  // async createTurno(){}
 
   //Horarios
   async createHorario(createHorarioDto: CreateHorarioDto) {
@@ -173,6 +179,30 @@ export class TurnoService {
       throw new NotFoundException('Este turno_id no existe');
     }
     return horarios;
+  }
+
+  async deleteHorario(id: number) {
+    try {
+      const horarioExistente = await this.prismaService.horario.findUnique({
+        where: { id },
+      });
+
+      if (!horarioExistente) {
+        throw new NotFoundException('⚠️ Este horario no existe');
+      }
+
+      await this.prismaService.horario.delete({
+        where: { id },
+      });
+
+      return {
+        success: true,
+        mensaje: '✅ Horario eliminado correctamente',
+      };
+    } catch (error) {
+      console.error('Error al eliminar el horario:', error);
+      throw new InternalServerErrorException('❌ Error al eliminar el horario');
+    }
   }
 }
 

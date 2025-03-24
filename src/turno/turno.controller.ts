@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseIntPipe,
@@ -61,5 +62,10 @@ export class TurnoController {
   @Get('/horario/:turno_id')
   getHorarios(@Param('turno_id') turno_id: string) {
     return this.turnoService.getHorario(Number(turno_id));
+  }
+
+  @Delete('/horario/:id')
+  deleteHorario(@Param('id') id: string) {
+    return this.turnoService.deleteHorario(Number(id));
   }
 }
