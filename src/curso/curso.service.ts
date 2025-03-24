@@ -53,36 +53,7 @@ export class CursoService {
 
   async getCursos(getCursoDto: GetCursoDto) {
     return await this.prismaReadonly.$queryRawUnsafe(
-      `select
-        tp.n_codper,
-        tp.c_codmod,
-        tb.c_nommod,
-        tp.c_codfac,
-        tp.c_codesp,
-        tp.n_ciclo,
-        tp.c_ciclo,
-        tp.c_codcur,
-        tp.c_nomcur,
-        tp.n_ht,
-        tp.n_hp
-      FROM tb_plan_estudio_curso tp
-      inner join tb_modalidad tb on tb.c_codmod = tp.c_codmod
-      where tp.n_codper in (2023, 2025)
-      and tp.c_codfac = ?
-      and tp.c_codesp = ?
-      and tp.n_ciclo = ?
-      group by
-        tp.n_codper,
-        tp.c_codmod,
-        tp.c_codfac,
-        tp.c_codesp,
-        tp.c_codcur,
-        tp.c_nomcur,
-        tp.n_ciclo,
-        tp.c_ciclo,
-        tp.n_ht,
-        tp.n_hp
-      order by tp.c_nomcur;
+      ` 
       `,
       getCursoDto.c_codfac,
       getCursoDto.c_codesp,

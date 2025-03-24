@@ -38,6 +38,8 @@ export class TurnoService {
     return turno;
   }
 
+  async createTurno() {}
+
   async updateTurno(id: number, updateTurnoDto: UpdateTurnoDto) {
     const turno = await this.prismaService.turno.findFirst({ where: { id } });
 
@@ -253,3 +255,13 @@ export class TurnoService {
 //c_tema => null
 //n_monto_doc => null
 //horas => null
+
+//
+//
+/*
+ */
+
+// EC	ESPECIALIDAD
+// EF	ESPECIFICA
+// FG	FORMACIÓN GENERAL
+// PP	PRÁCTICAS PRE-PROFESIONALES
