@@ -287,6 +287,30 @@ export class TurnoService {
       mensaje: '✅ El aula está disponible en ese horario.',
     };
   }
+
+  async deleteHorario(id: number) {
+    try {
+      const horarioExistente = await this.prismaService.horario.findUnique({
+        where: { id },
+      });
+
+      if (!horarioExistente) {
+        throw new NotFoundException('⚠️ Este horario no existe');
+      }
+
+      await this.prismaService.horario.delete({
+        where: { id },
+      });
+
+      return {
+        success: true,
+        mensaje: '✅ Horario eliminado correctamente',
+      };
+    } catch (error) {
+      console.error('Error al eliminar el horario:', error);
+      throw new InternalServerErrorException('❌ Error al eliminar el horario');
+    }
+  }
 }
 
 // a1   a2

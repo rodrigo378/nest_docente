@@ -76,10 +76,10 @@ export class TurnoController {
     return this.turnoService.getHorario(turno_id);
   }
 
-  // @Delete('/horario/:id')
-  // deleteHorario(@Param('id', ParseIntPipe) id: number) {
-  //   return this.turnoService.deleteHorario(id);
-  // }
+  @Delete('/horario/:id')
+  deleteHorario(@Param('id', ParseIntPipe) id: number) {
+    return this.turnoService.deleteHorario(id);
+  }
 
   @Post('/aula/verificar')
   verificarAula(@Body() verificarAulaDto: VerificarAulaDto) {
