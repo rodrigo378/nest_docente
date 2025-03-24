@@ -213,3 +213,41 @@ export class TurnoService {
 // a.c_codmod,
 // e.c_nommod,
 // b.n_ciclo;
+
+// tb_cur_grp_hor
+// id_horario
+// n_codper
+// c_codfac
+// c_codcur
+// c_grpcur
+// c_dnidoc
+// n_numdia
+// c_hh_ini
+// c_min_ini
+// c_hh_fin
+// c_mi_fin
+// n_break =>  0
+// c_codadm => null
+// d_freg => falta
+// c_codmod
+// c_tipo => TEO TEV PRP LBP => falta
+// id_aula
+// c_codesp
+// n_codpla => 2025
+// c_sedcod => 1
+
+// tb_doc_cur_grp
+//c_dnidoc
+//n_codper
+//c_codmod
+//c_codfac
+//c_codcur
+//c_grpcur
+//c_tipo => falta
+//c_categoria
+//c_codesp
+//n_codpla
+//c_sedcod => 1
+//c_tema => null
+//n_monto_doc => null
+//horas => null
