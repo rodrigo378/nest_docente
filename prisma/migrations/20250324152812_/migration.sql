@@ -266,6 +266,7 @@ CREATE TABLE `Horario` (
     `dia` VARCHAR(191) NOT NULL,
     `h_inicio` DATETIME(3) NOT NULL,
     `h_fin` DATETIME(3) NOT NULL,
+    `n_horas` INTEGER NOT NULL,
     `c_color` VARCHAR(191) NOT NULL,
     `c_coddoc` VARCHAR(191) NULL,
     `c_nomdoc` VARCHAR(191) NULL,
