@@ -7,6 +7,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { UpdateTurnoDto } from './dto/updateTurnoDto';
 import { CreateHorarioDto } from './dto/createHorarioDto';
 import { UpsertManyHorarioDto } from './dto/updateHorarioDto';
+import { CreateTurnoDto } from './dto/createTurnoDto';
 
 @Injectable()
 export class TurnoService {
@@ -56,7 +57,24 @@ export class TurnoService {
     return newTurno;
   }
 
-  // async createTurno(){}
+  async createTurno(createTurnoDto: CreateTurnoDto) {
+    try {
+      const newTurno = await this.prismaService.turno.create({
+        data: {
+          ...createTurnoDto,
+        },
+      });
+
+      return {
+        success: true,
+        mensaje: '✅ Turno creado correctamente',
+        turno: newTurno,
+      };
+    } catch (error) {
+      console.error('❌ Error al crear el turno:', error);
+      throw new InternalServerErrorException('Error al crear el turno');
+    }
+  }
 
   //Horarios
   async createHorario(createHorarioDto: CreateHorarioDto) {

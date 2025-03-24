@@ -1,16 +1,16 @@
-import { IsString, IsNotEmpty, IsOptional, IsInt } from 'class-validator';
+import { IsString, IsNotEmpty, IsInt } from 'class-validator';
 import { Type } from 'class-transformer';
 
-export class CreateHorarioDto {
+export class CreateTurnoDto {
   @Type(() => Number)
   @IsInt()
   @IsNotEmpty()
-  n_codper: string;
+  n_codper: number;
 
   @Type(() => Number)
   @IsInt()
   @IsNotEmpty()
-  n_codpla: string;
+  n_codpla: number;
 
   @IsString()
   @IsNotEmpty()
@@ -30,7 +30,7 @@ export class CreateHorarioDto {
 
   @IsString()
   @IsNotEmpty()
-  c_grpcur: number;
+  c_grpcur: string;
 
   @IsString()
   @IsNotEmpty()
@@ -38,11 +38,7 @@ export class CreateHorarioDto {
 
   @IsString()
   @IsNotEmpty()
-  c_nommod?: string;
-
-  @IsOptional()
-  @IsString()
-  c_nomdoc?: string;
+  c_nommod: string;
 
   @Type(() => Number)
   @IsInt()
