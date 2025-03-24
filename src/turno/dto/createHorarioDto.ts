@@ -3,10 +3,10 @@ import {
   IsDateString,
   IsHexColor,
   IsNotEmpty,
-  IsOptional,
   IsInt,
   IsArray,
   ValidateNested,
+  IsOptional,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -40,14 +40,6 @@ export class HorarioDto {
   @IsNotEmpty()
   c_color: string;
 
-  @IsOptional()
-  @IsString()
-  c_coddoc?: string;
-
-  @IsOptional()
-  @IsString()
-  c_nomdoc?: string;
-
   @Type(() => Number)
   @IsInt()
   @IsNotEmpty()
@@ -55,8 +47,13 @@ export class HorarioDto {
 
   @Type(() => Number)
   @IsInt()
-  @IsNotEmpty()
+  @IsOptional()
   aula_id: number;
+
+  @Type(() => Number)
+  @IsInt()
+  @IsOptional()
+  docente_id: number;
 }
 
 export class CreateHorarioDto {

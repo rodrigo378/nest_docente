@@ -12,9 +12,9 @@ import {
 import { TurnoService } from './turno.service';
 import { UpdateTurnoDto } from './dto/updateTurnoDto';
 import { CreateHorarioDto } from './dto/createHorarioDto';
-import { UpsertManyHorarioDto } from './dto/updateHorarioDto';
 import { CreateTurnoDto } from './dto/createTurnoDto';
 import { VerificarAulaDto } from './dto/verificarAulaDto';
+import { updateHorarioDto } from './dto/updateHorarioDto';
 
 @Controller('')
 export class TurnoController {
@@ -67,7 +67,7 @@ export class TurnoController {
   }
 
   @Put('/horario')
-  updateHorario(@Body() updateHorarioDto: UpsertManyHorarioDto) {
+  updateHorario(@Body() updateHorarioDto: updateHorarioDto) {
     return this.turnoService.updateHorario(updateHorarioDto);
   }
 

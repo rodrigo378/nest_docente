@@ -6,14 +6,33 @@ import {
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UpdateTurnoDto } from './dto/updateTurnoDto';
 import { CreateHorarioDto } from './dto/createHorarioDto';
-import { UpsertManyHorarioDto } from './dto/updateHorarioDto';
 import { CreateTurnoDto } from './dto/createTurnoDto';
 import { VerificarAulaDto } from './dto/verificarAulaDto';
 import { Horario } from '@prisma/client';
+import { updateHorarioDto } from './dto/updateHorarioDto';
 
 @Injectable()
 export class TurnoService {
   constructor(private readonly prismaService: PrismaService) {}
+
+  async createTurno(createTurnoDto: CreateTurnoDto) {
+    try {
+      const newTurno = await this.prismaService.turno.create({
+        data: {
+          ...createTurnoDto,
+        },
+      });
+
+      return {
+        success: true,
+        mensaje: '✅ Turno creado correctamente',
+        turno: newTurno,
+      };
+    } catch (error) {
+      console.error('❌ Error al crear el turno:', error);
+      throw new InternalServerErrorException('Error al crear el turno');
+    }
+  }
 
   async getTurnos(
     c_codfac?: string,
@@ -53,29 +72,10 @@ export class TurnoService {
 
     const newTurno = await this.prismaService.turno.update({
       where: { id },
-      data: { estado: updateTurnoDto.estado },
+      data: { ...updateTurnoDto },
     });
 
     return newTurno;
-  }
-
-  async createTurno(createTurnoDto: CreateTurnoDto) {
-    try {
-      const newTurno = await this.prismaService.turno.create({
-        data: {
-          ...createTurnoDto,
-        },
-      });
-
-      return {
-        success: true,
-        mensaje: '✅ Turno creado correctamente',
-        turno: newTurno,
-      };
-    } catch (error) {
-      console.error('❌ Error al crear el turno:', error);
-      throw new InternalServerErrorException('Error al crear el turno');
-    }
   }
 
   async deleteTurno(id: number) {
@@ -113,10 +113,9 @@ export class TurnoService {
           h_fin,
           n_horas,
           c_color,
-          c_coddoc,
-          c_nomdoc,
           turno_id,
           aula_id,
+          docente_id,
         } = horario;
 
         await this.prismaService.horario.create({
@@ -128,10 +127,9 @@ export class TurnoService {
             h_fin: new Date(h_fin),
             n_horas,
             c_color,
-            c_coddoc: c_coddoc || null,
-            c_nomdoc: c_nomdoc || null,
             turno_id,
             aula_id,
+            docente_id,
           },
         });
       }
@@ -146,10 +144,20 @@ export class TurnoService {
     }
   }
 
-  async updateHorario(dto: UpsertManyHorarioDto) {
+  async getHorario(turno_id: number) {
+    const horarios = await this.prismaService.horario.findMany({
+      where: { turno_id: turno_id },
+    });
+    if (!horarios) {
+      throw new NotFoundException('Este turno_id no existe');
+    }
+    return horarios;
+  }
+
+  async updateHorario(updateHorarioDto: updateHorarioDto) {
     const resultados: { tipo: string; horario: any }[] = [];
 
-    for (const horario of dto.horarios) {
+    for (const horario of updateHorarioDto.horarios) {
       const {
         id,
         c_codcur,
@@ -159,10 +167,9 @@ export class TurnoService {
         h_fin,
         n_horas,
         c_color,
-        c_coddoc,
-        c_nomdoc,
         turno_id,
         aula_id,
+        docente_id,
       } = horario;
 
       if (id) {
@@ -182,9 +189,9 @@ export class TurnoService {
               h_fin,
               n_horas,
               c_color,
-              c_coddoc,
-              c_nomdoc,
               turno_id,
+              aula_id,
+              docente_id,
             },
           });
           resultados.push({ tipo: 'actualizado', horario: actualizado });
@@ -202,10 +209,9 @@ export class TurnoService {
           h_fin,
           n_horas,
           c_color,
-          c_coddoc,
-          c_nomdoc,
           turno_id,
           aula_id,
+          docente_id,
         },
       });
       resultados.push({ tipo: 'creado', horario: creado });
@@ -218,14 +224,28 @@ export class TurnoService {
     };
   }
 
-  async getHorario(turno_id: number) {
-    const horarios = await this.prismaService.horario.findMany({
-      where: { turno_id: turno_id },
-    });
-    if (!horarios) {
-      throw new NotFoundException('Este turno_id no existe');
+  async deleteHorario(id: number) {
+    try {
+      const horarioExistente = await this.prismaService.horario.findUnique({
+        where: { id },
+      });
+
+      if (!horarioExistente) {
+        throw new NotFoundException('⚠️ Este horario no existe');
+      }
+
+      await this.prismaService.horario.delete({
+        where: { id },
+      });
+
+      return {
+        success: true,
+        mensaje: '✅ Horario eliminado correctamente',
+      };
+    } catch (error) {
+      console.error('Error al eliminar el horario:', error);
+      throw new InternalServerErrorException('❌ Error al eliminar el horario');
     }
-    return horarios;
   }
 
   parseHora = (hora: string): Date => {
@@ -266,7 +286,7 @@ export class TurnoService {
 
       if (inicioNuevo < finExistente && finNuevo > inicioExistente) {
         conflictos.push({
-          mensaje: `⛔ Conflicto con el curso "${horario.c_nomcur}" del docente "${horario.c_nomdoc || 'Sin asignar'}" (${horaInicio} - ${horaFin})`,
+          mensaje: `⛔ Conflicto con el curso "${horario.c_nomcur}" del docente "${horario.docente_id || 'Sin asignar'}" (${horaInicio} - ${horaFin})`,
           horario,
         });
       }
@@ -286,30 +306,6 @@ export class TurnoService {
       conflicto: false,
       mensaje: '✅ El aula está disponible en ese horario.',
     };
-  }
-
-  async deleteHorario(id: number) {
-    try {
-      const horarioExistente = await this.prismaService.horario.findUnique({
-        where: { id },
-      });
-
-      if (!horarioExistente) {
-        throw new NotFoundException('⚠️ Este horario no existe');
-      }
-
-      await this.prismaService.horario.delete({
-        where: { id },
-      });
-
-      return {
-        success: true,
-        mensaje: '✅ Horario eliminado correctamente',
-      };
-    } catch (error) {
-      console.error('Error al eliminar el horario:', error);
-      throw new InternalServerErrorException('❌ Error al eliminar el horario');
-    }
   }
 }
 
