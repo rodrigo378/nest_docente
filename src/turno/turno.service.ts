@@ -76,6 +76,29 @@ export class TurnoService {
     }
   }
 
+  async deleteTurno(id: number) {
+    try {
+      const turnoExistente = await this.prismaService.turno.findUnique({
+        where: { id },
+      });
+
+      if (!turnoExistente) {
+        throw new NotFoundException('⚠️ Este turno no existe');
+      }
+      await this.prismaService.turno.delete({
+        where: { id },
+      });
+
+      return {
+        success: true,
+        mensaje: '✅ Turno eliminado correctamente',
+      };
+    } catch (error) {
+      console.error('Error al eliminar el horario:', error);
+      throw new InternalServerErrorException('❌ Error al eliminar el horario');
+    }
+  }
+
   //Horarios
   async createHorario(createHorarioDto: CreateHorarioDto) {
     try {

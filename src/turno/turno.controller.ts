@@ -54,6 +54,11 @@ export class TurnoController {
     return this.turnoService.createTurno(createTurnoDto);
   }
 
+  @Delete('/turno/:id')
+  deleteTurno(@Param('id', ParseIntPipe) id: number) {
+    return this.turnoService.deleteHorario(id);
+  }
+
   // horarios
   @Post('/horario')
   createHorario(@Body() createHorarioDto: CreateHorarioDto) {
@@ -66,12 +71,12 @@ export class TurnoController {
   }
 
   @Get('/horario/:turno_id')
-  getHorarios(@Param('turno_id') turno_id: string) {
-    return this.turnoService.getHorario(Number(turno_id));
+  getHorarios(@Param('turno_id', ParseIntPipe) turno_id: number) {
+    return this.turnoService.getHorario(turno_id);
   }
 
   @Delete('/horario/:id')
-  deleteHorario(@Param('id') id: string) {
-    return this.turnoService.deleteHorario(Number(id));
+  deleteHorario(@Param('id', ParseIntPipe) id: number) {
+    return this.turnoService.deleteHorario(id);
   }
 }
