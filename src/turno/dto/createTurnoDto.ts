@@ -45,8 +45,8 @@ export class CreateTurnoDto {
   @IsNotEmpty()
   n_ciclo: number;
 
-  @Type(() => Number)
-  @IsInt()
-  @IsNotEmpty()
-  estado: number;
+  // @Type(() => Number)
+  // @IsInt()
+  // @IsNotEmpty()
+  // estado: number;
 }
