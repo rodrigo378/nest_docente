@@ -1,6 +1,7 @@
 import {
   // Body,
   Controller,
+  Get,
   // Get,
   // Param,
   // Patch,
@@ -17,6 +18,11 @@ import { DocenteService } from './docente.service';
 @Controller('docente')
 export class DocenteController {
   constructor(private readonly docenteService: DocenteService) {}
+
+  @Get('')
+  getDocentes() {
+    return this.docenteService.getDocentes();
+  }
 
   // @Post('')
   // @UseGuards(JwtAuthGuard)

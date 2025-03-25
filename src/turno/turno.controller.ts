@@ -13,7 +13,6 @@ import { TurnoService } from './turno.service';
 import { UpdateTurnoDto } from './dto/updateTurnoDto';
 import { CreateHorarioDto } from './dto/createHorarioDto';
 import { CreateTurnoDto } from './dto/createTurnoDto';
-import { VerificarAulaDto } from './dto/verificarAulaDto';
 import { updateHorarioDto } from './dto/updateHorarioDto';
 
 @Controller('')
@@ -81,8 +80,9 @@ export class TurnoController {
     return this.turnoService.deleteHorario(id);
   }
 
-  @Post('/aula/verificar')
-  verificarAula(@Body() verificarAulaDto: VerificarAulaDto) {
-    return this.turnoService.verificarAula(verificarAulaDto);
+  //aulas
+  @Get('/aula')
+  getAulas() {
+    return this.turnoService.getAulas();
   }
 }

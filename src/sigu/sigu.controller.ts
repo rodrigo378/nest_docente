@@ -24,7 +24,7 @@ export class SiguController {
     return await this.siguService.getCarreras(Number(c_ciclo), c_codfac);
   }
 
-  @Post()
+  @Post('curso')
   async getCursos(@Body() getCursosDto: GetCursoDto) {
     return await this.siguService.getCursos(getCursosDto);
   }

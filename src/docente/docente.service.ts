@@ -1,6 +1,7 @@
 import {
   // ConflictException,
   Injectable,
+  InternalServerErrorException,
   // InternalServerErrorException,
   // NotFoundException,
 } from '@nestjs/common';
@@ -522,4 +523,13 @@ export class DocenteService {
   //     );
   //   }
   // }
+
+  async getDocentes() {
+    try {
+      return await this.prismaService.docente.findMany();
+    } catch (error) {
+      console.error('Error en el servidor:', error);
+      throw new InternalServerErrorException('❌ Error en el servidor');
+    }
+  }
 }
