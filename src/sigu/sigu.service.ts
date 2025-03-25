@@ -52,7 +52,7 @@ export class SiguService {
 
   async getCursos(getCursoDto: GetCursoDto) {
     return await this.prismaReadonly.$queryRawUnsafe(
-      `SELECT distinct
+      `select
         tp.n_codper,
         tp.c_codmod,
         tb.c_nommod,
@@ -63,36 +63,26 @@ export class SiguService {
         tp.c_codcur,
         tp.c_nomcur,
         tp.n_ht,
-        tp.n_hp,
-        te.n_codper_equ,
-        te.c_codmod_equ,
-        te.c_codfac_equ,
-        te.c_codesp_equ,
-        te.c_codcur_equ,
-        te.c_nomcur_equ
-      FROM
-        tb_plan_estudio_curso tp
-          INNER JOIN
-        tb_modalidad tb ON tb.c_codmod = tp.c_codmod
-          INNER JOIN
-      (select distinct 
-        te.*,
-        tp.c_nomcur as c_nomcur_equ
-      from tb_plan_estudio_equ te
-      inner join tb_plan_estudio_curso tp on te.c_codcur_equ = tp.c_codcur) te ON te.c_codcur_equ = tp.c_codcur
-      WHERE 
-        tp.n_codper IN (2023 , 2025)
-        AND tp.c_codfac = ?
-        AND tp.c_codesp = ?
-        AND tp.n_ciclo = ?
+        tp.n_hp
+      FROM tb_plan_estudio_curso tp
+      inner join tb_modalidad tb on tb.c_codmod = tp.c_codmod
+      where tp.n_codper in (2023, 2025)
+        and tp.c_codfac = ?
+        and tp.c_codesp = ?
+        and tp.n_ciclo = ?
         AND tp.c_codmod = ?
-      GROUP BY tp.n_codper , tp.c_codmod , tp.c_codfac , tp.c_codesp , tp.c_codcur , tp.c_nomcur , tp.n_ciclo , tp.c_ciclo , tp.n_ht , tp.n_hp, te.n_codper_equ,
-        te.c_codmod_equ,
-        te.c_codfac_equ,
-        te.c_codesp_equ,
-        te.c_codcur_equ,
-        te.c_nomcur_equ
-      ORDER BY tp.c_nomcur;
+      group by
+        tp.n_codper,
+        tp.c_codmod,
+        tp.c_codfac,
+        tp.c_codesp,
+        tp.c_codcur,
+        tp.c_nomcur,
+        tp.n_ciclo,
+        tp.c_ciclo,
+        tp.n_ht,
+        tp.n_hp
+      order by tp.c_nomcur;
         `,
       getCursoDto.c_codfac,
       getCursoDto.c_codesp,
@@ -100,6 +90,56 @@ export class SiguService {
       getCursoDto.c_codmod,
     );
   }
+  // async getCursos(getCursoDto: GetCursoDto) {
+  //   return await this.prismaReadonly.$queryRawUnsafe(
+  //     `SELECT distinct
+  //       tp.n_codper,
+  //       tp.c_codmod,
+  //       tb.c_nommod,
+  //       tp.c_codfac,
+  //       tp.c_codesp,
+  //       tp.n_ciclo,
+  //       tp.c_ciclo,
+  //       tp.c_codcur,
+  //       tp.c_nomcur,
+  //       tp.n_ht,
+  //       tp.n_hp,
+  //       te.n_codper_equ,
+  //       te.c_codmod_equ,
+  //       te.c_codfac_equ,
+  //       te.c_codesp_equ,
+  //       te.c_codcur_equ,
+  //       te.c_nomcur_equ
+  //     FROM
+  //       tb_plan_estudio_curso tp
+  //         INNER JOIN
+  //       tb_modalidad tb ON tb.c_codmod = tp.c_codmod
+  //         INNER JOIN
+  //     (select distinct
+  //       te.*,
+  //       tp.c_nomcur as c_nomcur_equ
+  //     from tb_plan_estudio_equ te
+  //     inner join tb_plan_estudio_curso tp on te.c_codcur_equ = tp.c_codcur) te ON te.c_codcur_equ = tp.c_codcur
+  //     WHERE
+  //       tp.n_codper IN (2023 , 2025)
+  //       AND tp.c_codfac = ?
+  //       AND tp.c_codesp = ?
+  //       AND tp.n_ciclo = ?
+  //       AND tp.c_codmod = ?
+  //     GROUP BY tp.n_codper , tp.c_codmod , tp.c_codfac , tp.c_codesp , tp.c_codcur , tp.c_nomcur , tp.n_ciclo , tp.c_ciclo , tp.n_ht , tp.n_hp, te.n_codper_equ,
+  //       te.c_codmod_equ,
+  //       te.c_codfac_equ,
+  //       te.c_codesp_equ,
+  //       te.c_codcur_equ,
+  //       te.c_nomcur_equ
+  //     ORDER BY tp.c_nomcur;
+  //       `,
+  //     getCursoDto.c_codfac,
+  //     getCursoDto.c_codesp,
+  //     getCursoDto.n_ciclo,
+  //     getCursoDto.c_codmod,
+  //   );
+  // }
 
   async getEquivalencias() {
     return await this.prismaReadonly.$queryRawUnsafe(`
