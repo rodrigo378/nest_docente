@@ -110,6 +110,7 @@ CREATE TABLE `Horario` (
     `turno_id` INTEGER NOT NULL,
     `aula_id` INTEGER NULL,
     `docente_id` INTEGER NULL,
+    `horario_padre_id` INTEGER NULL,
 
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -155,3 +156,6 @@ ALTER TABLE `Horario` ADD CONSTRAINT `Horario_aula_id_fkey` FOREIGN KEY (`aula_i
 
 -- AddForeignKey
 ALTER TABLE `Horario` ADD CONSTRAINT `Horario_docente_id_fkey` FOREIGN KEY (`docente_id`) REFERENCES `Docente`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Horario` ADD CONSTRAINT `Horario_horario_padre_id_fkey` FOREIGN KEY (`horario_padre_id`) REFERENCES `Horario`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;

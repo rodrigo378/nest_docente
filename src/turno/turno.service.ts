@@ -97,6 +97,40 @@ export class TurnoService {
     }
   }
 
+  async asociarHorarioTransversal(hijoId: number, padreId: number) {
+    try {
+      // Verifica que ambos existan
+      const padre = await this.prismaService.horario.findUnique({
+        where: { id: padreId },
+      });
+      const hijo = await this.prismaService.horario.findUnique({
+        where: { id: hijoId },
+      });
+
+      if (!padre || !hijo) {
+        throw new NotFoundException('Horario padre o hijo no encontrado');
+      }
+
+      // Actualiza el hijo para que apunte al padre
+      const actualizado = await this.prismaService.horario.update({
+        where: { id: hijoId },
+        data: {
+          horario_padre_id: padreId,
+        },
+      });
+
+      return {
+        mensaje: '✅ Horario asociado como transversal correctamente',
+        hijo: actualizado,
+      };
+    } catch (error) {
+      console.error('❌ Error al asociar horario transversal:', error);
+      throw new InternalServerErrorException(
+        'Error al asociar horario transversal',
+      );
+    }
+  }
+
   async deleteTurno(id: number) {
     try {
       const turnoExistente = await this.prismaService.turno.findUnique({
@@ -460,3 +494,9 @@ export class TurnoService {
 
 //get docente
 // aulas
+
+// primero los cursos deben estar creadoos minimo 2
+
+// luego escoger uno de los 2 como padre y asignarle el curso hijo
+
+//
