@@ -6,56 +6,12 @@ import {
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UpdateTurnoDto } from './dto/updateTurnoDto';
 import { CreateHorarioDto } from './dto/createHorarioDto';
-import { UpsertManyHorarioDto } from './dto/updateHorarioDto';
 import { CreateTurnoDto } from './dto/createTurnoDto';
+import { updateHorarioDto } from './dto/updateHorarioDto';
 
 @Injectable()
 export class TurnoService {
   constructor(private readonly prismaService: PrismaService) {}
-
-  async getTurnos(
-    c_codfac?: string,
-    c_codesp?: string,
-    c_codmod?: string,
-    n_ciclo?: number,
-    estado?: number,
-  ) {
-    return await this.prismaService.turno.findMany({
-      where: {
-        ...(c_codfac && { c_codfac }),
-        ...(c_codesp && { c_codesp }),
-        ...(c_codmod && { c_codmod }),
-        ...(n_ciclo && { n_ciclo }),
-        ...(estado && { estado }),
-      },
-    });
-  }
-
-  async getTurno(id: number) {
-    const turno = await this.prismaService.turno.findFirst({
-      where: { id },
-    });
-
-    if (!turno) {
-      throw new NotFoundException('Este turno no existe');
-    }
-    return turno;
-  }
-
-  async updateTurno(id: number, updateTurnoDto: UpdateTurnoDto) {
-    const turno = await this.prismaService.turno.findFirst({ where: { id } });
-
-    if (!turno) {
-      throw new NotFoundException('Este turno no existe');
-    }
-
-    const newTurno = await this.prismaService.turno.update({
-      where: { id },
-      data: { estado: updateTurnoDto.estado },
-    });
-
-    return newTurno;
-  }
 
   async createTurno(createTurnoDto: CreateTurnoDto) {
     try {
@@ -73,6 +29,71 @@ export class TurnoService {
     } catch (error) {
       console.error('❌ Error al crear el turno:', error);
       throw new InternalServerErrorException('Error al crear el turno');
+    }
+  }
+
+  async getTurnos(
+    c_codfac?: string,
+    c_codesp?: string,
+    c_codmod?: string,
+    n_ciclo?: number,
+    estado?: number,
+  ) {
+    try {
+      return await this.prismaService.turno.findMany({
+        where: {
+          ...(c_codfac && { c_codfac }),
+          ...(c_codesp && { c_codesp }),
+          ...(c_codmod && { c_codmod }),
+          ...(n_ciclo && { n_ciclo }),
+          ...(estado && { estado }),
+        },
+      });
+    } catch (error) {
+      console.error('❌ Error =>', error);
+      throw new InternalServerErrorException(
+        '❌ Error al procesar la solicitud',
+      );
+    }
+  }
+
+  async getTurno(id: number) {
+    try {
+      const turno = await this.prismaService.turno.findFirst({
+        where: { id },
+      });
+
+      if (!turno) {
+        throw new NotFoundException('Este turno no existe');
+      }
+      return turno;
+    } catch (error) {
+      console.error('❌ Error =>', error);
+      throw new InternalServerErrorException(
+        '❌ Error al procesar la solicitud',
+      );
+    }
+  }
+
+  async updateTurno(id: number, updateTurnoDto: UpdateTurnoDto) {
+    try {
+      const turno = await this.prismaService.turno.findFirst({ where: { id } });
+
+      if (!turno) {
+        throw new NotFoundException('Este turno no existe');
+      }
+
+      const newTurno = await this.prismaService.turno.update({
+        where: { id },
+        data: { ...updateTurnoDto },
+      });
+
+      return newTurno;
+    } catch (error) {
+      console.error('❌ Error =>', error);
+      throw new InternalServerErrorException(
+        '❌ Error al procesar la solicitud',
+      );
     }
   }
 
@@ -100,7 +121,87 @@ export class TurnoService {
   }
 
   //Horarios
+  parseHora(hora: Date | string): Date {
+    const date = new Date(hora);
+    return new Date(1970, 0, 1, date.getHours(), date.getMinutes(), 0, 0);
+  }
+
+  async verificarCruze(createHorarioDto: CreateHorarioDto) {
+    const errores: string[] = [];
+    const horarios = createHorarioDto.horarios;
+
+    // 🔹 1. Verificar conflictos dentro del mismo body
+    for (let i = 0; i < horarios.length; i++) {
+      const h1 = horarios[i];
+      const inicio1 = this.parseHora(h1.h_inicio);
+      const fin1 = this.parseHora(h1.h_fin);
+
+      for (let j = i + 1; j < horarios.length; j++) {
+        const h2 = horarios[j];
+        if (h1.dia !== h2.dia) continue;
+
+        const inicio2 = this.parseHora(h2.h_inicio);
+        const fin2 = this.parseHora(h2.h_fin);
+
+        const cruceHoras = inicio1 < fin2 && fin1 > inicio2;
+        const mismoAula = h1.aula_id === h2.aula_id;
+        const mismoDocente = h1.docente_id === h2.docente_id;
+
+        if (cruceHoras && (mismoAula || mismoDocente)) {
+          errores.push(
+            `⛔ Conflicto entre "${h1.c_nomcur}" y "${h2.c_nomcur}" el día ${h1.dia} ` +
+              `(${mismoAula ? 'en la misma aula' : ''}${mismoAula && mismoDocente ? ' y ' : ''}${mismoDocente ? 'con el mismo docente' : ''})`,
+          );
+        }
+      }
+    }
+
+    // 🔹 2. Verificar conflictos con base de datos
+    for (const h of horarios) {
+      const inicio1 = this.parseHora(h.h_inicio);
+      const fin1 = this.parseHora(h.h_fin);
+
+      const horariosBd = await this.prismaService.horario.findMany({
+        where: {
+          dia: h.dia,
+          turno_id: h.turno_id,
+          OR: [{ aula_id: h.aula_id }, { docente_id: h.docente_id }],
+        },
+      });
+
+      for (const hb of horariosBd) {
+        const inicio2 = this.parseHora(hb.h_inicio);
+        const fin2 = this.parseHora(hb.h_fin);
+
+        const cruceHoras = inicio1 < fin2 && fin1 > inicio2;
+        const mismoAula = h.aula_id === hb.aula_id;
+        const mismoDocente = h.docente_id === hb.docente_id;
+
+        if (cruceHoras && (mismoAula || mismoDocente)) {
+          errores.push(
+            `⛔ Conflicto con base de datos entre "${h.c_nomcur}" y "${hb.c_nomcur}" el día ${h.dia} ` +
+              `(${mismoAula ? 'en la misma aula' : ''}${mismoAula && mismoDocente ? ' y ' : ''}${mismoDocente ? 'con el mismo docente' : ''})`,
+          );
+        }
+      }
+    }
+
+    return {
+      success: errores.length === 0,
+      errores,
+    };
+  }
+
   async createHorario(createHorarioDto: CreateHorarioDto) {
+    const resultado = await this.verificarCruze(createHorarioDto);
+
+    if (!resultado.success) {
+      return {
+        message: '❌ No se puede registrar los horarios debido a conflictos',
+        errores: resultado.errores,
+      };
+    }
+
     try {
       for (const horario of createHorarioDto.horarios) {
         const {
@@ -111,9 +212,9 @@ export class TurnoService {
           h_fin,
           n_horas,
           c_color,
-          c_coddoc,
-          c_nomdoc,
           turno_id,
+          aula_id,
+          docente_id,
         } = horario;
 
         await this.prismaService.horario.create({
@@ -125,9 +226,9 @@ export class TurnoService {
             h_fin: new Date(h_fin),
             n_horas,
             c_color,
-            c_coddoc: c_coddoc || null,
-            c_nomdoc: c_nomdoc || null,
             turno_id,
+            aula_id,
+            docente_id,
           },
         });
       }
@@ -142,76 +243,6 @@ export class TurnoService {
     }
   }
 
-  async updateHorario(dto: UpsertManyHorarioDto) {
-    const resultados: { tipo: string; horario: any }[] = [];
-
-    for (const horario of dto.horarios) {
-      const {
-        id,
-        c_codcur,
-        c_nomcur,
-        dia,
-        h_inicio,
-        h_fin,
-        n_horas,
-        c_color,
-        c_coddoc,
-        c_nomdoc,
-        turno_id,
-      } = horario;
-
-      if (id) {
-        // 🔁 Si tiene ID: intentar actualizar
-        const existe = await this.prismaService.horario.findUnique({
-          where: { id },
-        });
-
-        if (existe) {
-          const actualizado = await this.prismaService.horario.update({
-            where: { id },
-            data: {
-              c_codcur,
-              c_nomcur,
-              dia,
-              h_inicio,
-              h_fin,
-              n_horas,
-              c_color,
-              c_coddoc,
-              c_nomdoc,
-              turno_id,
-            },
-          });
-          resultados.push({ tipo: 'actualizado', horario: actualizado });
-          continue;
-        }
-      }
-
-      // ➕ Si no tiene ID o no existe: crear nuevo
-      const creado = await this.prismaService.horario.create({
-        data: {
-          c_codcur,
-          c_nomcur,
-          dia,
-          h_inicio,
-          h_fin,
-          n_horas,
-          c_color,
-          c_coddoc,
-          c_nomdoc,
-          turno_id,
-        },
-      });
-      resultados.push({ tipo: 'creado', horario: creado });
-    }
-
-    return {
-      success: true,
-      mensaje: '✔️ Horarios procesados correctamente',
-      resultados,
-    };
-  }
-
   async getHorario(turno_id: number) {
     const horarios = await this.prismaService.horario.findMany({
       where: { turno_id: turno_id },
@@ -220,6 +251,82 @@ export class TurnoService {
       throw new NotFoundException('Este turno_id no existe');
     }
     return horarios;
+  }
+
+  async updateHorario(updateHorarioDto: updateHorarioDto) {
+    try {
+      const resultados: { tipo: string; horario: any }[] = [];
+
+      for (const horario of updateHorarioDto.horarios) {
+        const {
+          id,
+          c_codcur,
+          c_nomcur,
+          dia,
+          h_inicio,
+          h_fin,
+          n_horas,
+          c_color,
+          turno_id,
+          aula_id,
+          docente_id,
+        } = horario;
+
+        if (id) {
+          // 🔁 Si tiene ID: intentar actualizar
+          const existe = await this.prismaService.horario.findUnique({
+            where: { id },
+          });
+
+          if (existe) {
+            const actualizado = await this.prismaService.horario.update({
+              where: { id },
+              data: {
+                c_codcur,
+                c_nomcur,
+                dia,
+                h_inicio,
+                h_fin,
+                n_horas,
+                c_color,
+                turno_id,
+                aula_id,
+                docente_id,
+              },
+            });
+            resultados.push({ tipo: 'actualizado', horario: actualizado });
+            continue;
+          }
+        }
+
+        // ➕ Si no tiene ID o no existe: crear nuevo
+        const creado = await this.prismaService.horario.create({
+          data: {
+            c_codcur,
+            c_nomcur,
+            dia,
+            h_inicio,
+            h_fin,
+            n_horas,
+            c_color,
+            turno_id,
+            aula_id,
+            docente_id,
+          },
+        });
+        resultados.push({ tipo: 'creado', horario: creado });
+      }
+
+      return {
+        mensaje: '✔️ Horarios procesados correctamente',
+        resultados,
+      };
+    } catch (error) {
+      console.error('❌ Error =>', error);
+      throw new InternalServerErrorException(
+        '❌ Error al procesar la solicitud',
+      );
+    }
   }
 
   async deleteHorario(id: number) {
@@ -237,7 +344,6 @@ export class TurnoService {
       });
 
       return {
-        success: true,
         mensaje: '✅ Horario eliminado correctamente',
       };
     } catch (error) {
@@ -245,7 +351,24 @@ export class TurnoService {
       throw new InternalServerErrorException('❌ Error al eliminar el horario');
     }
   }
+
+  //aula
+  async getAulas() {
+    try {
+      return await this.prismaService.aula.findMany();
+    } catch (error) {
+      console.error('Error en el servidor:', error);
+      throw new InternalServerErrorException('❌ Error en el servidor');
+    }
+  }
 }
+
+// a1   a2
+// 8:00 a 10:00
+// b1   b2
+// 9:30 a 12:30
+// a1 < b2 and a2 > b1
+// 8:00 < 12:30 and 10:00 > 9:30
 
 // GENERAR TURNO
 // SELECT
@@ -286,3 +409,54 @@ export class TurnoService {
 // a.c_codmod,
 // e.c_nommod,
 // b.n_ciclo;
+
+// tb_cur_grp_hor
+// id_horario
+// n_codper
+// c_codfac
+// c_codcur
+// c_grpcur
+// c_dnidoc
+// n_numdia
+// c_hh_ini
+// c_min_ini
+// c_hh_fin
+// c_mi_fin
+// n_break =>  0
+// c_codadm => null
+// d_freg => falta
+// c_codmod
+// c_tipo => TEO TEV PRP LBP => falta
+// id_aula
+// c_codesp
+// n_codpla => 2025
+// c_sedcod => 1
+
+// tb_doc_cur_grp
+//c_dnidoc
+//n_codper
+//c_codmod
+//c_codfac
+//c_codcur
+//c_grpcur
+//c_tipo => falta
+//c_categoria
+//c_codesp
+//n_codpla
+//c_sedcod => 1
+//c_tema => null
+//n_monto_doc => null
+//horas => null
+
+//
+//
+/*
+ */
+
+// EC	ESPECIALIDAD => netamente de carrera
+// EF	ESPECIFICA => semainarios
+// FG	FORMACIÓN GENERAL => generales
+// PP	PRÁCTICAS PRE-PROFESIONALES => practicas
+
+//get docente
+// aulas

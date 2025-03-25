@@ -10,7 +10,7 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
-export class UpsertHorarioDto {
+export class HorarioDto {
   @IsOptional()
   @Type(() => Number)
   @IsInt()
@@ -45,23 +45,25 @@ export class UpsertHorarioDto {
   @IsNotEmpty()
   c_color: string;
 
-  @IsOptional()
-  @IsString()
-  c_coddoc?: string;
-
-  @IsOptional()
-  @IsString()
-  c_nomdoc?: string;
-
   @Type(() => Number)
   @IsInt()
   @IsNotEmpty()
   turno_id: number;
+
+  @Type(() => Number)
+  @IsInt()
+  @IsOptional()
+  aula_id: number;
+
+  @Type(() => Number)
+  @IsInt()
+  @IsOptional()
+  docente_id: number;
 }
 
-export class UpsertManyHorarioDto {
+export class updateHorarioDto {
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => UpsertHorarioDto)
-  horarios: UpsertHorarioDto[];
+  @Type(() => HorarioDto)
+  horarios: HorarioDto[];
 }
