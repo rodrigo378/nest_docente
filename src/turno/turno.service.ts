@@ -453,10 +453,10 @@ export class TurnoService {
 /*
  */
 
-// EC	ESPECIALIDAD
-// EF	ESPECIFICA
-// FG	FORMACIÓN GENERAL
-// PP	PRÁCTICAS PRE-PROFESIONALES
+// EC	ESPECIALIDAD => netamente de carrera
+// EF	ESPECIFICA => semainarios
+// FG	FORMACIÓN GENERAL => generales
+// PP	PRÁCTICAS PRE-PROFESIONALES => practicas
 
 //get docente
 // aulas
