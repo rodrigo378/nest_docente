@@ -144,7 +144,10 @@ export class SiguService {
     );
 
     return cursos.map((curso) => {
-      return { ...curso, vacante: 20 };
+      return {
+        ...curso,
+        vacante: Math.floor(Math.random() * (30 - 10 + 1)) + 10,
+      };
     });
   }
 
