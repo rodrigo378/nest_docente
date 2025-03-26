@@ -2,6 +2,21 @@ import { Injectable } from '@nestjs/common';
 import { PrismaReadonlyService } from 'src/prisma/readonly.service';
 import { GetCursoDto } from './dto/getCursoDto';
 
+interface CursoQuery {
+  n_codper: number;
+  c_codmod: string;
+  c_nommod: string;
+  c_codfac: string;
+  c_codesp: string;
+  n_ciclo: number;
+  c_ciclo: string;
+  c_codcur: string;
+  c_nomcur: string;
+  n_ht: number;
+  n_hp: number;
+  equivalencias: string | null;
+}
+
 @Injectable()
 export class SiguService {
   constructor(private readonly prismaReadonly: PrismaReadonlyService) {}
@@ -17,18 +32,18 @@ export class SiguService {
   async getCarreras(n_ciclo: number, c_codfac: string) {
     return await this.prismaReadonly.$queryRawUnsafe(
       `select 
-          tp.c_codmod,
-          tp.c_codfac,
-          tp.c_codesp,
-            tb.nomesp,
-            tp.c_ciclo,
-            tp.n_ciclo
-        from tb_plan_estudio_curso tp
-        inner join tb_especialidad tb on (tp.c_codfac  = tb.codfac and tp.c_codesp  = tb.codesp)
-        where n_ciclo = ? and c_codfac = ?
-        group by tp.c_codfac, tp.c_codesp, tp.c_ciclo, tp.n_ciclo  , tp.c_codmod
-        -- order by tp.c_ciclo;
-        order by tb.nomesp, tp.n_ciclo -- , tp.c_codmod;
+        tp.c_codmod,
+        tp.c_codfac,
+        tp.c_codesp,
+        tb.nomesp,
+        tp.c_ciclo,
+        tp.n_ciclo
+      from tb_plan_estudio_curso tp
+      inner join tb_especialidad tb on (tp.c_codfac  = tb.codfac and tp.c_codesp  = tb.codesp)
+      where n_ciclo = ? and c_codfac = ?
+      group by tp.c_codfac, tp.c_codesp, tp.c_ciclo, tp.n_ciclo  , tp.c_codmod
+      -- order by tp.c_ciclo;
+      order by tb.nomesp, tp.n_ciclo -- , tp.c_codmod;
         `,
       n_ciclo,
       c_codfac,
@@ -38,58 +53,146 @@ export class SiguService {
   async getCicloCarreras(c_codfac: string) {
     return await this.prismaReadonly.$queryRawUnsafe(
       `SELECT 
-            es.nomesp AS especialidad,
-            GROUP_CONCAT(DISTINCT pe.c_ciclo ORDER BY pe.c_ciclo SEPARATOR ', ') AS ciclos
-        FROM tb_plan_estudio_curso pe
-        JOIN tb_especialidad es 
-            ON pe.c_codesp = es.codesp  
-            AND pe.c_codfac = es.codfac
-        WHERE pe.c_codfac = ?
-        GROUP BY es.nomesp;`,
+        es.nomesp AS especialidad,
+        GROUP_CONCAT(DISTINCT pe.c_ciclo ORDER BY pe.c_ciclo SEPARATOR ', ') AS ciclos
+      FROM tb_plan_estudio_curso pe
+      JOIN tb_especialidad es 
+        ON pe.c_codesp = es.codesp  
+        AND pe.c_codfac = es.codfac
+      WHERE pe.c_codfac = ?
+      GROUP BY es.nomesp;`,
       c_codfac,
     );
   }
 
   async getCursos(getCursoDto: GetCursoDto) {
-    return await this.prismaReadonly.$queryRawUnsafe(
-      `select
+    const cursos = await this.prismaReadonly.$queryRawUnsafe<CursoQuery[]>(
+      `SELECT
         tp.n_codper,
         tp.c_codmod,
         tb.c_nommod,
         tp.c_codfac,
         tp.c_codesp,
+        tp.c_area,
+        tpec.c_nom_cur_area,
         tp.n_ciclo,
         tp.c_ciclo,
         tp.c_codcur,
         tp.c_nomcur,
         tp.n_ht,
-        tp.n_hp
-      FROM tb_plan_estudio_curso tp
-      inner join tb_modalidad tb on tb.c_codmod = tp.c_codmod
-      where tp.n_codper in (2023, 2025)
-        and tp.c_codfac = ?
-        and tp.c_codesp = ?
-        and tp.n_ciclo = ?
-        AND tp.c_codmod = ?
-      group by
+        tp.n_hp,
+        tpee.n_codper_equ,
+        tpee.c_codmod_equ,
+        tpee.c_codfac_equ,
+        tpee.c_codesp_equ,
+        tpee.c_codcur_equ,
+        tpee.c_nomcur_equ
+      FROM
+        tb_plan_estudio_curso tp
+        INNER JOIN tb_modalidad tb ON tb.c_codmod = tp.c_codmod 
+        INNER JOIN tb_plan_estudio_curso_area tpec ON tpec.c_cod_cur_area = tp.c_area
+        left JOIN (
+        SELECT 
+          te.n_codper_equ,
+          te.c_codmod_equ,
+          te.c_codfac_equ,
+          te.c_codesp_equ,
+          te.c_codcur_equ,
+          tp2.c_nomcur AS c_nomcur_equ
+          FROM tb_plan_estudio_equ te
+          INNER JOIN tb_plan_estudio_curso tp2 ON te.c_codcur_equ = tp2.c_codcur
+          WHERE te.n_codper_equ in (2023, 2025)) tpee 
+          ON tpee.c_codcur_equ = tp.c_codcur
+          and tpee.c_codmod_equ = tp.c_codmod 
+          and tpee.c_codfac_equ = tp.c_codfac 
+          and tpee.c_codesp_equ = tp.c_codesp
+        WHERE
+        tp.n_codper IN ( 2023, 2025 ) 
+          AND tp.c_codfac = ?
+          AND tp.c_codesp = ?
+          AND tp.n_ciclo = ?
+          AND tp.c_codmod = ?
+      GROUP BY
         tp.n_codper,
         tp.c_codmod,
         tp.c_codfac,
         tp.c_codesp,
+        tp.c_area,
+        tpec.c_nom_cur_area,
         tp.c_codcur,
         tp.c_nomcur,
         tp.n_ciclo,
         tp.c_ciclo,
         tp.n_ht,
-        tp.n_hp
-      order by tp.c_nomcur;
-        `,
+        tp.n_hp,
+        tpee.n_codper_equ,
+        tpee.c_codmod_equ,
+        tpee.c_codfac_equ,
+        tpee.c_codesp_equ,
+        tpee.c_codcur_equ,
+        tpee.c_nomcur_equ
+      ORDER BY
+        tp.c_nomcur;
+      `,
       getCursoDto.c_codfac,
       getCursoDto.c_codesp,
       getCursoDto.n_ciclo,
       getCursoDto.c_codmod,
     );
+
+    return cursos.map((curso) => {
+      return { ...curso, vacante: 20 };
+    });
   }
+
+  // async getCursos(getCursoDto: GetCursoDto) {
+  //   return await this.prismaReadonly.$queryRawUnsafe(
+  //     `SELECT
+  //       tp.n_codper,
+  //       tp.c_codmod,
+  //       tb.c_nommod,
+  //       tp.c_codfac,
+  //       tp.c_codesp,
+  //       tp.c_area,
+  //       tpec.c_nom_cur_area,
+  //       tp.n_ciclo,
+  //       tp.c_ciclo,
+  //       tp.c_codcur,
+  //       tp.c_nomcur,
+  //       tp.n_ht,
+  //       tp.n_hp
+  //     FROM
+  //       tb_plan_estudio_curso tp
+  //       INNER JOIN tb_modalidad tb ON tb.c_codmod = tp.c_codmod
+  //       INNER JOIN tb_plan_estudio_curso_area tpec ON tpec.c_cod_cur_area = tp.c_area
+  //     WHERE
+  //       tp.n_codper IN ( 2023, 2025 )
+  //       AND tp.c_codfac = ?
+  //       AND tp.c_codesp = ?
+  //       AND tp.n_ciclo = ?
+  //       AND tp.c_codmod = ?
+  //     GROUP BY
+  //       tp.n_codper,
+  //       tp.c_codmod,
+  //       tp.c_codfac,
+  //       tp.c_codesp,
+  //       tp.c_area,
+  //       tpec.c_nom_cur_area,
+  //       tp.c_codcur,
+  //       tp.c_nomcur,
+  //       tp.n_ciclo,
+  //       tp.c_ciclo,
+  //       tp.n_ht,
+  //       tp.n_hp
+  //     ORDER BY
+  //       tp.c_nomcur;
+  //       `,
+  // getCursoDto.c_codfac,
+  // getCursoDto.c_codesp,
+  // getCursoDto.n_ciclo,
+  // getCursoDto.c_codmod,
+  //   );
+  // }
   // async getCursos(getCursoDto: GetCursoDto) {
   //   return await this.prismaReadonly.$queryRawUnsafe(
   //     `SELECT distinct

@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -8,6 +9,7 @@ import { UpdateTurnoDto } from './dto/updateTurnoDto';
 import { CreateHorarioDto } from './dto/createHorarioDto';
 import { CreateTurnoDto } from './dto/createTurnoDto';
 import { updateHorarioDto } from './dto/updateHorarioDto';
+import { AsignarCursoTransversalDto } from './dto/asignarCursoTransversal';
 
 @Injectable()
 export class TurnoService {
@@ -120,7 +122,7 @@ export class TurnoService {
     }
   }
 
-  //Horarios
+  //Horarios=======================================================================
   parseHora(hora: Date | string): Date {
     const date = new Date(hora);
     return new Date(1970, 0, 1, date.getHours(), date.getMinutes(), 0, 0);
@@ -130,7 +132,7 @@ export class TurnoService {
     const errores: string[] = [];
     const horarios = createHorarioDto.horarios;
 
-    // 🔹 1. Verificar conflictos dentro del mismo body
+    // 🔹 1. Conflictos dentro del mismo body
     for (let i = 0; i < horarios.length; i++) {
       const h1 = horarios[i];
       const inicio1 = this.parseHora(h1.h_inicio);
@@ -156,7 +158,7 @@ export class TurnoService {
       }
     }
 
-    // 🔹 2. Verificar conflictos con base de datos
+    // 🔹 2. Conflictos con base de datos (todos los turnos)
     for (const h of horarios) {
       const inicio1 = this.parseHora(h.h_inicio);
       const fin1 = this.parseHora(h.h_fin);
@@ -164,7 +166,6 @@ export class TurnoService {
       const horariosBd = await this.prismaService.horario.findMany({
         where: {
           dia: h.dia,
-          turno_id: h.turno_id,
           OR: [{ aula_id: h.aula_id }, { docente_id: h.docente_id }],
         },
       });
@@ -178,9 +179,11 @@ export class TurnoService {
         const mismoDocente = h.docente_id === hb.docente_id;
 
         if (cruceHoras && (mismoAula || mismoDocente)) {
+          const mismoTurno = h.turno_id === hb.turno_id;
           errores.push(
-            `⛔ Conflicto con base de datos entre "${h.c_nomcur}" y "${hb.c_nomcur}" el día ${h.dia} ` +
-              `(${mismoAula ? 'en la misma aula' : ''}${mismoAula && mismoDocente ? ' y ' : ''}${mismoDocente ? 'con el mismo docente' : ''})`,
+            `⛔ Conflicto con "${hb.c_nomcur}" (turno ${hb.turno_id}) el día ${h.dia} ` +
+              `(${mismoAula ? 'misma aula' : ''}${mismoAula && mismoDocente ? ' y ' : ''}${mismoDocente ? 'mismo docente' : ''})` +
+              `${!mismoTurno ? ' ⚠️ en diferente turno' : ''}`,
           );
         }
       }
@@ -196,10 +199,10 @@ export class TurnoService {
     const resultado = await this.verificarCruze(createHorarioDto);
 
     if (!resultado.success) {
-      return {
+      throw new BadRequestException({
         message: '❌ No se puede registrar los horarios debido a conflictos',
         errores: resultado.errores,
-      };
+      });
     }
 
     try {
@@ -239,7 +242,7 @@ export class TurnoService {
       };
     } catch (error) {
       console.error('❌ Error al crear horarios:', error);
-      throw new Error('Error al crear los horarios');
+      throw new InternalServerErrorException('Error al crear los horarios');
     }
   }
 
@@ -352,7 +355,75 @@ export class TurnoService {
     }
   }
 
-  //aula
+  async asociarHorarioTransversal(
+    asignarCursoTransversalDto: AsignarCursoTransversalDto,
+  ) {
+    try {
+      const { padre_id, hijo_id } = asignarCursoTransversalDto;
+
+      const padre = await this.prismaService.horario.findUnique({
+        where: { id: padre_id },
+      });
+      const hijo = await this.prismaService.horario.findUnique({
+        where: { id: hijo_id },
+      });
+
+      if (!padre || !hijo) {
+        throw new NotFoundException('Horario padre o hijo no encontrado');
+      }
+
+      const mismoDocente = padre.docente_id === hijo.docente_id;
+      const mismaAula = padre.aula_id === hijo.aula_id;
+      const mismaHoraInicio =
+        this.parseHora(padre.h_inicio).getTime() ===
+        this.parseHora(hijo.h_inicio).getTime();
+      const mismaHoraFin =
+        this.parseHora(padre.h_fin).getTime() ===
+        this.parseHora(hijo.h_fin).getTime();
+
+      if (!mismoDocente || !mismaAula || !mismaHoraInicio || !mismaHoraFin) {
+        throw new BadRequestException(
+          `${
+            !mismoDocente
+              ? 'No se puede asignar este curso transversal con docentes distintos. '
+              : ''
+          }${
+            !mismaAula
+              ? 'No se puede asignar este curso transversal con aulas distintas. '
+              : ''
+          }${
+            !mismaHoraInicio || !mismaHoraFin
+              ? 'Los horarios deben coincidir exactamente en hora de inicio y fin.'
+              : ''
+          }`,
+        );
+      }
+
+      const actualizado = await this.prismaService.horario.update({
+        where: { id: hijo_id },
+        data: {
+          horario_padre_id: padre_id,
+        },
+      });
+
+      return {
+        mensaje: '✅ Horario asociado como transversal correctamente',
+        hijo: actualizado,
+      };
+    } catch (error) {
+      if (
+        error instanceof NotFoundException ||
+        error instanceof BadRequestException
+      ) {
+        throw error;
+      }
+      throw new InternalServerErrorException(
+        'Error al asociar horario transversal',
+      );
+    }
+  }
+
+  //aula==========================================================================
   async getAulas() {
     try {
       return await this.prismaService.aula.findMany();
@@ -460,3 +531,9 @@ export class TurnoService {
 
 //get docente
 // aulas
+
+// primero los cursos deben estar creadoos minimo 2
+
+// luego escoger uno de los 2 como padre y asignarle el curso hijo
+
+//

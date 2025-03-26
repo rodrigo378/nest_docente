@@ -286,6 +286,11 @@ model Horario {
 
   Docente    Docente? @relation(fields: [docente_id], references: [id])
   docente_id Int?
+
+  // Relación recursiva
+  horario_padre_id Int?
+  horario_padre    Horario?  @relation("HorarioPadre", fields: [horario_padre_id], references: [id])
+  hijos            Horario[] @relation("HorarioPadre")
 }
 
 model Aula {
