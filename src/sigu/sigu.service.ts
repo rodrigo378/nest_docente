@@ -2,20 +2,20 @@ import { Injectable } from '@nestjs/common';
 import { PrismaReadonlyService } from 'src/prisma/readonly.service';
 import { GetCursoDto } from './dto/getCursoDto';
 
-// interface CursoQuery {
-//   n_codper: number;
-//   c_codmod: string;
-//   c_nommod: string;
-//   c_codfac: string;
-//   c_codesp: string;
-//   n_ciclo: number;
-//   c_ciclo: string;
-//   c_codcur: string;
-//   c_nomcur: string;
-//   n_ht: number;
-//   n_hp: number;
-//   equivalencias: string | null;
-// }
+interface CursoQuery {
+  n_codper: number;
+  c_codmod: string;
+  c_nommod: string;
+  c_codfac: string;
+  c_codesp: string;
+  n_ciclo: number;
+  c_ciclo: string;
+  c_codcur: string;
+  c_nomcur: string;
+  n_ht: number;
+  n_hp: number;
+  equivalencias: string | null;
+}
 
 @Injectable()
 export class SiguService {
@@ -32,18 +32,18 @@ export class SiguService {
   async getCarreras(n_ciclo: number, c_codfac: string) {
     return await this.prismaReadonly.$queryRawUnsafe(
       `select 
-          tp.c_codmod,
-          tp.c_codfac,
-          tp.c_codesp,
-            tb.nomesp,
-            tp.c_ciclo,
-            tp.n_ciclo
-        from tb_plan_estudio_curso tp
-        inner join tb_especialidad tb on (tp.c_codfac  = tb.codfac and tp.c_codesp  = tb.codesp)
-        where n_ciclo = ? and c_codfac = ?
-        group by tp.c_codfac, tp.c_codesp, tp.c_ciclo, tp.n_ciclo  , tp.c_codmod
-        -- order by tp.c_ciclo;
-        order by tb.nomesp, tp.n_ciclo -- , tp.c_codmod;
+        tp.c_codmod,
+        tp.c_codfac,
+        tp.c_codesp,
+        tb.nomesp,
+        tp.c_ciclo,
+        tp.n_ciclo
+      from tb_plan_estudio_curso tp
+      inner join tb_especialidad tb on (tp.c_codfac  = tb.codfac and tp.c_codesp  = tb.codesp)
+      where n_ciclo = ? and c_codfac = ?
+      group by tp.c_codfac, tp.c_codesp, tp.c_ciclo, tp.n_ciclo  , tp.c_codmod
+      -- order by tp.c_ciclo;
+      order by tb.nomesp, tp.n_ciclo -- , tp.c_codmod;
         `,
       n_ciclo,
       c_codfac,
@@ -53,20 +53,20 @@ export class SiguService {
   async getCicloCarreras(c_codfac: string) {
     return await this.prismaReadonly.$queryRawUnsafe(
       `SELECT 
-            es.nomesp AS especialidad,
-            GROUP_CONCAT(DISTINCT pe.c_ciclo ORDER BY pe.c_ciclo SEPARATOR ', ') AS ciclos
-        FROM tb_plan_estudio_curso pe
-        JOIN tb_especialidad es 
-            ON pe.c_codesp = es.codesp  
-            AND pe.c_codfac = es.codfac
-        WHERE pe.c_codfac = ?
-        GROUP BY es.nomesp;`,
+        es.nomesp AS especialidad,
+        GROUP_CONCAT(DISTINCT pe.c_ciclo ORDER BY pe.c_ciclo SEPARATOR ', ') AS ciclos
+      FROM tb_plan_estudio_curso pe
+      JOIN tb_especialidad es 
+        ON pe.c_codesp = es.codesp  
+        AND pe.c_codfac = es.codfac
+      WHERE pe.c_codfac = ?
+      GROUP BY es.nomesp;`,
       c_codfac,
     );
   }
 
   async getCursos(getCursoDto: GetCursoDto) {
-    return await this.prismaReadonly.$queryRawUnsafe(
+    const cursos = await this.prismaReadonly.$queryRawUnsafe<CursoQuery[]>(
       `SELECT
         tp.n_codper,
         tp.c_codmod,
@@ -139,6 +139,10 @@ export class SiguService {
       getCursoDto.n_ciclo,
       getCursoDto.c_codmod,
     );
+
+    return cursos.map((curso) => {
+      return { ...curso, vacante: 20 };
+    });
   }
 
   // async getCursos(getCursoDto: GetCursoDto) {
