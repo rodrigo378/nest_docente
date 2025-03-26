@@ -91,27 +91,30 @@ export class SiguService {
         tb_plan_estudio_curso tp
         INNER JOIN tb_modalidad tb ON tb.c_codmod = tp.c_codmod 
         INNER JOIN tb_plan_estudio_curso_area tpec ON tpec.c_cod_cur_area = tp.c_area
-        left JOIN (
-        SELECT 
-          te.n_codper_equ,
-          te.c_codmod_equ,
-          te.c_codfac_equ,
-          te.c_codesp_equ,
-          te.c_codcur_equ,
-          tp2.c_nomcur AS c_nomcur_equ
-          FROM tb_plan_estudio_equ te
-          INNER JOIN tb_plan_estudio_curso tp2 ON te.c_codcur_equ = tp2.c_codcur
-          WHERE te.n_codper_equ in (2023, 2025)) tpee 
-          ON tpee.c_codcur_equ = tp.c_codcur
-          and tpee.c_codmod_equ = tp.c_codmod 
-          and tpee.c_codfac_equ = tp.c_codfac 
-          and tpee.c_codesp_equ = tp.c_codesp
-        WHERE
+        left JOIN (SELECT distinct
+					te.c_codcur,
+					te.c_codfac,
+					te.c_codesp,
+					te.c_codmod,
+					te.n_codper_equ,
+					te.c_codmod_equ,
+					te.c_codfac_equ,
+					te.c_codesp_equ,
+					te.c_codcur_equ,
+					tp2.c_nomcur AS c_nomcur_equ
+			FROM tb_plan_estudio_equ te
+			INNER JOIN tb_plan_estudio_curso tp2 ON te.c_codcur_equ = tp2.c_codcur
+			WHERE te.n_codper_equ in (2023, 2025)) tpee 
+			ON tpee.c_codcur = tp.c_codcur 
+			and tpee.c_codmod = tp.c_codmod 
+			and tpee.c_codfac = tp.c_codfac
+			and tpee.c_codesp = tp.c_codesp
+      WHERE
         tp.n_codper IN ( 2023, 2025 ) 
-          AND tp.c_codfac = ?
-          AND tp.c_codesp = ?
-          AND tp.n_ciclo = ?
-          AND tp.c_codmod = ?
+        AND tp.c_codfac = ?
+        AND tp.c_codesp = ?
+        AND tp.n_ciclo = ?
+        AND tp.c_codmod = ?
       GROUP BY
         tp.n_codper,
         tp.c_codmod,
@@ -125,7 +128,7 @@ export class SiguService {
         tp.c_ciclo,
         tp.n_ht,
         tp.n_hp,
-        tpee.n_codper_equ,
+		tpee.n_codper_equ,
         tpee.c_codmod_equ,
         tpee.c_codfac_equ,
         tpee.c_codesp_equ,

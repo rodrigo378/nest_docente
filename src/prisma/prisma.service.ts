@@ -22,7 +22,7 @@ export class PrismaService
       await this.$connect(); // ✅ Intentar conectar Prisma
       console.log('✅ Prisma conectado correctamente'); // 🔍 Confirmación de conexión
     } catch (error) {
-      console.error('❌ Error al conectar a la base de datos:', error.message);
+      console.error('❌ Error al conectar a la base de datos:', error);
       process.exit(1); // 🔴 Detiene la aplicación si la DB no está disponible
     }
   }
@@ -32,7 +32,7 @@ export class PrismaService
       await this.$disconnect(); // ✅ Cerrar la conexión cuando el módulo se destruye
       console.log('🛑 Prisma desconectado correctamente');
     } catch (error) {
-      console.error('⚠️ Error al desconectar Prisma:', error.message);
+      console.error('⚠️ Error al desconectar Prisma:', error);
     }
   }
 }
