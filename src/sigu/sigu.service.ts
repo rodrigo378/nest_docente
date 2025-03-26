@@ -2,6 +2,21 @@ import { Injectable } from '@nestjs/common';
 import { PrismaReadonlyService } from 'src/prisma/readonly.service';
 import { GetCursoDto } from './dto/getCursoDto';
 
+interface CursoQuery {
+  n_codper: number;
+  c_codmod: string;
+  c_nommod: string;
+  c_codfac: string;
+  c_codesp: string;
+  n_ciclo: number;
+  c_ciclo: string;
+  c_codcur: string;
+  c_nomcur: string;
+  n_ht: number;
+  n_hp: number;
+  equivalencias: string | null;
+}
+
 @Injectable()
 export class SiguService {
   constructor(private readonly prismaReadonly: PrismaReadonlyService) {}
@@ -51,53 +66,130 @@ export class SiguService {
   }
 
   async getCursos(getCursoDto: GetCursoDto) {
-    return await this.prismaReadonly.$queryRawUnsafe(
-      `SELECT
+    const cursos = await this.prismaReadonly.$queryRawUnsafe<CursoQuery[]>(
+      `SELECT 
         tp.n_codper,
         tp.c_codmod,
         tb.c_nommod,
         tp.c_codfac,
         tp.c_codesp,
-        tp.c_area,
-        tpec.c_nom_cur_area,
         tp.n_ciclo,
         tp.c_ciclo,
         tp.c_codcur,
         tp.c_nomcur,
         tp.n_ht,
-        tp.n_hp
+        tp.n_hp,
+        GROUP_CONCAT(DISTINCT CONCAT(te.c_codcur_equ, ' - ', IFNULL(te.c_nomcur_equ, 'SIN NOMBRE')) SEPARATOR ' , ') AS equivalencias
+        -- GROUP_CONCAT(DISTINCT te.c_codcur_equ SEPARATOR ' , ') AS codigos_equivalentes,
+        -- GROUP_CONCAT(te.c_nomcur_equ SEPARATOR ' , ') AS nombres_equivalentes
       FROM
-        tb_plan_estudio_curso tp
-        INNER JOIN tb_modalidad tb ON tb.c_codmod = tp.c_codmod 
-        INNER JOIN tb_plan_estudio_curso_area tpec ON tpec.c_cod_cur_area = tp.c_area
+          tb_plan_estudio_curso tp
+      INNER JOIN tb_modalidad tb ON tb.c_codmod = tp.c_codmod
+      LEFT JOIN (
+          SELECT distinct
+              te.c_codcur,
+              te.c_codcur_equ,
+              tp2.c_nomcur AS c_nomcur_equ
+          FROM tb_plan_estudio_equ te
+          INNER JOIN tb_plan_estudio_curso tp2 ON te.c_codcur_equ = tp2.c_codcur
+          WHERE te.n_codper_equ in (2023, 2025)
+      ) te ON te.c_codcur = tp.c_codcur
       WHERE
-        tp.n_codper IN ( 2023, 2025 ) 
-        AND tp.c_codfac = ?
-        AND tp.c_codesp = ?
-        AND tp.n_ciclo = ?
-        AND tp.c_codmod = ?
+          tp.n_codper IN (2023 , 2025)
+          AND tp.c_codfac = ?
+          AND tp.c_codesp = ?
+          AND tp.n_ciclo = ?
+          AND tp.c_codmod = ?
       GROUP BY
-        tp.n_codper,
-        tp.c_codmod,
-        tp.c_codfac,
-        tp.c_codesp,
-        tp.c_area,
-        tpec.c_nom_cur_area,
-        tp.c_codcur,
-        tp.c_nomcur,
-        tp.n_ciclo,
-        tp.c_ciclo,
-        tp.n_ht,
-        tp.n_hp
-      ORDER BY
-        tp.c_nomcur;
-        `,
+          tp.n_codper,
+          tp.c_codmod,
+          tb.c_nommod,
+          tp.c_codfac,
+          tp.c_codesp,
+          tp.n_ciclo,
+          tp.c_ciclo,
+          tp.c_codcur,
+          tp.c_nomcur,
+          tp.n_ht,
+          tp.n_hp
+      ORDER BY tp.c_nomcur;
+      `,
       getCursoDto.c_codfac,
       getCursoDto.c_codesp,
       getCursoDto.n_ciclo,
       getCursoDto.c_codmod,
     );
+
+    const cursosModificados = cursos.map((curso) => {
+      const equivalencias: string[] = curso.equivalencias
+        ? curso.equivalencias.split(',').map((e) => e.trim())
+        : [];
+
+      const equ = equivalencias.map((equivalencia) => {
+        const array = equivalencia.split('-');
+        return {
+          c_codcur_equ: array[0],
+          c_nomcur_equ: array[1],
+        };
+      });
+
+      return {
+        ...curso,
+        equivalencias: equ,
+      };
+    });
+
+    return cursosModificados;
   }
+
+  // async getCursos(getCursoDto: GetCursoDto) {
+  //   return await this.prismaReadonly.$queryRawUnsafe(
+  //     `SELECT
+  //       tp.n_codper,
+  //       tp.c_codmod,
+  //       tb.c_nommod,
+  //       tp.c_codfac,
+  //       tp.c_codesp,
+  //       tp.c_area,
+  //       tpec.c_nom_cur_area,
+  //       tp.n_ciclo,
+  //       tp.c_ciclo,
+  //       tp.c_codcur,
+  //       tp.c_nomcur,
+  //       tp.n_ht,
+  //       tp.n_hp
+  //     FROM
+  //       tb_plan_estudio_curso tp
+  //       INNER JOIN tb_modalidad tb ON tb.c_codmod = tp.c_codmod
+  //       INNER JOIN tb_plan_estudio_curso_area tpec ON tpec.c_cod_cur_area = tp.c_area
+  //     WHERE
+  //       tp.n_codper IN ( 2023, 2025 )
+  //       AND tp.c_codfac = ?
+  //       AND tp.c_codesp = ?
+  //       AND tp.n_ciclo = ?
+  //       AND tp.c_codmod = ?
+  //     GROUP BY
+  //       tp.n_codper,
+  //       tp.c_codmod,
+  //       tp.c_codfac,
+  //       tp.c_codesp,
+  //       tp.c_area,
+  //       tpec.c_nom_cur_area,
+  //       tp.c_codcur,
+  //       tp.c_nomcur,
+  //       tp.n_ciclo,
+  //       tp.c_ciclo,
+  //       tp.n_ht,
+  //       tp.n_hp
+  //     ORDER BY
+  //       tp.c_nomcur;
+  //       `,
+  // getCursoDto.c_codfac,
+  // getCursoDto.c_codesp,
+  // getCursoDto.n_ciclo,
+  // getCursoDto.c_codmod,
+  //   );
+  // }
   // async getCursos(getCursoDto: GetCursoDto) {
   //   return await this.prismaReadonly.$queryRawUnsafe(
   //     `SELECT distinct

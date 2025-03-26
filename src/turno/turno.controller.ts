@@ -14,6 +14,7 @@ import { UpdateTurnoDto } from './dto/updateTurnoDto';
 import { CreateHorarioDto } from './dto/createHorarioDto';
 import { CreateTurnoDto } from './dto/createTurnoDto';
 import { updateHorarioDto } from './dto/updateHorarioDto';
+import { AsignarCursoTransversalDto } from './dto/asignarCursoTransversal';
 
 @Controller('')
 export class TurnoController {
@@ -60,6 +61,15 @@ export class TurnoController {
   }
 
   // horarios
+  @Post('/horario/transversal')
+  asociarHorarioTransversal(
+    @Body() asignarCursoTransversalDto: AsignarCursoTransversalDto,
+  ) {
+    return this.turnoService.asociarHorarioTransversal(
+      asignarCursoTransversalDto,
+    );
+  }
+
   @Post('/horario')
   createHorario(@Body() createHorarioDto: CreateHorarioDto) {
     return this.turnoService.createHorario(createHorarioDto);
