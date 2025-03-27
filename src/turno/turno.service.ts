@@ -191,15 +191,17 @@ export class TurnoService {
         n_codper,
       } = horario;
 
+      // Validar solo si viene aula_id
       if (
-        !(await this.prismaService.aula.findUnique({
-          where: { id: aula_id },
-        }))
+        aula_id &&
+        !(await this.prismaService.aula.findUnique({ where: { id: aula_id } }))
       ) {
         throw new NotFoundException('Esta aula no existe');
       }
 
+      // Validar solo si viene docente_id
       if (
+        docente_id &&
         !(await this.prismaService.docente.findUnique({
           where: { id: docente_id },
         }))
@@ -218,8 +220,8 @@ export class TurnoService {
           n_horas,
           c_color,
           turno_id,
-          aula_id,
-          docente_id,
+          aula_id: aula_id ?? null,
+          docente_id: docente_id ?? null,
         },
       });
     }
