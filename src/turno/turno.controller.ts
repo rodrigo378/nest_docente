@@ -88,14 +88,14 @@ export class TurnoController {
     @Query('c_codper') c_codper?: string,
     @Query('c_codfac') c_codfac?: string,
     @Query('c_codesp') c_codesp?: string,
-    @Query('c_codpla') c_codpla?: string,
+    @Query('n_codpla') n_codpla?: string,
   ) {
     return this.turnoService.getHorarios(
       c_codmod,
       Number(c_codper),
       c_codfac,
       c_codesp,
-      Number(c_codpla),
+      Number(n_codpla),
     );
   }
 

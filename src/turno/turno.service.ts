@@ -230,6 +230,13 @@ export class TurnoService {
     };
   }
 
+  // async createHorarioMasa(createHorarioMasaDto: CreateHorarioMasaDto) {
+  //   for (const horario of createHorarioMasaDto.turnos_id) {
+  //     console.log(horario);
+  //     const newHora
+  //   }
+  // }
+
   async getHorario(turno_id: number) {
     const horarios = await this.prismaService.horario.findMany({
       where: { turno_id: turno_id },
@@ -257,7 +264,7 @@ export class TurnoService {
           ...(n_codpla && { n_codpla }),
         },
       },
-      include: { turno: true, hijos: true },
+      include: { turno: true, hijos: true, Docente: true },
     });
     return horarios;
   }
@@ -307,6 +314,7 @@ export class TurnoService {
           continue;
         }
       }
+
       const creado = await this.prismaService.horario.create({
         data: {
           n_codper,
@@ -357,6 +365,7 @@ export class TurnoService {
     const padre = await this.prismaService.horario.findUnique({
       where: { id: padre_id },
     });
+
     const hijo = await this.prismaService.horario.findUnique({
       where: { id: hijo_id },
     });
@@ -365,37 +374,14 @@ export class TurnoService {
       throw new NotFoundException('Horario padre o hijo no encontrado');
     }
 
-    const mismoDocente = padre.docente_id === hijo.docente_id;
-    const mismaAula = padre.aula_id === hijo.aula_id;
-    const mismaHoraInicio =
-      this.parseHora(padre.h_inicio).getTime() ===
-      this.parseHora(hijo.h_inicio).getTime();
-    const mismaHoraFin =
-      this.parseHora(padre.h_fin).getTime() ===
-      this.parseHora(hijo.h_fin).getTime();
-
-    if (!mismoDocente || !mismaAula || !mismaHoraInicio || !mismaHoraFin) {
-      throw new BadRequestException(
-        `${
-          !mismoDocente
-            ? 'No se puede asignar este curso transversal con docentes distintos. '
-            : ''
-        }${
-          !mismaAula
-            ? 'No se puede asignar este curso transversal con aulas distintas. '
-            : ''
-        }${
-          !mismaHoraInicio || !mismaHoraFin
-            ? 'Los horarios deben coincidir exactamente en hora de inicio y fin.'
-            : ''
-        }`,
-      );
-    }
-
     const actualizado = await this.prismaService.horario.update({
       where: { id: hijo_id },
       data: {
         horario_padre_id: padre_id,
+        h_inicio: padre.h_inicio,
+        h_fin: padre.h_fin,
+        aula_id: padre.aula_id,
+        docente_id: padre.docente_id,
       },
     });
 
@@ -410,6 +396,8 @@ export class TurnoService {
     return await this.prismaService.aula.findMany();
   }
 }
+
+//plan facultad especialidad ciclo modalidad
 
 // a1   a2
 // 8:00 a 10:00
@@ -512,5 +500,3 @@ export class TurnoService {
 // primero los cursos deben estar creadoos minimo 2
 
 // luego escoger uno de los 2 como padre y asignarle el curso hijo
-
-//
