@@ -270,6 +270,7 @@ model Turno {
 
 model Horario {
   id       Int      @id @default(autoincrement())
+  n_codper String
   c_codcur String
   c_nomcur String
   dia      String

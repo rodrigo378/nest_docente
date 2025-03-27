@@ -38,7 +38,8 @@ export class TurnoService {
     c_codfac?: string,
     c_codesp?: string,
     c_codmod?: string,
-    n_ciclo?: number,
+    n_codper?: number,
+    n_codpla?: number,
     estado?: number,
   ) {
     try {
@@ -47,9 +48,11 @@ export class TurnoService {
           ...(c_codfac && { c_codfac }),
           ...(c_codesp && { c_codesp }),
           ...(c_codmod && { c_codmod }),
-          ...(n_ciclo && { n_ciclo }),
+          ...(n_codper && { n_codper }),
+          ...(n_codpla && { n_codpla }),
           ...(estado && { estado }),
         },
+        // include: { Horario: true },
       });
     } catch (error) {
       console.error('❌ Error =>', error);
@@ -218,10 +221,12 @@ export class TurnoService {
           turno_id,
           aula_id,
           docente_id,
+          n_codper,
         } = horario;
 
         await this.prismaService.horario.create({
           data: {
+            n_codper,
             c_codcur,
             c_nomcur,
             dia,
@@ -256,6 +261,35 @@ export class TurnoService {
     return horarios;
   }
 
+  async getHorarios(
+    c_codmod?: string,
+    n_codper?: number,
+    c_codfac?: string,
+    c_codesp?: string,
+    n_codpla?: number,
+  ) {
+    try {
+      const horarios = await this.prismaService.horario.findMany({
+        where: {
+          turno: {
+            ...(c_codmod && { c_codmod }),
+            ...(n_codper && { n_codper }),
+            ...(c_codfac && { c_codfac }),
+            ...(c_codesp && { c_codesp }),
+            ...(n_codpla && { n_codpla }),
+          },
+        },
+        include: { turno: true, hijos: true },
+      });
+      return horarios;
+    } catch (error) {
+      console.error('❌ Error =>', error);
+      throw new InternalServerErrorException(
+        '❌ Error al procesar la solicitud',
+      );
+    }
+  }
+
   async updateHorario(updateHorarioDto: updateHorarioDto) {
     try {
       const resultados: { tipo: string; horario: any }[] = [];
@@ -273,6 +307,7 @@ export class TurnoService {
           turno_id,
           aula_id,
           docente_id,
+          n_codper,
         } = horario;
 
         if (id) {
@@ -285,6 +320,7 @@ export class TurnoService {
             const actualizado = await this.prismaService.horario.update({
               where: { id },
               data: {
+                n_codper,
                 c_codcur,
                 c_nomcur,
                 dia,
@@ -305,6 +341,7 @@ export class TurnoService {
         // ➕ Si no tiene ID o no existe: crear nuevo
         const creado = await this.prismaService.horario.create({
           data: {
+            n_codper,
             c_codcur,
             c_nomcur,
             dia,
