@@ -13,6 +13,10 @@ import { Type } from 'class-transformer';
 export class HorarioDto {
   @IsString()
   @IsNotEmpty()
+  n_codper: string;
+
+  @IsString()
+  @IsNotEmpty()
   c_codcur: string;
 
   @IsString()

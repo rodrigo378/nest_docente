@@ -25,14 +25,16 @@ export class TurnoController {
     @Query('c_codfac') c_codfac?: string,
     @Query('c_codesp') c_codesp?: string,
     @Query('c_codmod') c_codmod?: string,
-    @Query('n_ciclo') n_ciclo?: number,
+    @Query('c_codper') c_codper?: string,
+    @Query('c_codpla') c_codpla?: string,
     @Query('estado') estado?: number,
   ) {
     return this.turnoService.getTurnos(
       c_codfac,
       c_codesp,
       c_codmod,
-      Number(n_ciclo),
+      Number(c_codper),
+      Number(c_codpla),
       Number(estado),
     );
   }
@@ -78,6 +80,23 @@ export class TurnoController {
   @Put('/horario')
   updateHorario(@Body() updateHorarioDto: updateHorarioDto) {
     return this.turnoService.updateHorario(updateHorarioDto);
+  }
+
+  @Get('/horario')
+  getHorario(
+    @Query('c_codmod') c_codmod?: string,
+    @Query('c_codper') c_codper?: string,
+    @Query('c_codfac') c_codfac?: string,
+    @Query('c_codesp') c_codesp?: string,
+    @Query('c_codpla') c_codpla?: string,
+  ) {
+    return this.turnoService.getHorarios(
+      c_codmod,
+      Number(c_codper),
+      c_codfac,
+      c_codesp,
+      Number(c_codpla),
+    );
   }
 
   @Get('/horario/:turno_id')
