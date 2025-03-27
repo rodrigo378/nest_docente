@@ -282,7 +282,6 @@ export class TurnoService {
       } = horario;
 
       if (id) {
-        // 🔁 Si tiene ID: intentar actualizar
         const existe = await this.prismaService.horario.findUnique({
           where: { id },
         });
@@ -308,8 +307,6 @@ export class TurnoService {
           continue;
         }
       }
-
-      // ➕ Si no tiene ID o no existe: crear nuevo
       const creado = await this.prismaService.horario.create({
         data: {
           n_codper,
