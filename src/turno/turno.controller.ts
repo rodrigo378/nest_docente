@@ -15,6 +15,7 @@ import { CreateHorarioDto } from './dto/createHorarioDto';
 import { CreateTurnoDto } from './dto/createTurnoDto';
 import { updateHorarioDto } from './dto/updateHorarioDto';
 import { AsignarCursoTransversalDto } from './dto/asignarCursoTransversal';
+import { DeleteHorarioArrayDto } from './dto/deleteHorarioArrayDto';
 
 @Controller('')
 export class TurnoController {
@@ -102,6 +103,11 @@ export class TurnoController {
   @Get('/horario/:turno_id')
   getHorarios(@Param('turno_id', ParseIntPipe) turno_id: number) {
     return this.turnoService.getHorario(turno_id);
+  }
+
+  @Delete('/horario/array')
+  deleteHorarioArray(@Body() deleteHorarioArray: DeleteHorarioArrayDto) {
+    return this.turnoService.deleteHorarioArray(deleteHorarioArray);
   }
 
   @Delete('/horario/:id')

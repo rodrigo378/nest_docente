@@ -9,6 +9,7 @@ import { CreateHorarioDto } from './dto/createHorarioDto';
 import { CreateTurnoDto } from './dto/createTurnoDto';
 import { updateHorarioDto } from './dto/updateHorarioDto';
 import { AsignarCursoTransversalDto } from './dto/asignarCursoTransversal';
+import { DeleteHorarioArrayDto } from './dto/deleteHorarioArrayDto';
 
 @Injectable()
 export class TurnoService {
@@ -111,14 +112,18 @@ export class TurnoService {
 
       for (let j = i + 1; j < horarios.length; j++) {
         const h2 = horarios[j];
+
         if (h1.dia !== h2.dia) continue;
 
         const inicio2 = this.parseHora(h2.h_inicio);
         const fin2 = this.parseHora(h2.h_fin);
 
         const cruceHoras = inicio1 < fin2 && fin1 > inicio2;
-        const mismoAula = h1.aula_id === h2.aula_id;
-        const mismoDocente = h1.docente_id === h2.docente_id;
+
+        // Solo comparar si ambos tienen aula/docente definidos
+        const mismoAula = h1.aula_id && h2.aula_id && h1.aula_id === h2.aula_id;
+        const mismoDocente =
+          h1.docente_id && h2.docente_id && h1.docente_id === h2.docente_id;
 
         if (cruceHoras && (mismoAula || mismoDocente)) {
           errores.push(
@@ -129,15 +134,22 @@ export class TurnoService {
       }
     }
 
-    // 🔹 2. Conflictos con base de datos (todos los turnos)
+    // 🔹 2. Conflictos con la base de datos
     for (const h of horarios) {
       const inicio1 = this.parseHora(h.h_inicio);
       const fin1 = this.parseHora(h.h_fin);
 
+      // Construir condiciones OR dinámicamente
+      const condicionesOR: any[] = [];
+      if (h.aula_id) condicionesOR.push({ aula_id: h.aula_id });
+      if (h.docente_id) condicionesOR.push({ docente_id: h.docente_id });
+
+      if (condicionesOR.length === 0) continue;
+
       const horariosBd = await this.prismaService.horario.findMany({
         where: {
           dia: h.dia,
-          OR: [{ aula_id: h.aula_id }, { docente_id: h.docente_id }],
+          OR: condicionesOR,
         },
       });
 
@@ -146,11 +158,14 @@ export class TurnoService {
         const fin2 = this.parseHora(hb.h_fin);
 
         const cruceHoras = inicio1 < fin2 && fin1 > inicio2;
-        const mismoAula = h.aula_id === hb.aula_id;
-        const mismoDocente = h.docente_id === hb.docente_id;
+
+        const mismoAula = h.aula_id && hb.aula_id && h.aula_id === hb.aula_id;
+        const mismoDocente =
+          h.docente_id && hb.docente_id && h.docente_id === hb.docente_id;
 
         if (cruceHoras && (mismoAula || mismoDocente)) {
           const mismoTurno = h.turno_id === hb.turno_id;
+
           errores.push(
             `⛔ Conflicto con "${hb.c_nomcur}" (turno ${hb.turno_id}) el día ${h.dia} ` +
               `(${mismoAula ? 'misma aula' : ''}${mismoAula && mismoDocente ? ' y ' : ''}${mismoDocente ? 'mismo docente' : ''})` +
@@ -232,45 +247,6 @@ export class TurnoService {
     };
   }
 
-  // async createHorarioMasa(createHorarioMasaDto: CreateHorarioMasaDto) {
-  //   for (const horario of createHorarioMasaDto.turnos_id) {
-  //     console.log(horario);
-  //     const newHora
-  //   }
-  // }
-
-  async getHorario(turno_id: number) {
-    const horarios = await this.prismaService.horario.findMany({
-      where: { turno_id: turno_id },
-    });
-    if (!horarios) {
-      throw new NotFoundException('Este turno_id no existe');
-    }
-    return horarios;
-  }
-
-  async getHorarios(
-    c_codmod?: string,
-    n_codper?: number,
-    c_codfac?: string,
-    c_codesp?: string,
-    n_codpla?: number,
-  ) {
-    const horarios = await this.prismaService.horario.findMany({
-      where: {
-        turno: {
-          ...(c_codmod && { c_codmod }),
-          ...(n_codper && { n_codper }),
-          ...(c_codfac && { c_codfac }),
-          ...(c_codesp && { c_codesp }),
-          ...(n_codpla && { n_codpla }),
-        },
-      },
-      include: { turno: true, hijos: true, Docente: true },
-    });
-    return horarios;
-  }
-
   async updateHorario(updateHorarioDto: updateHorarioDto) {
     const resultados: { tipo: string; horario: any }[] = [];
 
@@ -341,6 +317,46 @@ export class TurnoService {
     };
   }
 
+  //plan facultad especialidad ciclo modalidad
+  // async createHorarioMasa(createHorarioMasaDto: CreateHorarioMasaDto) {
+  //   for (const horario of createHorarioMasaDto.turnos_id) {
+  //     console.log(horario);
+  //     const newHora = await this.prismaService.horario();
+  //   }
+  // }
+
+  async getHorario(turno_id: number) {
+    const horarios = await this.prismaService.horario.findMany({
+      where: { turno_id: turno_id },
+    });
+    if (!horarios) {
+      throw new NotFoundException('Este turno_id no existe');
+    }
+    return horarios;
+  }
+
+  async getHorarios(
+    c_codmod?: string,
+    n_codper?: number,
+    c_codfac?: string,
+    c_codesp?: string,
+    n_codpla?: number,
+  ) {
+    const horarios = await this.prismaService.horario.findMany({
+      where: {
+        turno: {
+          ...(c_codmod && { c_codmod }),
+          ...(n_codper && { n_codper }),
+          ...(c_codfac && { c_codfac }),
+          ...(c_codesp && { c_codesp }),
+          ...(n_codpla && { n_codpla }),
+        },
+      },
+      include: { turno: true, hijos: true, Docente: true },
+    });
+    return horarios;
+  }
+
   async deleteHorario(id: number) {
     const horarioExistente = await this.prismaService.horario.findUnique({
       where: { id },
@@ -356,6 +372,29 @@ export class TurnoService {
 
     return {
       mensaje: '✅ Horario eliminado correctamente',
+    };
+  }
+
+  async deleteHorarioArray(deleteHorarioArray: DeleteHorarioArrayDto) {
+    const eliminados: number[] = [];
+    const errores: number[] = [];
+
+    for (const horario_id of deleteHorarioArray.horarios_id) {
+      try {
+        await this.prismaService.horario.delete({
+          where: { id: horario_id },
+        });
+        eliminados.push(horario_id);
+      } catch (error) {
+        console.warn(`No se pudo eliminar el horario ${horario_id}:`, error);
+        errores.push(horario_id);
+      }
+    }
+
+    return {
+      eliminados,
+      errores,
+      message: 'Proceso de eliminación finalizado.',
     };
   }
 
@@ -398,8 +437,6 @@ export class TurnoService {
     return await this.prismaService.aula.findMany();
   }
 }
-
-//plan facultad especialidad ciclo modalidad
 
 // a1   a2
 // 8:00 a 10:00

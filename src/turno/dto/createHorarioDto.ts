@@ -57,6 +57,7 @@ export class HorarioDto {
   @Type(() => Number)
   @IsInt()
   @IsOptional()
+  @IsNotEmpty()
   docente_id: number;
 }
 
