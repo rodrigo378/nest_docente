@@ -49,6 +49,30 @@ export class HorarioDto {
   @IsNotEmpty()
   c_color: string;
 
+  @IsString()
+  @IsOptional()
+  n_codper_equ: string;
+
+  @IsString()
+  @IsOptional()
+  c_codmod_equ: string;
+
+  @IsString()
+  @IsOptional()
+  c_codfac_equ: string;
+
+  @IsString()
+  @IsOptional()
+  c_codesp_equ: string;
+
+  @IsString()
+  @IsOptional()
+  c_codcur_equ: string;
+
+  @IsString()
+  @IsOptional()
+  c_nomcur_equ: string;
+
   @Type(() => Number)
   @IsInt()
   @IsNotEmpty()
@@ -65,7 +89,7 @@ export class HorarioDto {
   docente_id: number;
 }
 
-export class updateHorarioDto {
+export class UpdateHorarioArrayDto {
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => HorarioDto)

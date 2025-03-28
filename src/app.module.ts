@@ -6,6 +6,8 @@ import { UbicacionModule } from './ubicacion/ubicacion.module';
 import { DocenteModule } from './docente/docente.module';
 import { TurnoModule } from './turno/turno.module';
 import { SiguModule } from './sigu/sigu.module';
+import { HorarioModule } from './horario/horario.module';
+import { AulaModule } from './aula/aula.module';
 
 @Module({
   imports: [
@@ -16,6 +18,8 @@ import { SiguModule } from './sigu/sigu.module';
     DocenteModule,
     TurnoModule,
     SiguModule,
+    HorarioModule,
+    AulaModule,
   ],
   controllers: [],
   providers: [],

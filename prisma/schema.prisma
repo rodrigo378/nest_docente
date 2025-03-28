@@ -279,6 +279,13 @@ model Horario {
   n_horas  Int
   c_color  String
 
+  n_codper_equ String?
+  c_codmod_equ String?
+  c_codfac_equ String?
+  c_codesp_equ String?
+  c_codcur_equ String?
+  c_nomcur_equ String?
+
   turno_id Int
   turno    Turno @relation(fields: [turno_id], references: [id], onDelete: Cascade)
 
@@ -288,7 +295,6 @@ model Horario {
   Docente    Docente? @relation(fields: [docente_id], references: [id])
   docente_id Int?
 
-  // Relación recursiva
   horario_padre_id Int?
   horario_padre    Horario?  @relation("HorarioPadre", fields: [horario_padre_id], references: [id])
   hijos            Horario[] @relation("HorarioPadre")
@@ -296,7 +302,7 @@ model Horario {
 
 model Aula {
   id      Int       @id @default(autoincrement())
-  n_aulo  String
+  n_aula  String
   aforo   Int
   Horario Horario[]
 }
