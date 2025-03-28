@@ -13,18 +13,6 @@ import { Type } from 'class-transformer';
 export class HorarioDto {
   @IsString()
   @IsNotEmpty()
-  n_codper: string;
-
-  @IsString()
-  @IsNotEmpty()
-  c_codcur: string;
-
-  @IsString()
-  @IsNotEmpty()
-  c_nomcur: string;
-
-  @IsString()
-  @IsNotEmpty()
   dia: string;
 
   @IsDateString()
@@ -44,30 +32,6 @@ export class HorarioDto {
   @IsNotEmpty()
   c_color: string;
 
-  @IsString()
-  @IsOptional()
-  n_codper_equ: string;
-
-  @IsString()
-  @IsOptional()
-  c_codmod_equ: string;
-
-  @IsString()
-  @IsOptional()
-  c_codfac_equ: string;
-
-  @IsString()
-  @IsOptional()
-  c_codesp_equ: string;
-
-  @IsString()
-  @IsOptional()
-  c_codcur_equ: string;
-
-  @IsString()
-  @IsOptional()
-  c_nomcur_equ: string;
-
   @Type(() => Number)
   @IsInt()
   @IsNotEmpty()
@@ -85,9 +49,83 @@ export class HorarioDto {
   docente_id: number;
 }
 
-export class CreateHorarioArrayDto {
+export class CursoDto {
+  @IsString()
+  @IsNotEmpty()
+  n_codper: string;
+
+  @IsInt()
+  @Type(() => Number)
+  c_codmod: number;
+
+  @IsString()
+  @IsNotEmpty()
+  c_codfac: string;
+
+  @IsString()
+  @IsNotEmpty()
+  c_codesp: string;
+
+  @IsString()
+  @IsNotEmpty()
+  c_codcur: string;
+
+  @IsString()
+  @IsNotEmpty()
+  c_nomcur: string;
+
+  @IsInt()
+  @Type(() => Number)
+  n_ciclo: number;
+
+  @IsString()
+  @IsNotEmpty()
+  c_area: string;
+
+  @IsInt()
+  @Type(() => Number)
+  turno_id: number;
+
+  //equivalentes
+  @IsString()
+  @IsNotEmpty()
+  n_codper_equ: string;
+
+  @IsString()
+  @IsNotEmpty()
+  c_codmod_equ: string;
+
+  @IsString()
+  @IsNotEmpty()
+  c_codfac_equ: string;
+
+  @IsString()
+  @IsNotEmpty()
+  c_codesp_equ: string;
+
+  @IsString()
+  @IsNotEmpty()
+  c_codcur_equ: string;
+
+  @IsString()
+  @IsNotEmpty()
+  c_nomcur_equ: string;
+}
+
+export class CreateCursoHorarioDto {
+  @ValidateNested()
+  @Type(() => CursoDto)
+  curso: CursoDto;
+
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => HorarioDto)
   horarios: HorarioDto[];
+}
+
+export class CreateHorarioArrayDto {
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CreateCursoHorarioDto)
+  dataArray: CreateCursoHorarioDto[];
 }

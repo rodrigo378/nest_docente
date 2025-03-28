@@ -2,11 +2,11 @@ import {
   IsString,
   IsDateString,
   IsHexColor,
-  IsOptional,
-  IsInt,
   IsNotEmpty,
+  IsInt,
   IsArray,
   ValidateNested,
+  IsOptional,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -16,9 +16,59 @@ export class HorarioDto {
   @IsInt()
   id?: number;
 
+  @IsOptional()
+  @IsString()
+  dia?: string;
+
+  @IsOptional()
+  @IsDateString()
+  h_inicio?: string;
+
+  @IsOptional()
+  @IsDateString()
+  h_fin?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  n_horas?: number;
+
+  @IsOptional()
+  @IsHexColor()
+  c_color?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  aula_id?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  docente_id?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  turno_id?: number;
+}
+
+export class CursoDto {
   @IsString()
   @IsNotEmpty()
   n_codper: string;
+
+  @IsInt()
+  @Type(() => Number)
+  c_codmod: number;
+
+  @IsString()
+  @IsNotEmpty()
+  c_codfac: string;
+
+  @IsString()
+  @IsNotEmpty()
+  c_codesp: string;
 
   @IsString()
   @IsNotEmpty()
@@ -28,70 +78,58 @@ export class HorarioDto {
   @IsNotEmpty()
   c_nomcur: string;
 
-  @IsString()
-  @IsNotEmpty()
-  dia: string;
-
-  @IsDateString()
-  @IsNotEmpty()
-  h_inicio: string;
-
-  @IsDateString()
-  @IsNotEmpty()
-  h_fin: string;
-
-  @Type(() => Number)
   @IsInt()
-  @IsNotEmpty()
-  n_horas: number;
-
-  @IsHexColor()
-  @IsNotEmpty()
-  c_color: string;
-
-  @IsString()
-  @IsOptional()
-  n_codper_equ: string;
-
-  @IsString()
-  @IsOptional()
-  c_codmod_equ: string;
-
-  @IsString()
-  @IsOptional()
-  c_codfac_equ: string;
-
-  @IsString()
-  @IsOptional()
-  c_codesp_equ: string;
-
-  @IsString()
-  @IsOptional()
-  c_codcur_equ: string;
-
-  @IsString()
-  @IsOptional()
-  c_nomcur_equ: string;
-
   @Type(() => Number)
-  @IsInt()
+  n_ciclo: number;
+
+  @IsString()
   @IsNotEmpty()
+  c_area: string;
+
+  @IsInt()
+  @Type(() => Number)
   turno_id: number;
 
-  @Type(() => Number)
-  @IsInt()
+  // Equivalentes opcionales
   @IsOptional()
-  aula_id: number;
+  @IsString()
+  n_codper_equ?: string;
 
-  @Type(() => Number)
-  @IsInt()
   @IsOptional()
-  docente_id: number;
+  @IsString()
+  c_codmod_equ?: string;
+
+  @IsOptional()
+  @IsString()
+  c_codfac_equ?: string;
+
+  @IsOptional()
+  @IsString()
+  c_codesp_equ?: string;
+
+  @IsOptional()
+  @IsString()
+  c_codcur_equ?: string;
+
+  @IsOptional()
+  @IsString()
+  c_nomcur_equ?: string;
+}
+
+export class UpdateCursoHorarioDto {
+  @ValidateNested()
+  @Type(() => CursoDto)
+  curso: CursoDto;
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => HorarioDto)
+  horarios: HorarioDto[];
 }
 
 export class UpdateHorarioArrayDto {
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => HorarioDto)
-  horarios: HorarioDto[];
+  @Type(() => UpdateCursoHorarioDto)
+  dataArray: UpdateCursoHorarioDto[];
 }

@@ -98,19 +98,49 @@ CREATE TABLE `Turno` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `Horario` (
+CREATE TABLE `Curso` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `n_codper` VARCHAR(191) NOT NULL,
+    `c_codmod` INTEGER NOT NULL,
+    `c_codfac` VARCHAR(191) NOT NULL,
+    `c_codesp` VARCHAR(191) NOT NULL,
     `c_codcur` VARCHAR(191) NOT NULL,
     `c_nomcur` VARCHAR(191) NOT NULL,
+    `n_ciclo` INTEGER NOT NULL,
+    `c_area` VARCHAR(191) NOT NULL,
+    `n_codper_equ` VARCHAR(191) NULL,
+    `c_codmod_equ` VARCHAR(191) NULL,
+    `c_codfac_equ` VARCHAR(191) NULL,
+    `c_codesp_equ` VARCHAR(191) NULL,
+    `c_codcur_equ` VARCHAR(191) NULL,
+    `c_nomcur_equ` VARCHAR(191) NULL,
+    `turno_id` INTEGER NOT NULL,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `grupo_sincro` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `curso_id` INTEGER NOT NULL,
+    `padre_curso_id` INTEGER NOT NULL,
+    `shortname` VARCHAR(191) NOT NULL,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `Horario` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
     `dia` VARCHAR(191) NOT NULL,
     `h_inicio` DATETIME(3) NOT NULL,
     `h_fin` DATETIME(3) NOT NULL,
     `n_horas` INTEGER NOT NULL,
     `c_color` VARCHAR(191) NOT NULL,
-    `turno_id` INTEGER NOT NULL,
     `aula_id` INTEGER NULL,
     `docente_id` INTEGER NULL,
-    `horario_padre_id` INTEGER NULL,
+    `curso_id` INTEGER NOT NULL,
+    `turno_id` INTEGER NOT NULL,
 
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -118,7 +148,7 @@ CREATE TABLE `Horario` (
 -- CreateTable
 CREATE TABLE `Aula` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `n_aulo` VARCHAR(191) NOT NULL,
+    `n_aula` VARCHAR(191) NOT NULL,
     `aforo` INTEGER NOT NULL,
 
     PRIMARY KEY (`id`)
@@ -149,7 +179,13 @@ ALTER TABLE `Permission` ADD CONSTRAINT `Permission_user_id_fkey` FOREIGN KEY (`
 ALTER TABLE `Permission` ADD CONSTRAINT `Permission_item_id_fkey` FOREIGN KEY (`item_id`) REFERENCES `Item`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `Horario` ADD CONSTRAINT `Horario_turno_id_fkey` FOREIGN KEY (`turno_id`) REFERENCES `Turno`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `Curso` ADD CONSTRAINT `Curso_turno_id_fkey` FOREIGN KEY (`turno_id`) REFERENCES `Turno`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `grupo_sincro` ADD CONSTRAINT `grupo_sincro_curso_id_fkey` FOREIGN KEY (`curso_id`) REFERENCES `Curso`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `grupo_sincro` ADD CONSTRAINT `grupo_sincro_padre_curso_id_fkey` FOREIGN KEY (`padre_curso_id`) REFERENCES `Curso`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `Horario` ADD CONSTRAINT `Horario_aula_id_fkey` FOREIGN KEY (`aula_id`) REFERENCES `Aula`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
@@ -158,4 +194,7 @@ ALTER TABLE `Horario` ADD CONSTRAINT `Horario_aula_id_fkey` FOREIGN KEY (`aula_i
 ALTER TABLE `Horario` ADD CONSTRAINT `Horario_docente_id_fkey` FOREIGN KEY (`docente_id`) REFERENCES `Docente`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `Horario` ADD CONSTRAINT `Horario_horario_padre_id_fkey` FOREIGN KEY (`horario_padre_id`) REFERENCES `Horario`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE `Horario` ADD CONSTRAINT `Horario_curso_id_fkey` FOREIGN KEY (`curso_id`) REFERENCES `Curso`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Horario` ADD CONSTRAINT `Horario_turno_id_fkey` FOREIGN KEY (`turno_id`) REFERENCES `Turno`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
