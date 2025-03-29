@@ -266,21 +266,55 @@ model Turno {
   estado   Int    @default(1)
 
   Horario Horario[]
+  Curso   Curso[]
+}
+
+model Curso {
+  id       Int    @id @default(autoincrement())
+  n_codper String
+  c_codmod Int
+  c_codfac String
+  c_codesp String
+  c_codcur String
+  c_nomcur String
+  n_ciclo  Int
+  c_area   String
+
+  n_codper_equ String?
+  c_codmod_equ String?
+  c_codfac_equ String?
+  c_codesp_equ String?
+  c_codcur_equ String?
+  c_nomcur_equ String?
+
+  turno_id Int
+  turno    Turno @relation(fields: [turno_id], references: [id], onDelete: Cascade)
+
+  cursosHijos  grupo_sincro[] @relation("CursoPadre")
+  cursosPadres grupo_sincro[] @relation("CursoHijo")
+
+  Horario Horario[]
+}
+
+model grupo_sincro {
+  id Int @id @default(autoincrement())
+
+  curso_id   Int
+  cursosHijo Curso @relation("CursoHijo", fields: [curso_id], references: [id], onDelete: Cascade)
+
+  padre_curso_id Int
+  cursoPadre     Curso @relation("CursoPadre", fields: [padre_curso_id], references: [id], onDelete: Cascade)
+
+  shortname String
 }
 
 model Horario {
   id       Int      @id @default(autoincrement())
-  n_codper String
-  c_codcur String
-  c_nomcur String
   dia      String
   h_inicio DateTime
   h_fin    DateTime
   n_horas  Int
   c_color  String
-
-  turno_id Int
-  turno    Turno @relation(fields: [turno_id], references: [id], onDelete: Cascade)
 
   aula_id Int?
   aula    Aula? @relation(fields: [aula_id], references: [id], onDelete: Cascade)
@@ -288,15 +322,16 @@ model Horario {
   Docente    Docente? @relation(fields: [docente_id], references: [id])
   docente_id Int?
 
-  // Relación recursiva
-  horario_padre_id Int?
-  horario_padre    Horario?  @relation("HorarioPadre", fields: [horario_padre_id], references: [id])
-  hijos            Horario[] @relation("HorarioPadre")
+  curso_id Int
+  curso    Curso @relation(fields: [curso_id], references: [id])
+
+  Turno    Turno @relation(fields: [turno_id], references: [id])
+  turno_id Int
 }
 
 model Aula {
   id      Int       @id @default(autoincrement())
-  n_aulo  String
+  n_aula  String
   aforo   Int
   Horario Horario[]
 }
