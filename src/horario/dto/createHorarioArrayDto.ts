@@ -88,27 +88,27 @@ export class CursoDto {
 
   //equivalentes
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   n_codper_equ: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   c_codmod_equ: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   c_codfac_equ: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   c_codesp_equ: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   c_codcur_equ: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   c_nomcur_equ: string;
 }
 

@@ -47,11 +47,6 @@ export class HorarioController {
     return this.horarioService.getHorariosTurno(turno_id);
   }
 
-  @Get(':id')
-  getHorario(@Param('id', ParseIntPipe) id: number) {
-    return this.horarioService.getHorario(id);
-  }
-
   @Get('curso')
   getCurso(
     @Query('c_codmod') c_codmod?: string,
@@ -60,8 +55,6 @@ export class HorarioController {
     @Query('c_codesp') c_codesp?: string,
     @Query('c_codcur') c_codcur?: string,
   ) {
-    console.log('getCurso');
-
     return this.horarioService.getCursos(
       Number(c_codmod),
       c_codper,
@@ -71,30 +64,8 @@ export class HorarioController {
     );
   }
 
-  // @Get('')
-  // getHorario(
-  // @Query('c_codmod') c_codmod?: string,
-  // @Query('c_codper') c_codper?: string,
-  // @Query('c_codfac') c_codfac?: string,
-  // @Query('c_codesp') c_codesp?: string,
-  // @Query('n_codpla') n_codpla?: string,
-  // ) {
-  //   return this.horarioService.getHorarios(
-  //     c_codmod,
-  //     Number(c_codper),
-  //     c_codfac,
-  //     c_codesp,
-  //     Number(n_codpla),
-  //   );
-  // }
-
-  // @Get(':turno_id')
-  // getHorarios(@Param('turno_id', ParseIntPipe) turno_id: number) {
-  //   return this.horarioService.getHorario(turno_id);
-  // }
-
-  // @Delete(':id')
-  // deleteHorario(@Param('id', ParseIntPipe) id: number) {
-  //   return this.horarioService.deleteHorario(id);
-  // }
+  @Get(':id')
+  getHorario(@Param('id', ParseIntPipe) id: number) {
+    return this.horarioService.getHorario(id);
+  }
 }

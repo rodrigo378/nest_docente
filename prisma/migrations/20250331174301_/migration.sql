@@ -148,8 +148,10 @@ CREATE TABLE `Horario` (
 -- CreateTable
 CREATE TABLE `Aula` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `n_aula` VARCHAR(191) NOT NULL,
-    `aforo` INTEGER NOT NULL,
+    `c_codaula` VARCHAR(191) NOT NULL,
+    `n_piso` INTEGER NOT NULL,
+    `n_capacidad` VARCHAR(191) NOT NULL,
+    `c_obs` VARCHAR(191) NULL,
 
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;

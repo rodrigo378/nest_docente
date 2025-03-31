@@ -330,10 +330,13 @@ model Horario {
 }
 
 model Aula {
-  id      Int       @id @default(autoincrement())
-  n_aula  String
-  aforo   Int
-  Horario Horario[]
+  id          Int       @id @default(autoincrement())
+  c_codaula   String
+  n_piso      Int
+  pabellon    String
+  n_capacidad String
+  c_obs       String?
+  Horario     Horario[]
 }
 
 model Docente {
