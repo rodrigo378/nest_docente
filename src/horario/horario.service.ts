@@ -6,7 +6,11 @@ import {
   HorarioDto,
 } from './dto/createHorarioArrayDto';
 import { DeleteHorarioArrayDto } from './dto/deleteHorarioArrayDto';
-import { UpdateHorarioArrayDto } from './dto/updateHorarioArrayDto';
+import {
+  CursoUpdateDto,
+  HorarioUpdateDto,
+  UpdateHorarioArrayDto,
+} from './dto/updateHorarioArrayDto';
 import { CreateTransversalDto } from './dto/createTransversalDto';
 
 @Injectable()
@@ -189,30 +193,108 @@ export class HorarioService {
     };
   }
 
-  async deleteHorarioArray(deleteHorarioArray: DeleteHorarioArrayDto) {
-    const eliminados: number[] = [];
-    const errores: number[] = [];
+  async verificarCruzeUpdate(updateHorarioArrayDto: UpdateHorarioArrayDto) {
+    const errores: string[] = [];
 
-    for (const horario_id of deleteHorarioArray.horarios_id) {
-      try {
-        await this.prismaService.horario.delete({
-          where: { id: horario_id },
-        });
-        eliminados.push(horario_id);
-      } catch (error) {
-        console.warn(`No se pudo eliminar el horario ${horario_id}:`, error);
-        errores.push(horario_id);
+    const todosLosHorarios: {
+      h: HorarioUpdateDto;
+      curso: CursoUpdateDto;
+    }[] = [];
+
+    for (const data of updateHorarioArrayDto.dataArray) {
+      const { curso, horarios } = data;
+
+      for (let i = 0; i < horarios.length; i++) {
+        const h1 = horarios[i];
+        const inicio1 = h1.h_inicio ? this.parseHora(h1.h_inicio) : null;
+        const fin1 = h1.h_fin ? this.parseHora(h1.h_fin) : null;
+
+        if (!inicio1 || !fin1) continue;
+
+        for (let j = i + 1; j < horarios.length; j++) {
+          const h2 = horarios[j];
+          if (h1.dia !== h2.dia) continue;
+
+          const inicio2 = h2.h_inicio ? this.parseHora(h2.h_inicio) : null;
+          const fin2 = h2.h_fin ? this.parseHora(h2.h_fin) : null;
+
+          if (!inicio2 || !fin2) continue;
+
+          const cruceHoras = inicio1 < fin2 && fin1 > inicio2;
+          const mismoAula =
+            h1.aula_id && h2.aula_id && h1.aula_id === h2.aula_id;
+          const mismoDocente =
+            h1.docente_id && h2.docente_id && h1.docente_id === h2.docente_id;
+
+          if (cruceHoras && (mismoAula || mismoDocente)) {
+            errores.push(
+              `⛔ Conflicto interno en curso "${curso.c_nomcur}" el día ${h1.dia}` +
+                ` (${mismoAula ? 'misma aula' : ''}${mismoAula && mismoDocente ? ' y ' : ''}${mismoDocente ? 'mismo docente' : ''})`,
+            );
+          }
+        }
+
+        todosLosHorarios.push({ h: h1, curso });
+      }
+    }
+
+    // 2️⃣ Verificación con la BD excluyendo los horarios originales si ya existen
+    for (const { h, curso } of todosLosHorarios) {
+      const condicionesOR: any[] = [];
+      if (h.aula_id) condicionesOR.push({ aula_id: h.aula_id });
+      if (h.docente_id) condicionesOR.push({ docente_id: h.docente_id });
+
+      if (condicionesOR.length === 0) continue;
+
+      const existentes = await this.prismaService.horario.findMany({
+        where: {
+          dia: h.dia,
+          turno_id: curso.turno_id,
+          OR: condicionesOR,
+          NOT: h.id ? { id: h.id } : undefined,
+        },
+        include: { curso: true },
+      });
+
+      const inicio1 = h.h_inicio ? this.parseHora(h.h_inicio) : null;
+      const fin1 = h.h_fin ? this.parseHora(h.h_fin) : null;
+
+      if (!inicio1 || !fin1) continue;
+
+      for (const e of existentes) {
+        const inicio2 = this.parseHora(e.h_inicio);
+        const fin2 = this.parseHora(e.h_fin);
+
+        const cruce = inicio1 < fin2 && fin1 > inicio2;
+        const mismoAula = h.aula_id && e.aula_id && h.aula_id === e.aula_id;
+        const mismoDocente =
+          h.docente_id && e.docente_id && h.docente_id === e.docente_id;
+
+        if (cruce && (mismoAula || mismoDocente)) {
+          errores.push(
+            `⛔ Conflicto con "${e.curso?.c_nomcur}" en BD el día ${h.dia}` +
+              ` (${mismoAula ? 'misma aula' : ''}${mismoAula && mismoDocente ? ' y ' : ''}${mismoDocente ? 'mismo docente' : ''})`,
+          );
+        }
       }
     }
 
     return {
-      eliminados,
+      success: errores.length === 0,
       errores,
-      message: 'Proceso de eliminación finalizado.',
     };
   }
 
   async updateHorarioArray(updateHorarioArrayDto: UpdateHorarioArrayDto) {
+    const verificacion = await this.verificarCruzeUpdate(updateHorarioArrayDto);
+
+    if (!verificacion.success && updateHorarioArrayDto.verificar) {
+      return {
+        success: false,
+        errores: verificacion.errores,
+      };
+    }
+
     const { dataArray } = updateHorarioArrayDto;
 
     let cursosCreados = 0;
@@ -297,10 +379,34 @@ export class HorarioService {
     }
 
     return {
+      success: true,
       mensaje: '✅ Cursos y horarios procesados correctamente',
       cursos_nuevos: cursosCreados,
       horarios_creados: horariosCreados,
       horarios_actualizados: horariosActualizados,
+    };
+  }
+
+  async deleteHorarioArray(deleteHorarioArray: DeleteHorarioArrayDto) {
+    const eliminados: number[] = [];
+    const errores: number[] = [];
+
+    for (const horario_id of deleteHorarioArray.horarios_id) {
+      try {
+        await this.prismaService.horario.delete({
+          where: { id: horario_id },
+        });
+        eliminados.push(horario_id);
+      } catch (error) {
+        console.warn(`No se pudo eliminar el horario ${horario_id}:`, error);
+        errores.push(horario_id);
+      }
+    }
+
+    return {
+      eliminados,
+      errores,
+      message: 'Proceso de eliminación finalizado.',
     };
   }
 

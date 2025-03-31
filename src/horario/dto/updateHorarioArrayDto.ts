@@ -7,10 +7,11 @@ import {
   IsArray,
   ValidateNested,
   IsOptional,
+  IsBoolean,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
-export class HorarioDto {
+export class HorarioUpdateDto {
   @IsOptional()
   @Type(() => Number)
   @IsInt()
@@ -53,7 +54,7 @@ export class HorarioDto {
   turno_id?: number;
 }
 
-export class CursoDto {
+export class CursoUpdateDto {
   @IsString()
   @IsNotEmpty()
   n_codper: string;
@@ -118,13 +119,13 @@ export class CursoDto {
 
 export class UpdateCursoHorarioDto {
   @ValidateNested()
-  @Type(() => CursoDto)
-  curso: CursoDto;
+  @Type(() => CursoUpdateDto)
+  curso: CursoUpdateDto;
 
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => HorarioDto)
-  horarios: HorarioDto[];
+  @Type(() => HorarioUpdateDto)
+  horarios: HorarioUpdateDto[];
 }
 
 export class UpdateHorarioArrayDto {
@@ -132,4 +133,7 @@ export class UpdateHorarioArrayDto {
   @ValidateNested({ each: true })
   @Type(() => UpdateCursoHorarioDto)
   dataArray: UpdateCursoHorarioDto[];
+
+  @IsBoolean()
+  verificar: boolean;
 }
