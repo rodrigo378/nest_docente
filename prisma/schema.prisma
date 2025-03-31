@@ -332,7 +332,7 @@ model Horario {
 model Aula {
   id          Int       @id @default(autoincrement())
   c_codaula   String
-  n_piso      Int
+  n_piso      String
   pabellon    String
   n_capacidad String
   c_obs       String?

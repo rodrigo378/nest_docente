@@ -7,6 +7,7 @@ import {
   IsArray,
   ValidateNested,
   IsOptional,
+  IsBoolean,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -128,4 +129,7 @@ export class CreateHorarioArrayDto {
   @ValidateNested({ each: true })
   @Type(() => CreateCursoHorarioDto)
   dataArray: CreateCursoHorarioDto[];
+
+  @IsBoolean()
+  verificar: boolean;
 }

@@ -13,6 +13,7 @@ import { HorarioService } from './horario.service';
 import { DeleteHorarioArrayDto } from './dto/deleteHorarioArrayDto';
 import { CreateHorarioArrayDto } from './dto/createHorarioArrayDto';
 import { UpdateHorarioArrayDto } from './dto/updateHorarioArrayDto';
+import { CreateTransversalDto } from './dto/createTransversalDto';
 
 @Controller('horario')
 export class HorarioController {
@@ -67,5 +68,10 @@ export class HorarioController {
   @Get(':id')
   getHorario(@Param('id', ParseIntPipe) id: number) {
     return this.horarioService.getHorario(id);
+  }
+
+  @Post('curso/transversal')
+  createTransversal(@Body() createTransversalDto: CreateTransversalDto) {
+    return this.horarioService.createTransversal(createTransversalDto);
   }
 }

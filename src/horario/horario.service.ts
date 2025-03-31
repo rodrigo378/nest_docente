@@ -7,6 +7,7 @@ import {
 } from './dto/createHorarioArrayDto';
 import { DeleteHorarioArrayDto } from './dto/deleteHorarioArrayDto';
 import { UpdateHorarioArrayDto } from './dto/updateHorarioArrayDto';
+import { CreateTransversalDto } from './dto/createTransversalDto';
 
 @Injectable()
 export class HorarioService {
@@ -107,7 +108,7 @@ export class HorarioService {
   async createHorarioArray(createHorarioArray: CreateHorarioArrayDto) {
     const verificacion = await this.verificarCruze(createHorarioArray);
 
-    if (!verificacion.success) {
+    if (!verificacion.success && createHorarioArray.verificar) {
       return {
         success: false,
         errores: verificacion.errores,
@@ -322,6 +323,60 @@ export class HorarioService {
     return horario;
   }
 
+  async createTransversal(createTransversalDto: CreateTransversalDto) {
+    const { padre_id, hijos_id } = createTransversalDto;
+
+    // Obtener datos del curso padre con su turno
+    const cursoPadre = await this.prismaService.curso.findUnique({
+      where: { id: padre_id },
+      include: { turno: true },
+    });
+
+    if (!cursoPadre) throw new Error('Curso padre no encontrado');
+
+    // Iniciar shortname con datos del padre
+    let shortname = `${cursoPadre.c_codcur}-1-${cursoPadre.n_codper.slice(-3)}-${cursoPadre.turno.c_grpcur}`;
+
+    const hijos: { id: number }[] = [];
+
+    for (const hijo_id of hijos_id) {
+      const cursoHijo = await this.prismaService.curso.findUnique({
+        where: { id: hijo_id },
+        include: { turno: true },
+      });
+
+      if (!cursoHijo) continue;
+
+      shortname += cursoHijo.turno.c_grpcur;
+      hijos.push(cursoHijo);
+    }
+
+    await this.prismaService.grupo_sincro.create({
+      data: {
+        curso_id: padre_id,
+        padre_curso_id: padre_id,
+        shortname,
+      },
+    });
+
+    // Registrar grupo_sincro para cada hijo
+    for (const hijo of hijos) {
+      await this.prismaService.grupo_sincro.create({
+        data: {
+          curso_id: hijo.id,
+          padre_curso_id: padre_id,
+          shortname,
+        },
+      });
+    }
+
+    return {
+      mensaje: '✅ Cursos transversales asociados correctamente',
+      shortname,
+      hijos_asociados: hijos.length,
+    };
+  }
+
   async getCursos(
     c_codmod?: number,
     n_codper?: string,
@@ -340,6 +395,8 @@ export class HorarioService {
       include: {
         Horario: { include: { Docente: true, aula: true } },
         turno: true,
+        cursosPadres: { include: { cursoPadre: true } },
+        cursosHijos: { include: { cursosHijo: { include: { turno: true } } } },
       },
     });
   }
