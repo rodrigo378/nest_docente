@@ -199,7 +199,10 @@ export class HorarioService {
   }
 
   async getHorariosTurno(turno_id: number) {
-    return await this.prismaService.horario.findMany({ where: { turno_id } });
+    return await this.prismaService.horario.findMany({
+      where: { turno_id },
+      include: { curso: true },
+    });
   }
 
   async getHorario(id: number) {
@@ -213,6 +216,7 @@ export class HorarioService {
 
     return horario;
   }
+
   // async getHorarios(
   // c_codmod?: string,
   // n_codper?: number,

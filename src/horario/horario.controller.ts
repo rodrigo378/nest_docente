@@ -52,7 +52,7 @@ export class HorarioController {
     return this.horarioService.getHorario(id);
   }
 
-  @Get('/curso')
+  @Get('curso')
   getCurso(
     @Query('c_codmod') c_codmod?: string,
     @Query('c_codper') c_codper?: string,
@@ -60,6 +60,8 @@ export class HorarioController {
     @Query('c_codesp') c_codesp?: string,
     @Query('c_codcur') c_codcur?: string,
   ) {
+    console.log('getCurso');
+
     return this.horarioService.getCursos(
       Number(c_codmod),
       c_codper,
