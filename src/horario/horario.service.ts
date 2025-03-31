@@ -77,10 +77,13 @@ export class HorarioService {
         where: {
           dia: h.dia,
           OR: condicionesOR,
-          turno_id: curso.turno_id,
         },
         include: { curso: true },
       });
+      console.log('por aca => ', existentes);
+      console.log('dia => ', h.dia);
+      console.log('condicionesOR => ', condicionesOR);
+      console.log('turno_id => ', curso.turno_id);
 
       const inicio1 = this.parseHora(h.h_inicio);
       const fin1 = this.parseHora(h.h_fin);
@@ -239,7 +242,7 @@ export class HorarioService {
     }
 
     // 2️⃣ Verificación con la BD excluyendo los horarios originales si ya existen
-    for (const { h, curso } of todosLosHorarios) {
+    for (const { h } of todosLosHorarios) {
       const condicionesOR: any[] = [];
       if (h.aula_id) condicionesOR.push({ aula_id: h.aula_id });
       if (h.docente_id) condicionesOR.push({ docente_id: h.docente_id });
@@ -249,7 +252,6 @@ export class HorarioService {
       const existentes = await this.prismaService.horario.findMany({
         where: {
           dia: h.dia,
-          turno_id: curso.turno_id,
           OR: condicionesOR,
           NOT: h.id ? { id: h.id } : undefined,
         },
