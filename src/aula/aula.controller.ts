@@ -5,7 +5,7 @@ import { AulaService } from './aula.service';
 export class AulaController {
   constructor(private readonly aulaService: AulaService) {}
 
-  @Get('/aula')
+  @Get('')
   getAulas() {
     return this.aulaService.getAulas();
   }
