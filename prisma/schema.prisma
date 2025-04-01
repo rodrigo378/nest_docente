@@ -332,10 +332,10 @@ model Horario {
 model Aula {
   id          Int       @id @default(autoincrement())
   c_codaula   String
-  n_piso      String
+  n_piso      Int
   pabellon    String
   n_capacidad String
-  c_obs       String?
+  c_obs       String?   @db.Text
   Horario     Horario[]
 }
 

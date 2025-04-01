@@ -4,12 +4,14 @@ import { seedProvincia } from './seed/provincia.seed';
 import { seedDistrito } from './seed/distrito.seed';
 import { seedTurno } from './seed/turno';
 import { seedCurso } from './seed/cursos';
+import { seedAula } from './seed/aula';
 
 const prisma = new PrismaClient();
 async function main() {
   await seedDepartamentos();
   await seedProvincia();
   await seedDistrito();
+  await seedAula();
   await seedTurno();
   await seedCurso();
 }
