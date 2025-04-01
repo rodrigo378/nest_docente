@@ -478,7 +478,7 @@ export async function seedAula() {
     },
     {
       c_codaula: 'SL01-LA16 (7B)',
-      n_piso: 8,
+      n_piso: 7,
       pabellon: 'C',
       n_capacidad: '30',
       c_obs: 'Ciencias de la Salud VIII',
