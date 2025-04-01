@@ -346,6 +346,6 @@ model Docente {
   h_min     Int
   h_max     Int
   tipo      Int
-  h_total   Int       @default(0)
+  h_total   Float     @default(0)
   Horario   Horario[]
 }

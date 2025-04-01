@@ -165,7 +165,7 @@ CREATE TABLE `Docente` (
     `h_min` INTEGER NOT NULL,
     `h_max` INTEGER NOT NULL,
     `tipo` INTEGER NOT NULL,
-    `h_total` INTEGER NOT NULL DEFAULT 0,
+    `h_total` DOUBLE NOT NULL DEFAULT 0,
 
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;

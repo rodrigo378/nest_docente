@@ -66,7 +66,7 @@ export class HorarioService {
     }
 
     // 2️⃣ Verificación con la base de datos
-    for (const { h, curso } of todosLosHorarios) {
+    for (const { h } of todosLosHorarios) {
       const condicionesOR: any[] = [];
       if (h.aula_id) condicionesOR.push({ aula_id: h.aula_id });
       if (h.docente_id) condicionesOR.push({ docente_id: h.docente_id });
@@ -80,10 +80,6 @@ export class HorarioService {
         },
         include: { curso: true },
       });
-      console.log('por aca => ', existentes);
-      console.log('dia => ', h.dia);
-      console.log('condicionesOR => ', condicionesOR);
-      console.log('turno_id => ', curso.turno_id);
 
       const inicio1 = this.parseHora(h.h_inicio);
       const fin1 = this.parseHora(h.h_fin);
@@ -485,6 +481,12 @@ export class HorarioService {
     };
   }
 
+  async deleteTransversal(padre_curso_id: number) {
+    await this.prismaService.grupo_sincro.delete({
+      where: { padre_curso_id: 1 },
+    });
+  }
+
   async getCursos(
     c_codmod?: number,
     n_codper?: string,
@@ -509,59 +511,3 @@ export class HorarioService {
     });
   }
 }
-
-// async asociarHorarioTransversal(
-//   asignarCursoTransversalDto: AsignarCursoTransversalDto,
-// ) {
-//   const { padre_id, hijo_id } = asignarCursoTransversalDto;
-
-//   const padre = await this.prismaService.horario.findUnique({
-//     where: { id: padre_id },
-//   });
-
-//   const hijo = await this.prismaService.horario.findUnique({
-//     where: { id: hijo_id },
-//   });
-
-//   if (!padre || !hijo) {
-//     throw new NotFoundException('Horario padre o hijo no encontrado');
-//   }
-
-//   const actualizado = await this.prismaService.horario.update({
-//     where: { id: hijo_id },
-//     data: {
-//       horario_padre_id: padre_id,
-//       h_inicio: padre.h_inicio,
-//       h_fin: padre.h_fin,
-//       aula_id: padre.aula_id,
-//       docente_id: padre.docente_id,
-//     },
-//   });
-
-//   return {
-//     mensaje: '✅ Horario asociado como transversal correctamente',
-//     hijo: actualizado,
-//   };
-// }
-
-// async getHorarios(
-// c_codmod?: string,
-// n_codper?: number,
-// c_codfac?: string,
-// c_codesp?: string,
-// n_codpla?: number,
-// ) {
-//   const horarios = await this.prismaService.horario.findMany({
-//     where: {
-//       turno: {
-// ...(c_codmod && { c_codmod }),
-// ...(n_codper && { n_codper }),
-// ...(c_codfac && { c_codfac }),
-// ...(c_codesp && { c_codesp }),
-// ...(n_codpla && { n_codpla }),
-//       },
-//     },
-//     include: { turno: true, hijos: true, Docente: true },
-//   });
-//   return horarios;
-// }
