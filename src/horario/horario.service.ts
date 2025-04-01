@@ -411,7 +411,7 @@ export class HorarioService {
   async getHorariosTurno(turno_id: number) {
     return await this.prismaService.horario.findMany({
       where: { turno_id },
-      include: { curso: true },
+      include: { curso: { include: { cursosPadres: true } } },
     });
   }
 
@@ -482,9 +482,24 @@ export class HorarioService {
   }
 
   async deleteTransversal(padre_curso_id: number) {
-    await this.prismaService.grupo_sincro.delete({
-      where: { padre_curso_id: 1 },
+    const grupoIds = await this.prismaService.grupo_sincro.findMany({
+      where: { padre_curso_id },
+      select: { id: true },
     });
+
+    const ids = grupoIds.map((g) => g.id);
+
+    if (ids.length === 0) return;
+
+    const results = await this.prismaService.grupo_sincro.deleteMany({
+      where: {
+        id: { in: ids },
+      },
+    });
+
+    return {
+      message: `Se eliminaron el grupo_sincro con padre_id ${padre_curso_id} total => ${results.count}`,
+    };
   }
 
   async getCursos(

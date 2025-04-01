@@ -74,4 +74,11 @@ export class HorarioController {
   createTransversal(@Body() createTransversalDto: CreateTransversalDto) {
     return this.horarioService.createTransversal(createTransversalDto);
   }
+
+  @Delete('curso/transversal/:padre_curso_id')
+  deleteTransversal(
+    @Param('padre_curso_id', ParseIntPipe) padre_curso_id: number,
+  ) {
+    return this.horarioService.deleteTransversal(padre_curso_id);
+  }
 }
