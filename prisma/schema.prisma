@@ -340,8 +340,12 @@ model Aula {
 }
 
 model Docente {
-  id       Int       @id @default(autoincrement())
-  c_coddoc String
-  c_nomdoc String
-  Horario  Horario[]
+  id        Int       @id @default(autoincrement())
+  categoria String
+  c_nomdoc  String
+  h_min     Int
+  h_max     Int
+  tipo      Int
+  h_total   Int       @default(0)
+  Horario   Horario[]
 }

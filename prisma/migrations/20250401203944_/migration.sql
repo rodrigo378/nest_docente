@@ -160,8 +160,12 @@ CREATE TABLE `Aula` (
 -- CreateTable
 CREATE TABLE `Docente` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `c_coddoc` VARCHAR(191) NOT NULL,
+    `categoria` VARCHAR(191) NOT NULL,
     `c_nomdoc` VARCHAR(191) NOT NULL,
+    `h_min` INTEGER NOT NULL,
+    `h_max` INTEGER NOT NULL,
+    `tipo` INTEGER NOT NULL,
+    `h_total` INTEGER NOT NULL DEFAULT 0,
 
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
