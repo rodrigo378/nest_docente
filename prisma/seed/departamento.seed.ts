@@ -105,7 +105,10 @@ export async function seedDepartamentos() {
     },
   ];
 
-  const result = await prisma.departamento.createMany({ data });
+  const result = await prisma.departamento.createMany({
+    data,
+    skipDuplicates: true,
+  });
 
   console.log('✅ Departamentos insertados:', result);
 }

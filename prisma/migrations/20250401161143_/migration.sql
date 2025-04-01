@@ -109,7 +109,7 @@ CREATE TABLE `Curso` (
     `n_ciclo` INTEGER NOT NULL,
     `c_area` VARCHAR(191) NOT NULL,
     `n_codper_equ` VARCHAR(191) NULL,
-    `c_codmod_equ` VARCHAR(191) NULL,
+    `c_codmod_equ` INTEGER NULL,
     `c_codfac_equ` VARCHAR(191) NULL,
     `c_codesp_equ` VARCHAR(191) NULL,
     `c_codcur_equ` VARCHAR(191) NULL,

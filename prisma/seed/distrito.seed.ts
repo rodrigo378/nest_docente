@@ -9377,7 +9377,10 @@ export async function seedDistrito() {
     },
   ];
 
-  const result = await prisma.distrito.createMany({ data });
+  const result = await prisma.distrito.createMany({
+    data,
+    skipDuplicates: true,
+  });
 
   console.log('✅ Distrito insertados:', result);
 }

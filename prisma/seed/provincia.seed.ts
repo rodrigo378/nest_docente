@@ -987,7 +987,10 @@ export async function seedProvincia() {
     },
   ];
 
-  const result = await prisma.provincia.createMany({ data });
+  const result = await prisma.provincia.createMany({
+    data,
+    skipDuplicates: true,
+  });
 
   console.log('✅ Provincia insertados:', result);
 }

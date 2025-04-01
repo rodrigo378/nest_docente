@@ -281,7 +281,7 @@ model Curso {
   c_area   String
 
   n_codper_equ String?
-  c_codmod_equ String?
+  c_codmod_equ Int?
   c_codfac_equ String?
   c_codesp_equ String?
   c_codcur_equ String?
