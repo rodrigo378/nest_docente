@@ -34,7 +34,7 @@ export class UpdateTurnoDto {
 
   @IsString()
   @IsOptional()
-  c_codmod?: string;
+  c_codmod?: number;
 
   @IsString()
   @IsOptional()

@@ -34,7 +34,7 @@ export class CreateTurnoDto {
 
   @IsString()
   @IsNotEmpty()
-  c_codmod: string;
+  c_codmod: number;
 
   @IsString()
   @IsNotEmpty()

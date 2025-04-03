@@ -89,7 +89,7 @@ CREATE TABLE `Turno` (
     `c_codesp` VARCHAR(191) NOT NULL,
     `nomesp` VARCHAR(191) NOT NULL,
     `c_grpcur` VARCHAR(191) NOT NULL,
-    `c_codmod` VARCHAR(191) NOT NULL,
+    `c_codmod` INTEGER NOT NULL,
     `c_nommod` VARCHAR(191) NOT NULL,
     `n_ciclo` INTEGER NOT NULL,
     `estado` INTEGER NOT NULL DEFAULT 1,

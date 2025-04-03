@@ -260,7 +260,7 @@ model Turno {
   c_codesp String
   nomesp   String
   c_grpcur String
-  c_codmod String
+  c_codmod Int
   c_nommod String
   n_ciclo  Int
   estado   Int    @default(1)
