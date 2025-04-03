@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaReadonlyService } from 'src/prisma/readonly.service';
 import { GetCursoDto } from './dto/getCursoDto';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 interface CursoQuery {
   n_codper: number;
@@ -19,7 +20,10 @@ interface CursoQuery {
 
 @Injectable()
 export class SiguService {
-  constructor(private readonly prismaReadonly: PrismaReadonlyService) {}
+  constructor(
+    private readonly prismaReadonly: PrismaReadonlyService,
+    private readonly prismaService: PrismaService,
+  ) {}
 
   async getEspecialidades() {
     return await this.prismaReadonly.$queryRawUnsafe(
@@ -66,7 +70,7 @@ export class SiguService {
   }
 
   async getCursos(getCursoDto: GetCursoDto) {
-    const cursos = await this.prismaReadonly.$queryRawUnsafe<CursoQuery[]>(
+    const cursosSigu = await this.prismaReadonly.$queryRawUnsafe<CursoQuery[]>(
       `SELECT
         tp.n_codper,
         tp.c_codmod,
@@ -143,12 +147,41 @@ export class SiguService {
       getCursoDto.c_codmod,
     );
 
-    return cursos.map((curso) => {
+    // 🔍 Buscar si alguno de los cursosSigu tiene cursosPadres en base de datos
+    const cursosConAgrupacion = await this.prismaService.curso.findMany({
+      where: {
+        OR: cursosSigu.map((c) => ({
+          n_codper: String(c.n_codper),
+          c_codmod: Number(c.c_codmod),
+          c_codfac: c.c_codfac,
+          c_codesp: c.c_codesp,
+          c_codcur: c.c_codcur,
+        })),
+      },
+      include: {
+        cursosPadres: true,
+      },
+    });
+
+    // 🧠 Mapear y retornar cursos con campo `agrupado`
+    const cursosFinal = cursosSigu.map((curso) => {
+      const cursoMatch = cursosConAgrupacion.find(
+        (c) =>
+          Number(c.n_codper) === curso.n_codper &&
+          c.c_codmod === Number(curso.c_codmod) &&
+          c.c_codfac === curso.c_codfac &&
+          c.c_codesp === curso.c_codesp &&
+          c.c_codcur === curso.c_codcur,
+      );
+
       return {
         ...curso,
+        tipoAgrupado: cursoMatch?.cursosPadres?.[0]?.tipo ?? null,
         vacante: Math.floor(Math.random() * (30 - 10 + 1)) + 10,
       };
     });
+
+    return cursosFinal;
   }
 
   // async getCursos(getCursoDto: GetCursoDto) {

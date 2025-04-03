@@ -98,6 +98,7 @@ export class CursoDto {
 
   @IsInt()
   @Type(() => Number)
+  @IsOptional()
   c_codmod_equ: number;
 
   @IsString()

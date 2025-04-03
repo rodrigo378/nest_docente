@@ -100,9 +100,9 @@ export class CursoUpdateDto {
   @IsString()
   n_codper_equ?: string;
 
-  @IsOptional()
-  @IsString()
-  c_codmod_equ?: string;
+  @IsInt()
+  @Type(() => Number)
+  c_codmod_equ?: number;
 
   @IsOptional()
   @IsString()

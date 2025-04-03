@@ -43,6 +43,13 @@ export class HorarioController {
     return this.horarioService.updateHorarioArray(updateHorarioArrayDto);
   }
 
+  @Put('transversal/:padre_curso_id')
+  updateCursoTransversal(
+    @Param('padre_curso_id', ParseIntPipe) padre_curso_id: number,
+  ) {
+    return this.horarioService.updateCursoTransversal(padre_curso_id);
+  }
+
   @Get('/turno/:turno_id')
   getHorariosTurno(@Param('turno_id', ParseIntPipe) turno_id: number) {
     return this.horarioService.getHorariosTurno(turno_id);

@@ -575,4 +575,13 @@ export class HorarioService {
       totalPages: Math.ceil(total / take),
     };
   }
+
+  async updateCursoTransversal(padre_curso_id: number) {
+    const horarios = await this.prismaService.grupo_sincro.findMany({
+      where: { padre_curso_id: padre_curso_id },
+      include: { cursosHijo: true },
+    });
+
+    return horarios;
+  }
 }
