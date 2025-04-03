@@ -32,9 +32,10 @@ export class UpdateTurnoDto {
   @IsOptional()
   c_grpcur?: string;
 
-  @IsString()
+  @Type(() => Number)
+  @IsInt()
   @IsOptional()
-  c_codmod?: string;
+  c_codmod?: number;
 
   @IsString()
   @IsOptional()

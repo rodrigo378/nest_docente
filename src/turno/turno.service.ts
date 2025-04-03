@@ -24,7 +24,7 @@ export class TurnoService {
   async getTurnos(
     c_codfac?: string,
     c_codesp?: string,
-    c_codmod?: string,
+    c_codmod?: number,
     n_codper?: number,
     n_codpla?: number,
     n_ciclo?: number,

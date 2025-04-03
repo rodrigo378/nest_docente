@@ -21,7 +21,7 @@ export class TurnoController {
   getTurnos(
     @Query('c_codfac') c_codfac?: string,
     @Query('c_codesp') c_codesp?: string,
-    @Query('c_codmod') c_codmod?: string,
+    @Query('c_codmod') c_codmod?: number,
     @Query('c_codper') c_codper?: string,
     @Query('c_codpla') c_codpla?: string,
     @Query('n_ciclo') n_ciclo?: number,
@@ -30,7 +30,7 @@ export class TurnoController {
     return this.turnoService.getTurnos(
       c_codfac,
       c_codesp,
-      c_codmod,
+      Number(c_codmod),
       Number(c_codper),
       Number(c_codpla),
       Number(n_ciclo),

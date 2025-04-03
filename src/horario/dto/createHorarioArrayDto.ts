@@ -96,9 +96,9 @@ export class CursoDto {
   @IsOptional()
   n_codper_equ: string;
 
-  @IsString()
-  @IsOptional()
-  c_codmod_equ: string;
+  @IsInt()
+  @Type(() => Number)
+  c_codmod_equ: number;
 
   @IsString()
   @IsOptional()

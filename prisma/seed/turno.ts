@@ -1,14 +1,13 @@
-import { PrismaClient, Turno } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import { PrismaClient as PrismaClient2 } from '../../prisma/generated/readonly';
 
-// const prisma = new PrismaClient();
 const prismaReadonly = new PrismaClient2();
 const prisma = new PrismaClient();
 
 export async function seedTurno() {
   console.log('🌱 Seeding Turno...');
 
-  const turnosBD: Turno[] = await prismaReadonly.$queryRawUnsafe(`
+  const turnosBD: any[] = await prismaReadonly.$queryRawUnsafe(`
     SELECT
       a.n_codper,
       a.n_codpla,
@@ -34,29 +33,32 @@ export async function seedTurno() {
       AND a.c_codfac = d.codfac
     INNER JOIN tb_modalidad e
       ON a.c_codmod = e.c_codmod
-    WHERE a.n_codper = 20251 -- and n_ciclo = 1
+    WHERE a.n_codper = 20251
     AND a.c_codfac IN ('E', 'S')
     GROUP BY
-    a.n_codper,
-    a.n_codpla,
-    b.c_codfac,
-    c.nom_fac,
-    b.c_codesp,
-    d.nomesp,
-    a.c_grpcur,
-    a.c_codmod,
-    e.c_nommod,
-    b.n_ciclo;
+      a.n_codper,
+      a.n_codpla,
+      b.c_codfac,
+      c.nom_fac,
+      b.c_codesp,
+      d.nomesp,
+      a.c_grpcur,
+      a.c_codmod,
+      e.c_nommod,
+      b.n_ciclo;
   `);
 
+  const turnosConvertidos: any[] = turnosBD.map(
+    (turno: { any; c_codmod: string }) => ({
+      ...turno,
+      c_codmod: parseInt(turno.c_codmod, 10),
+    }),
+  );
+
   const result = await prisma.turno.createMany({
-    data: turnosBD,
+    data: turnosConvertidos,
     skipDuplicates: true,
   });
 
-  console.log('✅ Departamentos insertados:', result);
-
-  // for (const turnoBD of turnosBD) {
-  //   await prisma.turno.create({ data: turnoBD });
-  // }
+  console.log('✅ Turnos insertados:', result);
 }
