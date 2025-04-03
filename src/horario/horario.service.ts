@@ -174,6 +174,7 @@ export class HorarioService {
             h_fin: horario.h_fin,
             n_horas: horario.n_horas,
             c_color: horario.c_color,
+            tipo: horario.tipo,
             turno_id: horario.turno_id,
             curso_id: cursoCreado?.id || 0,
             aula_id: horario.aula_id || null,
@@ -349,6 +350,7 @@ export class HorarioService {
                 h_fin: new Date(horario.h_fin || ''),
                 n_horas: horario.n_horas,
                 c_color: horario.c_color,
+                tipo: horario.tipo,
                 aula_id: horario.aula_id ?? null,
                 docente_id: horario.docente_id ?? null,
               },
@@ -365,6 +367,7 @@ export class HorarioService {
             h_fin: new Date(horario.h_fin || ''),
             n_horas: horario.n_horas || 0,
             c_color: horario.c_color || '',
+            tipo: horario.tipo || '',
             turno_id: curso.turno_id,
             aula_id: horario.aula_id ?? null,
             docente_id: horario.docente_id ?? null,
@@ -427,7 +430,7 @@ export class HorarioService {
     return horario;
   }
 
-  async createTransversal(createTransversalDto: CreateTransversalDto) {
+  async createCursoAgrupado(createTransversalDto: CreateTransversalDto) {
     const { padre_id, hijos_id } = createTransversalDto;
 
     // Obtener datos del curso padre con su turno
@@ -460,6 +463,7 @@ export class HorarioService {
         curso_id: padre_id,
         padre_curso_id: padre_id,
         shortname,
+        tipo: 0,
       },
     });
 
@@ -470,6 +474,7 @@ export class HorarioService {
           curso_id: hijo.id,
           padre_curso_id: padre_id,
           shortname,
+          tipo: 0,
         },
       });
     }
@@ -481,7 +486,7 @@ export class HorarioService {
     };
   }
 
-  async deleteTransversal(padre_curso_id: number) {
+  async deleteAgrupado(padre_curso_id: number) {
     const grupoIds = await this.prismaService.grupo_sincro.findMany({
       where: { padre_curso_id },
       select: { id: true },
@@ -508,21 +513,66 @@ export class HorarioService {
     c_codfac?: string,
     c_codesp?: string,
     c_codcur?: string,
+    turno_id?: number,
+    skip?: number,
+    take?: number,
   ) {
-    return await this.prismaService.curso.findMany({
-      where: {
-        ...(c_codmod && { c_codmod }),
-        ...(n_codper && { n_codper }),
-        ...(c_codfac && { c_codfac }),
-        ...(c_codesp && { c_codesp }),
-        ...(c_codcur && { c_codcur }),
-      },
-      include: {
-        Horario: { include: { Docente: true, aula: true } },
-        turno: true,
-        cursosPadres: { include: { cursoPadre: true } },
-        cursosHijos: { include: { cursosHijo: { include: { turno: true } } } },
-      },
-    });
+    const where = {
+      ...(turno_id && { turno_id }),
+      ...(c_codmod && { c_codmod }),
+      ...(n_codper && { n_codper }),
+      ...(c_codfac && { c_codfac }),
+      ...(c_codesp && { c_codesp }),
+      ...(c_codcur && { c_codcur }),
+    };
+
+    if (take === undefined || take === 0) {
+      // ⚠️ Sin paginación, trae todo
+      const data = await this.prismaService.curso.findMany({
+        where,
+        include: {
+          Horario: { include: { Docente: true, aula: true } },
+          turno: true,
+          cursosPadres: { include: { cursoPadre: true } },
+          cursosHijos: {
+            include: { cursosHijo: { include: { turno: true } } },
+          },
+        },
+      });
+
+      return {
+        data,
+        total: data.length,
+        skip: 0,
+        take: 0,
+        totalPages: 1,
+      };
+    }
+
+    // ✅ Con paginación
+    const [data, total] = await this.prismaService.$transaction([
+      this.prismaService.curso.findMany({
+        where,
+        skip: skip || 0,
+        take,
+        include: {
+          Horario: { include: { Docente: true, aula: true } },
+          turno: true,
+          cursosPadres: { include: { cursoPadre: true } },
+          cursosHijos: {
+            include: { cursosHijo: { include: { turno: true } } },
+          },
+        },
+      }),
+      this.prismaService.curso.count({ where }),
+    ]);
+
+    return {
+      data,
+      total,
+      skip: skip || 0,
+      take,
+      totalPages: Math.ceil(total / take),
+    };
   }
 }

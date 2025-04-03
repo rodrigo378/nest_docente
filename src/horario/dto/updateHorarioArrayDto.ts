@@ -22,6 +22,10 @@ export class HorarioUpdateDto {
   dia?: string;
 
   @IsOptional()
+  @IsString()
+  tipo?: string;
+
+  @IsOptional()
   @IsDateString()
   h_inicio?: string;
 

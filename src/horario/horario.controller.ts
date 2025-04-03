@@ -55,6 +55,9 @@ export class HorarioController {
     @Query('c_codfac') c_codfac?: string,
     @Query('c_codesp') c_codesp?: string,
     @Query('c_codcur') c_codcur?: string,
+    @Query('turno_id') turno_id?: string,
+    @Query('skip') skip?: string,
+    @Query('take') take?: string,
   ) {
     return this.horarioService.getCursos(
       Number(c_codmod),
@@ -62,6 +65,9 @@ export class HorarioController {
       c_codfac,
       c_codesp,
       c_codcur,
+      turno_id ? Number(turno_id) : undefined,
+      skip ? Number(skip) : undefined,
+      skip ? Number(take) : undefined,
     );
   }
 
@@ -72,13 +78,13 @@ export class HorarioController {
 
   @Post('curso/transversal')
   createTransversal(@Body() createTransversalDto: CreateTransversalDto) {
-    return this.horarioService.createTransversal(createTransversalDto);
+    return this.horarioService.createCursoAgrupado(createTransversalDto);
   }
 
   @Delete('curso/transversal/:padre_curso_id')
   deleteTransversal(
     @Param('padre_curso_id', ParseIntPipe) padre_curso_id: number,
   ) {
-    return this.horarioService.deleteTransversal(padre_curso_id);
+    return this.horarioService.deleteAgrupado(padre_curso_id);
   }
 }

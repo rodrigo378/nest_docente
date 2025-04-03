@@ -16,6 +16,10 @@ export class HorarioDto {
   @IsNotEmpty()
   dia: string;
 
+  @IsString()
+  @IsNotEmpty()
+  tipo: string;
+
   @IsDateString()
   @IsNotEmpty()
   h_inicio: string;
