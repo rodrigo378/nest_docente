@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
   CreateHorarioArrayDto,
@@ -510,24 +514,35 @@ export class HorarioService {
   }
 
   async deleteHorarioArray(deleteHorarioArray: DeleteHorarioArrayDto) {
-    const eliminados: number[] = [];
-    const errores: number[] = [];
-
     for (const horario_id of deleteHorarioArray.horarios_id) {
       try {
-        await this.prismaService.horario.delete({
+        const horario = await this.prismaService.horario.findFirst({
           where: { id: horario_id },
+          include: { curso: { include: { cursosPadres: true } } },
         });
-        eliminados.push(horario_id);
+
+        if (horario?.curso?.cursosPadres?.[0]?.tipo === 0) {
+          const grupoCursos = await this.prismaService.grupo_sincro.findMany({
+            where: {
+              padre_curso_id: horario.curso.cursosPadres[0].padre_curso_id,
+            },
+          });
+
+          const cursosIds = grupoCursos.map((g) => g.curso_id);
+          await this.prismaService.horario.deleteMany({
+            where: { curso_id: { in: cursosIds } },
+          });
+        } else {
+          await this.prismaService.horario.delete({
+            where: { id: horario_id },
+          });
+        }
       } catch (error) {
         console.warn(`No se pudo eliminar el horario ${horario_id}:`, error);
-        errores.push(horario_id);
       }
     }
 
     return {
-      eliminados,
-      errores,
       message: 'Proceso de eliminación finalizado.',
     };
   }
@@ -551,8 +566,9 @@ export class HorarioService {
     return horario;
   }
 
-  async createCursoAgrupado(createTransversalDto: CreateTransversalDto) {
+  async createCursoTransversal(createTransversalDto: CreateTransversalDto) {
     const { padre_id, hijos_id } = createTransversalDto;
+    const errores: string[] = [];
 
     // Obtener datos del curso padre con su turno
     const cursoPadre = await this.prismaService.curso.findUnique({
@@ -562,10 +578,63 @@ export class HorarioService {
 
     if (!cursoPadre) throw new Error('Curso padre no encontrado');
 
+    const padreHorarios = await this.prismaService.horario.findMany({
+      where: { curso_id: cursoPadre.id },
+    });
+
+    const cursosHijos = await this.prismaService.curso.findMany({
+      where: { id: { in: hijos_id } },
+    });
+
+    const turnosIds = cursosHijos.map((c) => c.turno_id);
+
+    for (const padreHorario of padreHorarios) {
+      const inicio1 = this.parseHora(padreHorario.h_inicio);
+      const fin1 = this.parseHora(padreHorario.h_fin);
+
+      const horariosBd = await this.prismaService.horario.findMany({
+        where: {
+          dia: padreHorario.dia,
+          turno_id: { in: turnosIds },
+        },
+        include: { curso: true },
+      });
+
+      for (const horarioBD of horariosBd) {
+        const inicio2 = this.parseHora(horarioBD.h_inicio);
+        const fin2 = this.parseHora(horarioBD.h_fin);
+
+        const cruceHoras = inicio1 < fin2 && fin1 > inicio2;
+        const mismoAula =
+          padreHorario.aula_id &&
+          horarioBD.aula_id &&
+          padreHorario.aula_id === horarioBD.aula_id;
+        const mismoDocente =
+          padreHorario.docente_id &&
+          horarioBD.docente_id &&
+          padreHorario.docente_id === horarioBD.docente_id;
+
+        if (cruceHoras || mismoAula || mismoDocente) {
+          errores.push(
+            `⛔ Conflicto con curso "${horarioBD.curso.c_nomcur}" en BD el día ${padreHorario.dia} ` +
+              `entre ${this.formatoHora(inicio1)} - ${this.formatoHora(fin1)} y ${this.formatoHora(inicio2)} - ${this.formatoHora(fin2)} ` +
+              `(${mismoAula ? 'misma aula' : ''}${mismoAula && mismoDocente ? ' y ' : ''}${mismoDocente ? 'mismo docente' : ''})`,
+          );
+        }
+      }
+    }
+
+    // Mostrar errores si existen y no continuar
+    if (errores.length > 0) {
+      throw new BadRequestException({
+        mensaje:
+          '⛔ Se encontraron conflictos al asociar los cursos transversales',
+        errores,
+      });
+    }
+
     // Iniciar shortname con datos del padre
     let shortname = `${cursoPadre.c_codcur}-1-${cursoPadre.n_codper.slice(-3)}-${cursoPadre.turno.c_grpcur}`;
-
-    const hijos: { id: number }[] = [];
 
     for (const hijo_id of hijos_id) {
       const cursoHijo = await this.prismaService.curso.findUnique({
@@ -576,34 +645,53 @@ export class HorarioService {
       if (!cursoHijo) continue;
 
       shortname += cursoHijo.turno.c_grpcur;
-      hijos.push(cursoHijo);
     }
 
-    await this.prismaService.grupo_sincro.create({
-      data: {
-        curso_id: padre_id,
-        padre_curso_id: padre_id,
-        shortname,
-        tipo: 0,
-      },
+    const dataGrupo = hijos_id.map((hijo_id) => ({
+      curso_id: hijo_id,
+      padre_curso_id: padre_id,
+      tipo: 0,
+      shortname: shortname,
+    }));
+    dataGrupo.push({
+      curso_id: padre_id,
+      padre_curso_id: padre_id,
+      tipo: 0,
+      shortname: shortname,
     });
 
-    // Registrar grupo_sincro para cada hijo
-    for (const hijo of hijos) {
-      await this.prismaService.grupo_sincro.create({
-        data: {
-          curso_id: hijo.id,
-          padre_curso_id: padre_id,
-          shortname,
-          tipo: 0,
-        },
+    await this.prismaService.grupo_sincro.createMany({ data: dataGrupo });
+
+    await this.prismaService.horario.deleteMany({
+      where: { curso_id: { in: hijos_id } },
+    });
+
+    for (const hijo_id of hijos_id) {
+      const cursoHijo = await this.prismaService.curso.findUnique({
+        where: { id: hijo_id },
       });
+
+      for (const padreHorario of padreHorarios) {
+        await this.prismaService.horario.create({
+          data: {
+            dia: padreHorario.dia,
+            h_inicio: padreHorario.h_inicio,
+            h_fin: padreHorario.h_fin,
+            n_horas: padreHorario.n_horas,
+            c_color: padreHorario.c_color,
+            tipo: padreHorario.tipo,
+            aula_id: padreHorario.aula_id,
+            docente_id: padreHorario.docente_id,
+            curso_id: padreHorario.curso_id,
+            turno_id: cursoHijo?.turno_id || 0,
+          },
+        });
+      }
     }
 
     return {
       mensaje: '✅ Cursos transversales asociados correctamente',
       shortname,
-      hijos_asociados: hijos.length,
     };
   }
 
