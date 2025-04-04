@@ -24,7 +24,7 @@ export class HorarioService {
   }
 
   async verificarCruze(createHorarioArrayDto: CreateHorarioArrayDto) {
-    const errores: any[] = [];
+    const errores: string[] = [];
 
     const todosLosHorarios: {
       h: HorarioDto;
@@ -55,31 +55,10 @@ export class HorarioService {
             h1.docente_id && h2.docente_id && h1.docente_id === h2.docente_id;
 
           if (cruceHoras && (mismoAula || mismoDocente)) {
-            errores.push({
-              tipo: 'interno',
-              curso: {
-                id: curso.id,
-                nombre: curso.c_nomcur,
-              },
-              dia: h1.dia,
-              horario1: {
-                h_inicio: h1.h_inicio,
-                h_fin: h1.h_fin,
-                aula_id: h1.aula_id,
-                docente_id: h1.docente_id,
-              },
-              horario2: {
-                h_inicio: h2.h_inicio,
-                h_fin: h2.h_fin,
-                aula_id: h2.aula_id,
-                docente_id: h2.docente_id,
-              },
-              conflicto: {
-                hora: cruceHoras,
-                aula: mismoAula,
-                docente: mismoDocente,
-              },
-            });
+            errores.push(
+              `⛔ Conflicto interno en curso "${curso.c_nomcur}" el día ${h1.dia}` +
+                ` (${mismoAula ? 'misma aula' : ''}${mismoAula && mismoDocente ? ' y ' : ''}${mismoDocente ? 'mismo docente' : ''})`,
+            );
           }
         }
 
@@ -116,36 +95,10 @@ export class HorarioService {
           h.docente_id && e.docente_id && h.docente_id === e.docente_id;
 
         if (cruce && (mismoAula || mismoDocente)) {
-          errores.push({
-            tipo: 'externo',
-            curso: {
-              id: h.curso_id,
-              nombre: h,
-            },
-            dia: h.dia,
-            horario1: {
-              h_inicio: h.h_inicio,
-              h_fin: h.h_fin,
-              aula_id: h.aula_id,
-              docente_id: h.docente_id,
-            },
-            horario2: {
-              id: e.id,
-              h_inicio: e.h_inicio,
-              h_fin: e.h_fin,
-              aula_id: e.aula_id,
-              docente_id: e.docente_id,
-            },
-            cursoRelacionado: {
-              id: e.curso?.id,
-              nombre: e.curso?.c_nomcur,
-            },
-            conflicto: {
-              hora: cruce,
-              aula: mismoAula,
-              docente: mismoDocente,
-            },
-          });
+          errores.push(
+            `⛔ Conflicto con "${e.curso?.c_nomcur}" en BD el día ${h.dia} => ${e.id}` +
+              ` (${mismoAula ? 'misma aula' : ''}${mismoAula && mismoDocente ? ' y ' : ''}${mismoDocente ? 'mismo docente' : ''})`,
+          );
         }
       }
     }
