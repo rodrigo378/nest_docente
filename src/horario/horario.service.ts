@@ -23,6 +23,12 @@ export class HorarioService {
     return new Date(1970, 0, 1, date.getHours(), date.getMinutes(), 0, 0);
   }
 
+  formatoHora(hora: Date): string {
+    const h = hora.getHours().toString().padStart(2, '0');
+    const m = hora.getMinutes().toString().padStart(2, '0');
+    return `${h}:${m}`;
+  }
+
   async verificarCruze(createHorarioArrayDto: CreateHorarioArrayDto) {
     const errores: string[] = [];
 
@@ -56,8 +62,9 @@ export class HorarioService {
 
           if (cruceHoras && (mismoAula || mismoDocente)) {
             errores.push(
-              `⛔ Conflicto interno en curso "${curso.c_nomcur}" el día ${h1.dia}` +
-                ` (${mismoAula ? 'misma aula' : ''}${mismoAula && mismoDocente ? ' y ' : ''}${mismoDocente ? 'mismo docente' : ''})`,
+              `⛔ Conflicto interno en curso "${curso.c_nomcur}" el día ${h1.dia} ` +
+                `entre ${this.formatoHora(inicio1)} - ${this.formatoHora(fin1)} y ${this.formatoHora(inicio2)} - ${this.formatoHora(fin2)} ` +
+                `(${mismoAula ? 'misma aula' : ''}${mismoAula && mismoDocente ? ' y ' : ''}${mismoDocente ? 'mismo docente' : ''})`,
             );
           }
         }
@@ -96,8 +103,9 @@ export class HorarioService {
 
         if (cruce && (mismoAula || mismoDocente)) {
           errores.push(
-            `⛔ Conflicto con "${e.curso?.c_nomcur}" en BD el día ${h.dia} => ${e.id}` +
-              ` (${mismoAula ? 'misma aula' : ''}${mismoAula && mismoDocente ? ' y ' : ''}${mismoDocente ? 'mismo docente' : ''})`,
+            `⛔ Conflicto con curso "${e.curso?.c_nomcur}" en BD el día ${h.dia} (ID horario: ${e.id}) ` +
+              `entre ${this.formatoHora(inicio1)} - ${this.formatoHora(fin1)} y ${this.formatoHora(inicio2)} - ${this.formatoHora(fin2)} ` +
+              `(${mismoAula ? 'misma aula' : ''}${mismoAula && mismoDocente ? ' y ' : ''}${mismoDocente ? 'mismo docente' : ''})`,
           );
         }
       }
