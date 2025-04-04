@@ -12,6 +12,7 @@ import {
   UpdateHorarioArrayDto,
 } from './dto/updateHorarioArrayDto';
 import { CreateTransversalDto } from './dto/createTransversalDto';
+import { grupo_sincro } from '@prisma/client';
 
 @Injectable()
 export class HorarioService {
@@ -23,7 +24,7 @@ export class HorarioService {
   }
 
   async verificarCruze(createHorarioArrayDto: CreateHorarioArrayDto) {
-    const errores: string[] = [];
+    const errores: any[] = [];
 
     const todosLosHorarios: {
       h: HorarioDto;
@@ -54,10 +55,31 @@ export class HorarioService {
             h1.docente_id && h2.docente_id && h1.docente_id === h2.docente_id;
 
           if (cruceHoras && (mismoAula || mismoDocente)) {
-            errores.push(
-              `⛔ Conflicto interno en curso "${curso.c_nomcur}" el día ${h1.dia}` +
-                ` (${mismoAula ? 'misma aula' : ''}${mismoAula && mismoDocente ? ' y ' : ''}${mismoDocente ? 'mismo docente' : ''})`,
-            );
+            errores.push({
+              tipo: 'interno',
+              curso: {
+                id: curso.id,
+                nombre: curso.c_nomcur,
+              },
+              dia: h1.dia,
+              horario1: {
+                h_inicio: h1.h_inicio,
+                h_fin: h1.h_fin,
+                aula_id: h1.aula_id,
+                docente_id: h1.docente_id,
+              },
+              horario2: {
+                h_inicio: h2.h_inicio,
+                h_fin: h2.h_fin,
+                aula_id: h2.aula_id,
+                docente_id: h2.docente_id,
+              },
+              conflicto: {
+                hora: cruceHoras,
+                aula: mismoAula,
+                docente: mismoDocente,
+              },
+            });
           }
         }
 
@@ -94,10 +116,36 @@ export class HorarioService {
           h.docente_id && e.docente_id && h.docente_id === e.docente_id;
 
         if (cruce && (mismoAula || mismoDocente)) {
-          errores.push(
-            `⛔ Conflicto con "${e.curso?.c_nomcur}" en BD el día ${h.dia}` +
-              ` (${mismoAula ? 'misma aula' : ''}${mismoAula && mismoDocente ? ' y ' : ''}${mismoDocente ? 'mismo docente' : ''})`,
-          );
+          errores.push({
+            tipo: 'externo',
+            curso: {
+              id: h.curso_id,
+              nombre: h,
+            },
+            dia: h.dia,
+            horario1: {
+              h_inicio: h.h_inicio,
+              h_fin: h.h_fin,
+              aula_id: h.aula_id,
+              docente_id: h.docente_id,
+            },
+            horario2: {
+              id: e.id,
+              h_inicio: e.h_inicio,
+              h_fin: e.h_fin,
+              aula_id: e.aula_id,
+              docente_id: e.docente_id,
+            },
+            cursoRelacionado: {
+              id: e.curso?.id,
+              nombre: e.curso?.c_nomcur,
+            },
+            conflicto: {
+              hora: cruce,
+              aula: mismoAula,
+              docente: mismoDocente,
+            },
+          });
         }
       }
     }
@@ -106,6 +154,49 @@ export class HorarioService {
       success: errores.length === 0,
       errores,
     };
+  }
+
+  async verificarCruzesCursosTransversales(
+    cursosAgrupados: grupo_sincro[],
+    horarios: HorarioDto[],
+  ): Promise<string[]> {
+    const errores: string[] = [];
+
+    for (const cursoAgrupado of cursosAgrupados) {
+      const curso = await this.prismaService.curso.findUnique({
+        where: { id: cursoAgrupado.curso_id },
+      });
+
+      if (!curso) continue;
+
+      const turnoHorarios = await this.prismaService.horario.findMany({
+        where: { turno_id: curso.turno_id },
+        include: { curso: true },
+      });
+
+      for (const hNuevo of horarios) {
+        const inicioNuevo = this.parseHora(hNuevo.h_inicio);
+        const finNuevo = this.parseHora(hNuevo.h_fin);
+
+        for (const hExistente of turnoHorarios) {
+          if (hNuevo.dia !== hExistente.dia) continue;
+
+          const inicioExistente = this.parseHora(hExistente.h_inicio);
+          const finExistente = this.parseHora(hExistente.h_fin);
+
+          const cruceHoras =
+            inicioNuevo < finExistente && finNuevo > inicioExistente;
+
+          if (cruceHoras) {
+            errores.push(
+              `⛔ Cruce de hora con curso "${hExistente.curso?.c_nomcur}" en turno ${curso.turno_id} el día ${hNuevo.dia}`,
+            );
+          }
+        }
+      }
+    }
+
+    return errores;
   }
 
   async createHorarioArray(createHorarioArray: CreateHorarioArrayDto) {
@@ -125,6 +216,7 @@ export class HorarioService {
 
     for (const data of dataArray) {
       const { curso, horarios } = data;
+      // console.log('curso => ', curso);
 
       // Buscar si el curso ya existe
       const cursoExistente = await this.prismaService.curso.findFirst({
@@ -136,6 +228,7 @@ export class HorarioService {
           n_ciclo: curso.n_ciclo,
           turno_id: curso.turno_id,
         },
+        include: { cursosPadres: true },
       });
 
       let cursoCreado = cursoExistente;
@@ -160,13 +253,80 @@ export class HorarioService {
             c_codcur_equ: curso.c_codcur_equ || null,
             c_nomcur_equ: curso.c_nomcur_equ || null,
           },
+          include: { cursosPadres: true },
         });
 
         cursosCreados++;
+      } else {
+        // Si no existe, lo creamos
+        // console.log('pas => ', cursoCreado);
+        if (
+          cursoCreado?.cursosPadres.length !== 0 &&
+          cursoCreado?.cursosPadres[0].tipo === 0
+        ) {
+          console.log('entro aca =======');
+
+          const cursosAgrupados =
+            await this.prismaService.grupo_sincro.findMany({
+              where: {
+                padre_curso_id: cursoCreado.cursosPadres[0].padre_curso_id,
+              },
+              include: {
+                cursosHijo: true,
+              },
+            });
+
+          const errores = await this.verificarCruzesCursosTransversales(
+            cursosAgrupados,
+            horarios,
+          );
+
+          if (errores.length > 0) {
+            return {
+              success: false,
+              errores,
+            };
+          }
+
+          const idCursos = cursosAgrupados.map((g) => g.curso_id);
+
+          await this.prismaService.horario.deleteMany({
+            where: {
+              curso_id: { in: idCursos },
+            },
+          });
+
+          // 4️⃣ Volver a crear los mismos horarios para todos los cursos sincronizados
+          for (const grupo of cursosAgrupados) {
+            const cursoHijo = grupo.cursosHijo;
+
+            for (const horario of horarios) {
+              await this.prismaService.horario.create({
+                data: {
+                  dia: horario.dia,
+                  h_inicio: horario.h_inicio,
+                  h_fin: horario.h_fin,
+                  n_horas: horario.n_horas,
+                  c_color: horario.c_color,
+                  tipo: horario.tipo,
+                  turno_id: cursoHijo.turno_id,
+                  curso_id: cursoHijo.id,
+                  aula_id: horario.aula_id || null,
+                  docente_id: horario.docente_id || null,
+                },
+              });
+
+              horariosCreados++;
+            }
+          }
+          continue;
+        }
       }
 
       // Crear los horarios asociados al curso
       for (const horario of horarios) {
+        console.log('horario => ', horario);
+
         await this.prismaService.horario.create({
           data: {
             dia: horario.dia,

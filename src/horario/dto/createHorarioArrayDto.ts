@@ -52,9 +52,17 @@ export class HorarioDto {
   @IsOptional()
   @IsNotEmpty()
   docente_id: number;
+
+  @IsInt()
+  @IsOptional()
+  curso_id: number;
 }
 
 export class CursoDto {
+  @IsInt()
+  @IsOptional()
+  id: number;
+
   @IsString()
   @IsNotEmpty()
   n_codper: string;
