@@ -318,6 +318,8 @@ model Horario {
   n_horas  Int
   c_color  String
   tipo     String //teorico practico
+  // c_codmod Int 
+  // h_umaPlus Int
 
   aula_id Int?
   aula    Aula? @relation(fields: [aula_id], references: [id], onDelete: Cascade)

@@ -795,6 +795,7 @@ export class HorarioService {
   }
 }
 
+//agrupas cusos
 //editar cursos agregar logica de transversal
 //docente carga academica
 //agregar una ruta de docente con horarios
