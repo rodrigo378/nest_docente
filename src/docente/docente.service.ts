@@ -526,7 +526,9 @@ export class DocenteService {
 
   async getDocentes() {
     try {
-      return await this.prismaService.docente.findMany();
+      return await this.prismaService.docente.findMany({
+        include: { Horario: true },
+      });
     } catch (error) {
       console.error('Error en el servidor:', error);
       throw new InternalServerErrorException('❌ Error en el servidor');

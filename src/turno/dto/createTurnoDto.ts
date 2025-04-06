@@ -32,7 +32,8 @@ export class CreateTurnoDto {
   @IsNotEmpty()
   c_grpcur: string;
 
-  @IsString()
+  @Type(() => Number)
+  @IsInt()
   @IsNotEmpty()
   c_codmod: number;
 

@@ -124,6 +124,7 @@ CREATE TABLE `grupo_sincro` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `curso_id` INTEGER NOT NULL,
     `padre_curso_id` INTEGER NOT NULL,
+    `tipo` INTEGER NOT NULL,
     `shortname` VARCHAR(191) NOT NULL,
 
     PRIMARY KEY (`id`)
@@ -137,6 +138,7 @@ CREATE TABLE `Horario` (
     `h_fin` DATETIME(3) NOT NULL,
     `n_horas` INTEGER NOT NULL,
     `c_color` VARCHAR(191) NOT NULL,
+    `tipo` VARCHAR(191) NOT NULL,
     `aula_id` INTEGER NULL,
     `docente_id` INTEGER NULL,
     `curso_id` INTEGER NOT NULL,

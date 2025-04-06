@@ -305,6 +305,8 @@ model grupo_sincro {
   padre_curso_id Int
   cursoPadre     Curso @relation("CursoPadre", fields: [padre_curso_id], references: [id], onDelete: Cascade)
 
+  tipo Int // 0 => transversal, 1=> agrupado
+
   shortname String
 }
 
@@ -315,6 +317,9 @@ model Horario {
   h_fin    DateTime
   n_horas  Int
   c_color  String
+  tipo     String //teorico practico
+  // c_codmod Int 
+  // h_umaPlus Int
 
   aula_id Int?
   aula    Aula? @relation(fields: [aula_id], references: [id], onDelete: Cascade)

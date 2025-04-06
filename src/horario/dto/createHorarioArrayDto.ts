@@ -16,6 +16,10 @@ export class HorarioDto {
   @IsNotEmpty()
   dia: string;
 
+  @IsString()
+  @IsNotEmpty()
+  tipo: string;
+
   @IsDateString()
   @IsNotEmpty()
   h_inicio: string;
@@ -48,9 +52,17 @@ export class HorarioDto {
   @IsOptional()
   @IsNotEmpty()
   docente_id: number;
+
+  @IsInt()
+  @IsOptional()
+  curso_id: number;
 }
 
 export class CursoDto {
+  @IsInt()
+  @IsOptional()
+  id: number;
+
   @IsString()
   @IsNotEmpty()
   n_codper: string;
@@ -92,9 +104,10 @@ export class CursoDto {
   @IsOptional()
   n_codper_equ: string;
 
-  @IsString()
+  @IsInt()
+  @Type(() => Number)
   @IsOptional()
-  c_codmod_equ: string;
+  c_codmod_equ: number;
 
   @IsString()
   @IsOptional()
