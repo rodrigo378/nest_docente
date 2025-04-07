@@ -22,17 +22,20 @@ import { grupo_sincro } from '@prisma/client';
 export class HorarioService {
   constructor(private readonly prismaService: PrismaService) {}
 
+  //
   parseHora(hora: Date | string): Date {
     const date = new Date(hora);
     return new Date(1970, 0, 1, date.getHours(), date.getMinutes(), 0, 0);
   }
 
+  //
   formatoHora(hora: Date): string {
     const h = hora.getHours().toString().padStart(2, '0');
     const m = hora.getMinutes().toString().padStart(2, '0');
     return `${h}:${m}`;
   }
 
+  //
   async verificarCruze(createHorarioArrayDto: CreateHorarioArrayDto) {
     const errores: string[] = [];
 
@@ -121,6 +124,7 @@ export class HorarioService {
     };
   }
 
+  //
   async verificarCruzesCursosTransversales(
     cursosAgrupados: grupo_sincro[],
     horarios: HorarioDto[],
@@ -181,7 +185,6 @@ export class HorarioService {
 
     for (const data of dataArray) {
       const { curso, horarios } = data;
-      // console.log('curso => ', curso);
 
       // Buscar si el curso ya existe
       const cursoExistente = await this.prismaService.curso.findFirst({
@@ -224,13 +227,10 @@ export class HorarioService {
         cursosCreados++;
       } else {
         // Si no existe, lo creamos
-        // console.log('pas => ', cursoCreado);
         if (
           cursoCreado?.cursosPadres.length !== 0 &&
           cursoCreado?.cursosPadres[0].tipo === 0
         ) {
-          console.log('entro aca =======');
-
           const cursosAgrupados =
             await this.prismaService.grupo_sincro.findMany({
               where: {
@@ -290,8 +290,6 @@ export class HorarioService {
 
       // Crear los horarios asociados al curso
       for (const horario of horarios) {
-        console.log('horario => ', horario);
-
         await this.prismaService.horario.create({
           data: {
             dia: horario.dia,
@@ -318,6 +316,7 @@ export class HorarioService {
     };
   }
 
+  //
   async verificarCruzeUpdate(updateHorarioArrayDto: UpdateHorarioArrayDto) {
     const errores: string[] = [];
 
@@ -409,6 +408,56 @@ export class HorarioService {
     };
   }
 
+  //
+  async verificarCruzesCursosTransversalesUpdate(
+    cursosAgrupados: grupo_sincro[],
+    horarios: HorarioUpdateDto[],
+  ): Promise<string[]> {
+    const errores: string[] = [];
+
+    for (const cursoAgrupado of cursosAgrupados) {
+      const curso = await this.prismaService.curso.findUnique({
+        where: { id: cursoAgrupado.curso_id },
+      });
+
+      if (!curso) continue;
+
+      const turnoHorarios = await this.prismaService.horario.findMany({
+        where: { turno_id: curso.turno_id },
+        include: { curso: true },
+      });
+
+      for (const hNuevo of horarios) {
+        const inicioNuevo = hNuevo.h_inicio
+          ? this.parseHora(hNuevo.h_inicio)
+          : null;
+        const finNuevo = hNuevo.h_fin ? this.parseHora(hNuevo.h_fin) : null;
+        if (!inicioNuevo || !finNuevo) continue;
+
+        for (const hExistente of turnoHorarios) {
+          // Excluir el mismo horario si está siendo actualizado
+          if (hNuevo.id && hExistente.id === hNuevo.id) continue;
+
+          if (hNuevo.dia !== hExistente.dia) continue;
+
+          const inicioExistente = this.parseHora(hExistente.h_inicio);
+          const finExistente = this.parseHora(hExistente.h_fin);
+
+          const cruceHoras =
+            inicioNuevo < finExistente && finNuevo > inicioExistente;
+
+          if (cruceHoras) {
+            errores.push(
+              `⛔ Cruce de hora con curso "${hExistente.curso?.c_nomcur}" en turno ${curso.turno_id} el día ${hNuevo.dia}`,
+            );
+          }
+        }
+      }
+    }
+
+    return errores;
+  }
+
   async updateHorarioArray(updateHorarioArrayDto: UpdateHorarioArrayDto) {
     const verificacion = await this.verificarCruzeUpdate(updateHorarioArrayDto);
 
@@ -426,7 +475,7 @@ export class HorarioService {
     let horariosActualizados = 0;
 
     for (const { curso, horarios } of dataArray) {
-      let cursoExistente = await this.prismaService.curso.findFirst({
+      const cursoExistente = await this.prismaService.curso.findFirst({
         where: {
           n_codper: curso.n_codper,
           c_codfac: curso.c_codfac,
@@ -435,10 +484,13 @@ export class HorarioService {
           n_ciclo: curso.n_ciclo,
           turno_id: curso.turno_id,
         },
+        include: { cursosPadres: true },
       });
 
+      let cursoCreado = cursoExistente;
+
       if (!cursoExistente) {
-        cursoExistente = await this.prismaService.curso.create({
+        cursoCreado = await this.prismaService.curso.create({
           data: {
             n_codper: curso.n_codper,
             c_codmod: curso.c_codmod,
@@ -456,8 +508,114 @@ export class HorarioService {
             c_codcur_equ: curso.c_codcur_equ,
             c_nomcur_equ: curso.c_nomcur_equ,
           },
+          include: { cursosPadres: true },
         });
         cursosCreados++;
+      } else {
+        if (
+          cursoCreado?.cursosPadres.length !== 0 &&
+          cursoCreado?.cursosPadres[0].tipo === 0
+        ) {
+          const cursosAgrupados =
+            await this.prismaService.grupo_sincro.findMany({
+              where: {
+                padre_curso_id: cursoCreado.cursosPadres[0].padre_curso_id,
+              },
+              include: {
+                cursosHijo: true,
+              },
+            });
+
+          const errores = await this.verificarCruzesCursosTransversalesUpdate(
+            cursosAgrupados,
+            horarios,
+          );
+
+          if (errores.length > 0) {
+            return {
+              success: false,
+              errores,
+            };
+          }
+
+          const idCursos = cursosAgrupados.map((g) => g.curso_id);
+
+          await this.prismaService.horario.deleteMany({
+            where: {
+              curso_id: { in: idCursos },
+            },
+          });
+
+          // 4️⃣ Volver a crear los mismos horarios para todos los cursos sincronizados
+          for (const grupo of cursosAgrupados) {
+            const cursoHijo = grupo.cursosHijo;
+
+            for (const horario of horarios) {
+              let dia = horario.dia;
+              let h_inicio = horario.h_inicio;
+              let h_fin = horario.h_fin;
+              let n_horas = horario.n_horas;
+              let c_color = horario.c_color;
+              let tipo = horario.tipo;
+              let aula_id = horario.aula_id;
+              let docente_id = horario.docente_id;
+
+              // Si el horario tiene ID, traer su info de BD si faltan campos
+              if (horario.id) {
+                const horarioBD = await this.prismaService.horario.findUnique({
+                  where: { id: horario.id },
+                });
+
+                if (horarioBD) {
+                  dia = dia ?? horarioBD.dia;
+                  h_inicio =
+                    h_inicio ??
+                    (horarioBD.h_inicio
+                      ? horarioBD.h_inicio.toISOString()
+                      : '');
+                  h_fin =
+                    h_fin ??
+                    (horarioBD.h_fin ? horarioBD.h_fin.toISOString() : '');
+                  n_horas = n_horas ?? horarioBD.n_horas;
+                  c_color = c_color ?? horarioBD.c_color;
+                  tipo = tipo ?? horarioBD.tipo;
+                  aula_id =
+                    aula_id ??
+                    (horarioBD.aula_id !== null
+                      ? horarioBD.aula_id
+                      : undefined);
+                  docente_id =
+                    docente_id ??
+                    (horarioBD.docente_id !== null
+                      ? horarioBD.docente_id
+                      : undefined);
+                }
+              }
+
+              // Si falta algo importante, omitir
+              if (!dia || !h_inicio || !h_fin) continue;
+
+              await this.prismaService.horario.create({
+                data: {
+                  dia,
+                  h_inicio: new Date(h_inicio),
+                  h_fin: new Date(h_fin),
+                  n_horas: n_horas ?? 0,
+                  c_color: c_color ?? '#000000',
+                  tipo: tipo ?? 'Teoría',
+                  turno_id: cursoHijo.turno_id,
+                  curso_id: cursoHijo.id,
+                  aula_id: aula_id ?? null,
+                  docente_id: docente_id ?? null,
+                },
+              });
+
+              horariosCreados++;
+            }
+          }
+
+          continue;
+        }
       }
 
       for (const horario of horarios) {
@@ -496,7 +654,7 @@ export class HorarioService {
             turno_id: curso.turno_id,
             aula_id: horario.aula_id ?? null,
             docente_id: horario.docente_id ?? null,
-            curso_id: cursoExistente.id,
+            curso_id: cursoExistente?.id || 0,
           },
         });
 
