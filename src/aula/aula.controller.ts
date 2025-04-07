@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
 import { AulaService } from './aula.service';
 
 @Controller('aula')
@@ -6,7 +6,7 @@ export class AulaController {
   constructor(private readonly aulaService: AulaService) {}
 
   @Get('')
-  getAulas() {
-    return this.aulaService.getAulas();
+  getAulas(@Query('horario') horario?: boolean) {
+    return this.aulaService.getAulas(horario);
   }
 }
