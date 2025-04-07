@@ -21,8 +21,11 @@ export class DocenteController {
   constructor(private readonly docenteService: DocenteService) {}
 
   @Get('')
-  getDocentes(@Query('horario') horario?: boolean) {
-    return this.docenteService.getDocentes(horario);
+  getDocentes(
+    @Query('horario') horario?: boolean,
+    @Query('curso') curso?: boolean,
+  ) {
+    return this.docenteService.getDocentes(horario, curso);
   }
 
   // @Post('')

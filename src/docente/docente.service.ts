@@ -530,17 +530,13 @@ export class DocenteService {
   //   });
   // }
 
-  async getDocentes(horario: boolean = false) {
-    const include: { Horario: boolean } = {
-      Horario: false,
-    };
+  async getDocentes(horario: boolean = false, curso: boolean = false) {
+    const include: { Horario: any } = { Horario: false };
 
     if (horario) {
-      include.Horario = true;
+      include.Horario = curso ? { include: { curso: true } } : true;
     }
 
-    return this.prismaService.docente.findMany({
-      include: include,
-    });
+    return this.prismaService.docente.findMany({ include });
   }
 }
