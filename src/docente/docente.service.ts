@@ -1,13 +1,5 @@
-import {
-  // ConflictException,
-  Injectable,
-  InternalServerErrorException,
-  // InternalServerErrorException,
-  // NotFoundException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-// import { CreateDocenteDto } from './dto/createDocenteDto';
-// import { UpdateDocenteDto } from './dto/updateDocenteDto';
 
 @Injectable()
 export class DocenteService {
@@ -524,14 +516,31 @@ export class DocenteService {
   //   }
   // }
 
-  async getDocentes() {
-    try {
-      return await this.prismaService.docente.findMany({
-        include: { Horario: true },
-      });
-    } catch (error) {
-      console.error('Error en el servidor:', error);
-      throw new InternalServerErrorException('❌ Error en el servidor');
+  // async getDocentes(options: { includeHorario?: boolean } = {}) {
+  //   const include: { Horario: boolean } = {
+  //     Horario: false,
+  //   };
+
+  //   if (options.includeHorario) {
+  //     include.Horario = true;
+  //   }
+
+  //   return this.prismaService.docente.findMany({
+  //     include: Object.keys(include).length > 0 ? include : undefined,
+  //   });
+  // }
+
+  async getDocentes(horario: boolean = false) {
+    const include: { Horario: boolean } = {
+      Horario: false,
+    };
+
+    if (horario) {
+      include.Horario = true;
     }
+
+    return this.prismaService.docente.findMany({
+      include: include,
+    });
   }
 }

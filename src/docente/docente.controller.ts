@@ -2,6 +2,7 @@ import {
   // Body,
   Controller,
   Get,
+  Query,
   // Get,
   // Param,
   // Patch,
@@ -20,8 +21,8 @@ export class DocenteController {
   constructor(private readonly docenteService: DocenteService) {}
 
   @Get('')
-  getDocentes() {
-    return this.docenteService.getDocentes();
+  getDocentes(@Query('horario') horario?: boolean) {
+    return this.docenteService.getDocentes(horario);
   }
 
   // @Post('')
