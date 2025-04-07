@@ -5,9 +5,17 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class AulaService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async getAulas() {
+  async getAulas(horario: boolean = false) {
+    const include: { Horario: boolean } = {
+      Horario: false,
+    };
+
+    if (horario) {
+      include.Horario = true;
+    }
+
     return await this.prismaService.aula.findMany({
-      include: { Horario: true },
+      include: include,
     });
   }
 }
