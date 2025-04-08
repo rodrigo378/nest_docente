@@ -257,6 +257,15 @@ export class HorarioService {
             },
           });
 
+          for (const horario of horarios) {
+            if (horario.docente_id) {
+              await this.prismaService.docente.update({
+                where: { id: horario.docente_id },
+                data: { h_total: { increment: horario.n_horas } },
+              });
+            }
+          }
+
           // 4️⃣ Volver a crear los mismos horarios para todos los cursos sincronizados
           for (const grupo of cursosAgrupados) {
             const cursoHijo = grupo.cursosHijo;
@@ -300,6 +309,13 @@ export class HorarioService {
             docente_id: horario.docente_id || null,
           },
         });
+
+        if (horario.docente_id) {
+          await this.prismaService.docente.update({
+            where: { id: horario.docente_id },
+            data: { h_total: { increment: horario.n_horas } },
+          });
+        }
 
         horariosCreados++;
       }
@@ -523,12 +539,22 @@ export class HorarioService {
       h: HorarioUpdateDto;
       curso: CursoUpdateDto;
     }[] = [];
+    console.log('funcion verificarCruzeUpdate');
+    console.log(todosLosHorarios);
 
     for (const data of updateHorarioArrayDto.dataArray) {
       const { curso, horarios } = data;
 
+      const cur = await this.prismaService.curso.findFirst({
+        where: { c_codcur: curso.c_codcur, turno_id: curso.turno_id },
+        include: { cursosPadres: true },
+      });
+      console.log('cur => ', cur);
+
       for (let i = 0; i < horarios.length; i++) {
         const h1 = horarios[i];
+        console.log('h1 => ', h1);
+
         const inicio1 = h1.h_inicio ? this.parseHora(h1.h_inicio) : null;
         const fin1 = h1.h_fin ? this.parseHora(h1.h_fin) : null;
 
@@ -549,7 +575,11 @@ export class HorarioService {
           const mismoDocente =
             h1.docente_id && h2.docente_id && h1.docente_id === h2.docente_id;
 
-          if (cruceHoras && (mismoAula || mismoDocente)) {
+          if (
+            cur?.cursosPadres[0].tipo !== 0 &&
+            cruceHoras &&
+            (mismoAula || mismoDocente)
+          ) {
             errores.push(
               `⛔ Conflicto interno en curso "${curso.c_nomcur}" el día ${h1.dia}` +
                 ` (${mismoAula ? 'misma aula' : ''}${mismoAula && mismoDocente ? ' y ' : ''}${mismoDocente ? 'mismo docente' : ''})`,
@@ -562,7 +592,11 @@ export class HorarioService {
     }
 
     // 2️⃣ Verificación con la BD excluyendo los horarios originales si ya existen
-    for (const { h } of todosLosHorarios) {
+    for (const { h, curso } of todosLosHorarios) {
+      const cur = await this.prismaService.curso.findFirst({
+        where: { c_codcur: curso.c_codcur, turno_id: curso.turno_id },
+        include: { cursosPadres: true },
+      });
       const condicionesOR: any[] = [];
       if (h.aula_id) condicionesOR.push({ aula_id: h.aula_id });
       if (h.docente_id) condicionesOR.push({ docente_id: h.docente_id });
@@ -592,7 +626,11 @@ export class HorarioService {
         const mismoDocente =
           h.docente_id && e.docente_id && h.docente_id === e.docente_id;
 
-        if (cruce && (mismoAula || mismoDocente)) {
+        if (
+          cur?.cursosPadres[0].tipo !== 0 &&
+          cruce &&
+          (mismoAula || mismoDocente)
+        ) {
           errores.push(
             `⛔ Conflicto con "${e.curso?.c_nomcur}" en BD el día ${h.dia}` +
               ` (${mismoAula ? 'misma aula' : ''}${mismoAula && mismoDocente ? ' y ' : ''}${mismoDocente ? 'mismo docente' : ''})`,
@@ -601,6 +639,7 @@ export class HorarioService {
       }
     }
 
+    console.log('finalizar verificarCruzeUpdate');
     return {
       success: errores.length === 0,
       errores,
@@ -634,6 +673,16 @@ export class HorarioService {
         if (!inicioNuevo || !finNuevo) continue;
 
         for (const hExistente of turnoHorarios) {
+          // console.log('================');
+          // console.log('hNuevo => ', hNuevo);
+          // console.log('hExistente => ', hExistente);
+
+          // console.log('hNuevo.turno_id => ', hNuevo.turno_id);
+          // console.log('hExistente.turno_id => ', hExistente.turno_id);
+          // console.log('================');
+
+          if (hNuevo.turno_id !== hExistente.turno_id) continue;
+
           // Excluir el mismo horario si está siendo actualizado
           if (hNuevo.id && hExistente.id === hNuevo.id) continue;
 
@@ -738,6 +787,27 @@ export class HorarioService {
           }
 
           const idCursos = cursosAgrupados.map((g) => g.curso_id);
+
+          for (const horario of horarios) {
+            if (horario.docente_id) {
+              const h = await this.prismaService.horario.findUnique({
+                where: { id: horario.id },
+              });
+
+              if (h && h.n_horas != null) {
+                const diferencia = (horario.n_horas ?? 0) - h.n_horas;
+
+                await this.prismaService.docente.update({
+                  where: { id: horario.docente_id },
+                  data: {
+                    h_total: {
+                      increment: diferencia,
+                    },
+                  },
+                });
+              }
+            }
+          }
 
           await this.prismaService.horario.deleteMany({
             where: {
