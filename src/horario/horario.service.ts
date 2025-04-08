@@ -72,7 +72,6 @@ export class HorarioService {
             );
           }
         }
-
         todosLosHorarios.push({ h: h1, curso });
       }
     }
@@ -894,6 +893,32 @@ export class HorarioService {
                 docente_id: horario.docente_id ?? null,
               },
             });
+
+            const nuevaHoras = horario.n_horas || 0;
+            const anteriorHoras = existe.n_horas || 0;
+
+            if (horario.docente_id !== existe.docente_id) {
+              if (existe.docente_id) {
+                await this.prismaService.docente.update({
+                  where: { id: existe.docente_id },
+                  data: { h_total: { decrement: anteriorHoras } },
+                });
+              }
+
+              if (horario.docente_id) {
+                await this.prismaService.docente.update({
+                  where: { id: horario.docente_id },
+                  data: { h_total: { increment: nuevaHoras } },
+                });
+              }
+            } else if (horario.docente_id) {
+              const diferencia = nuevaHoras - anteriorHoras;
+              await this.prismaService.docente.update({
+                where: { id: horario.docente_id },
+                data: { h_total: { increment: diferencia } },
+              });
+            }
+
             horariosActualizados++;
             continue;
           }
@@ -913,6 +938,13 @@ export class HorarioService {
             curso_id: cursoExistente?.id || 0,
           },
         });
+
+        if (horario.docente_id) {
+          await this.prismaService.docente.update({
+            where: { id: horario.docente_id },
+            data: { h_total: { increment: horario.n_horas } },
+          });
+        }
 
         horariosCreados++;
       }
@@ -1209,7 +1241,6 @@ export class HorarioService {
     };
 
     if (take === undefined || take === 0) {
-      // ⚠️ Sin paginación, trae todo
       const data = await this.prismaService.curso.findMany({
         where,
         include: {
@@ -1231,8 +1262,7 @@ export class HorarioService {
       };
     }
 
-    // ✅ Con paginación
-    const [data, total] = await this.prismaService.$transaction([
+    const [data, total] = await Promise.all([
       this.prismaService.curso.findMany({
         where,
         skip: skip || 0,
@@ -1260,7 +1290,6 @@ export class HorarioService {
 }
 
 //agrupas cusos
-//editar cursos agregar logica de transversal
 //el botom para copiar => pensarlo mejor
 //virtuales
 //uma plus

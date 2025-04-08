@@ -19,15 +19,6 @@ import { CreateTransversalDto } from './dto/createTransversalDto';
 export class HorarioController {
   constructor(private readonly horarioService: HorarioService) {}
 
-  // @Post('transversal')
-  // asociarHorarioTransversal(
-  //   @Body() asignarCursoTransversalDto: AsignarCursoTransversalDto,
-  // ) {
-  //   return this.horarioService.asociarHorarioTransversal(
-  //     asignarCursoTransversalDto,
-  //   );
-  // }
-
   @Post('')
   createHorarioArray(@Body() createHorarioArray: CreateHorarioArrayDto) {
     return this.horarioService.createHorarioArray(createHorarioArray);
@@ -42,13 +33,6 @@ export class HorarioController {
   updateHorarioArray(@Body() updateHorarioArrayDto: UpdateHorarioArrayDto) {
     return this.horarioService.updateHorarioArray(updateHorarioArrayDto);
   }
-
-  // @Put('transversal/:padre_curso_id')
-  // updateCursoTransversal(
-  //   @Param('padre_curso_id', ParseIntPipe) padre_curso_id: number,
-  // ) {
-  //   return this.horarioService.updateCursoTransversal(padre_curso_id);
-  // }
 
   @Get('/turno/:turno_id')
   getHorariosTurno(@Param('turno_id', ParseIntPipe) turno_id: number) {
