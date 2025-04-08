@@ -539,8 +539,6 @@ export class HorarioService {
       h: HorarioUpdateDto;
       curso: CursoUpdateDto;
     }[] = [];
-    console.log('funcion verificarCruzeUpdate');
-    console.log(todosLosHorarios);
 
     for (const data of updateHorarioArrayDto.dataArray) {
       const { curso, horarios } = data;
@@ -549,11 +547,9 @@ export class HorarioService {
         where: { c_codcur: curso.c_codcur, turno_id: curso.turno_id },
         include: { cursosPadres: true },
       });
-      console.log('cur => ', cur);
 
       for (let i = 0; i < horarios.length; i++) {
         const h1 = horarios[i];
-        console.log('h1 => ', h1);
 
         const inicio1 = h1.h_inicio ? this.parseHora(h1.h_inicio) : null;
         const fin1 = h1.h_fin ? this.parseHora(h1.h_fin) : null;
@@ -639,7 +635,6 @@ export class HorarioService {
       }
     }
 
-    console.log('finalizar verificarCruzeUpdate');
     return {
       success: errores.length === 0,
       errores,
@@ -673,14 +668,6 @@ export class HorarioService {
         if (!inicioNuevo || !finNuevo) continue;
 
         for (const hExistente of turnoHorarios) {
-          // console.log('================');
-          // console.log('hNuevo => ', hNuevo);
-          // console.log('hExistente => ', hExistente);
-
-          // console.log('hNuevo.turno_id => ', hNuevo.turno_id);
-          // console.log('hExistente.turno_id => ', hExistente.turno_id);
-          // console.log('================');
-
           if (hNuevo.turno_id !== hExistente.turno_id) continue;
 
           // Excluir el mismo horario si está siendo actualizado
