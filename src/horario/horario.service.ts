@@ -929,34 +929,41 @@ export class HorarioService {
 
   async deleteHorarioArray(deleteHorarioArray: DeleteHorarioArrayDto) {
     for (const horario_id of deleteHorarioArray.horarios_id) {
-      try {
-        const horario = await this.prismaService.horario.findFirst({
-          where: { id: horario_id },
-          include: { curso: { include: { cursosPadres: true } } },
-        });
+      const horario = await this.prismaService.horario.findFirst({
+        where: { id: horario_id },
+        include: { curso: { include: { cursosPadres: true } } },
+      });
 
+      if (!horario) {
+        continue;
+      }
+
+      if (horario?.docente_id) {
         await this.prismaService.docente.update({
           where: { id: horario?.docente_id || 0 },
           data: { h_total: { decrement: horario?.n_horas } },
         });
-        if (horario?.curso?.cursosPadres?.[0]?.tipo === 0) {
-          const grupoCursos = await this.prismaService.grupo_sincro.findMany({
-            where: {
-              padre_curso_id: horario.curso.cursosPadres[0].padre_curso_id,
-            },
-          });
+      }
 
-          const cursosIds = grupoCursos.map((g) => g.curso_id);
-          await this.prismaService.horario.deleteMany({
-            where: { curso_id: { in: cursosIds } },
-          });
-        } else {
-          await this.prismaService.horario.delete({
-            where: { id: horario_id },
-          });
-        }
-      } catch (error) {
-        console.warn(`No se pudo eliminar el horario ${horario_id}:`, error);
+      if (horario?.curso?.cursosPadres?.[0]?.tipo === 0) {
+        const grupoCursos = await this.prismaService.grupo_sincro.findMany({
+          where: {
+            padre_curso_id: horario.curso.cursosPadres[0].padre_curso_id,
+          },
+        });
+
+        const cursosIds = grupoCursos.map((g) => g.curso_id);
+        await this.prismaService.horario.deleteMany({
+          where: {
+            curso_id: { in: cursosIds },
+            h_inicio: horario.h_inicio,
+            h_fin: horario.h_fin,
+          },
+        });
+      } else {
+        await this.prismaService.horario.delete({
+          where: { id: horario_id },
+        });
       }
     }
 
