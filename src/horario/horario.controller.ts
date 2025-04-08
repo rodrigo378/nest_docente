@@ -43,12 +43,12 @@ export class HorarioController {
     return this.horarioService.updateHorarioArray(updateHorarioArrayDto);
   }
 
-  @Put('transversal/:padre_curso_id')
-  updateCursoTransversal(
-    @Param('padre_curso_id', ParseIntPipe) padre_curso_id: number,
-  ) {
-    return this.horarioService.updateCursoTransversal(padre_curso_id);
-  }
+  // @Put('transversal/:padre_curso_id')
+  // updateCursoTransversal(
+  //   @Param('padre_curso_id', ParseIntPipe) padre_curso_id: number,
+  // ) {
+  //   return this.horarioService.updateCursoTransversal(padre_curso_id);
+  // }
 
   @Get('/turno/:turno_id')
   getHorariosTurno(@Param('turno_id', ParseIntPipe) turno_id: number) {
@@ -58,7 +58,7 @@ export class HorarioController {
   @Get('curso')
   getCurso(
     @Query('c_codmod') c_codmod?: string,
-    @Query('c_codper') c_codper?: string,
+    @Query('n_codper') n_codper?: string,
     @Query('c_codfac') c_codfac?: string,
     @Query('c_codesp') c_codesp?: string,
     @Query('c_codcur') c_codcur?: string,
@@ -68,7 +68,7 @@ export class HorarioController {
   ) {
     return this.horarioService.getCursos(
       Number(c_codmod),
-      c_codper,
+      n_codper,
       c_codfac,
       c_codesp,
       c_codcur,
