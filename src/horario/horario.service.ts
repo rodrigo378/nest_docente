@@ -249,13 +249,13 @@ export class HorarioService {
             };
           }
 
-          const idCursos = cursosAgrupados.map((g) => g.curso_id);
+          // const idCursos = cursosAgrupados.map((g) => g.curso_id);
 
-          await this.prismaService.horario.deleteMany({
-            where: {
-              curso_id: { in: idCursos },
-            },
-          });
+          // await this.prismaService.horario.deleteMany({
+          //   where: {
+          //     curso_id: { in: idCursos },
+          //   },
+          // });
 
           for (const horario of horarios) {
             if (horario.docente_id) {
@@ -935,6 +935,10 @@ export class HorarioService {
           include: { curso: { include: { cursosPadres: true } } },
         });
 
+        await this.prismaService.docente.update({
+          where: { id: horario?.docente_id || 0 },
+          data: { h_total: { decrement: horario?.n_horas } },
+        });
         if (horario?.curso?.cursosPadres?.[0]?.tipo === 0) {
           const grupoCursos = await this.prismaService.grupo_sincro.findMany({
             where: {
@@ -1111,7 +1115,6 @@ export class HorarioService {
 
   async createCursoGrupo(createTransversalDto: CreateTransversalDto) {
     const { padre_id, hijos_id } = createTransversalDto;
-    const errores: string[] = [];
 
     // Obtener datos del curso padre con su turno
     const cursoPadre = await this.prismaService.curso.findUnique({
@@ -1121,64 +1124,10 @@ export class HorarioService {
 
     if (!cursoPadre) throw new Error('Curso padre no encontrado');
 
-    const padreHorarios = await this.prismaService.horario.findMany({
-      where: { curso_id: cursoPadre.id },
-    });
-
-    const cursosHijos = await this.prismaService.curso.findMany({
-      where: { id: { in: hijos_id } },
-    });
-
-    const turnosIds = cursosHijos.map((c) => c.turno_id);
-
-    for (const padreHorario of padreHorarios) {
-      const inicio1 = this.parseHora(padreHorario.h_inicio);
-      const fin1 = this.parseHora(padreHorario.h_fin);
-
-      const horariosBd = await this.prismaService.horario.findMany({
-        where: {
-          dia: padreHorario.dia,
-          turno_id: { in: turnosIds },
-        },
-        include: { curso: true },
-      });
-
-      for (const horarioBD of horariosBd) {
-        const inicio2 = this.parseHora(horarioBD.h_inicio);
-        const fin2 = this.parseHora(horarioBD.h_fin);
-
-        const cruceHoras = inicio1 < fin2 && fin1 > inicio2;
-        const mismoAula =
-          padreHorario.aula_id &&
-          horarioBD.aula_id &&
-          padreHorario.aula_id === horarioBD.aula_id;
-        const mismoDocente =
-          padreHorario.docente_id &&
-          horarioBD.docente_id &&
-          padreHorario.docente_id === horarioBD.docente_id;
-
-        if (cruceHoras || mismoAula || mismoDocente) {
-          errores.push(
-            `⛔ Conflicto con curso "${horarioBD.curso.c_nomcur}" en BD el día ${padreHorario.dia} ` +
-              `entre ${this.formatoHora(inicio1)} - ${this.formatoHora(fin1)} y ${this.formatoHora(inicio2)} - ${this.formatoHora(fin2)} ` +
-              `(${mismoAula ? 'misma aula' : ''}${mismoAula && mismoDocente ? ' y ' : ''}${mismoDocente ? 'mismo docente' : ''})`,
-          );
-        }
-      }
-    }
-
-    // Mostrar errores si existen y no continuar
-    if (errores.length > 0) {
-      throw new BadRequestException({
-        mensaje:
-          '⛔ Se encontraron conflictos al asociar los cursos transversales',
-        errores,
-      });
-    }
-
-    // Iniciar shortname con datos del padre
+    // Armar el shortname con datos del padre
     let shortname = `${cursoPadre.c_codcur}-1-${cursoPadre.n_codper.slice(-3)}-${cursoPadre.turno.c_grpcur}`;
 
+    // Agregar el grupo de cada hijo al shortname
     for (const hijo_id of hijos_id) {
       const cursoHijo = await this.prismaService.curso.findUnique({
         where: { id: hijo_id },
@@ -1186,51 +1135,25 @@ export class HorarioService {
       });
 
       if (!cursoHijo) continue;
-
       shortname += cursoHijo.turno.c_grpcur;
     }
 
+    // Construir data para grupo_sincro (padre + hijos)
     const dataGrupo = hijos_id.map((hijo_id) => ({
       curso_id: hijo_id,
       padre_curso_id: padre_id,
-      tipo: 0,
-      shortname: shortname,
+      tipo: 1,
+      shortname,
     }));
     dataGrupo.push({
       curso_id: padre_id,
       padre_curso_id: padre_id,
-      tipo: 0,
-      shortname: shortname,
+      tipo: 1,
+      shortname,
     });
 
+    // Guardar la relación en grupo_sincro
     await this.prismaService.grupo_sincro.createMany({ data: dataGrupo });
-
-    await this.prismaService.horario.deleteMany({
-      where: { curso_id: { in: hijos_id } },
-    });
-
-    for (const hijo_id of hijos_id) {
-      const cursoHijo = await this.prismaService.curso.findUnique({
-        where: { id: hijo_id },
-      });
-
-      for (const padreHorario of padreHorarios) {
-        await this.prismaService.horario.create({
-          data: {
-            dia: padreHorario.dia,
-            h_inicio: padreHorario.h_inicio,
-            h_fin: padreHorario.h_fin,
-            n_horas: padreHorario.n_horas,
-            c_color: padreHorario.c_color,
-            tipo: padreHorario.tipo,
-            aula_id: padreHorario.aula_id,
-            docente_id: padreHorario.docente_id,
-            curso_id: padreHorario.curso_id,
-            turno_id: cursoHijo?.turno_id || 0,
-          },
-        });
-      }
-    }
 
     return {
       mensaje: '✅ Cursos grupo asociados correctamente',

@@ -88,6 +88,11 @@ export class HorarioController {
     return this.horarioService.createCursoTransversal(createTransversalDto);
   }
 
+  @Post('curso/grupo')
+  createGrupo(@Body() createTransversalDto: CreateTransversalDto) {
+    return this.horarioService.createCursoGrupo(createTransversalDto);
+  }
+
   @Delete('curso/transversal/:padre_curso_id')
   deleteTransversal(
     @Param('padre_curso_id', ParseIntPipe) padre_curso_id: number,
