@@ -1,4 +1,10 @@
-import { IsEmail, IsNotEmpty, IsOptional, MinLength } from 'class-validator';
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  MinLength,
+} from 'class-validator';
 
 export class SignupDto {
   @IsNotEmpty({ message: 'El correo es obligatorio' })
@@ -14,4 +20,24 @@ export class SignupDto {
 
   @IsOptional() // Solo se usará si el usuario se registra con Microsoft
   readonly microsoftId?: string;
+
+  @IsString()
+  @IsNotEmpty()
+  nombre: string;
+
+  @IsString()
+  @IsNotEmpty()
+  apellido: string;
+
+  @IsString()
+  @IsNotEmpty()
+  genero: string;
+
+  @IsString()
+  @IsNotEmpty()
+  grado: string;
+
+  @IsString()
+  @IsNotEmpty()
+  estado: string;
 }

@@ -14,7 +14,13 @@ datasource db {
 }
 
 model User {
-  id           String       @id @default(uuid())
+  // id           String       @id @default(uuid())
+  id           Int          @id @default(autoincrement())
+  nombre       String?
+  apellido     String?
+  genero       String?
+  grado        String?
+  estado       String       @default("A") @db.Char(1)
   email        String       @unique
   password     String? // Solo si usa login propio
   googleId     String?      @unique // ID de Google
@@ -214,7 +220,7 @@ model Distrito {
 // }
 
 model Modulo {
-  id        BigInt    @id @default(autoincrement())
+  id        Int       @id @default(autoincrement())
   nombre    String    @db.VarChar(255)
   codigo    String    @unique @db.VarChar(255)
   icono     String?   @db.Text
@@ -225,8 +231,8 @@ model Modulo {
 }
 
 model Item {
-  id        BigInt    @id @default(autoincrement())
-  moduloId  BigInt    @map("modulo_id")
+  id        Int       @id @default(autoincrement())
+  moduloId  Int       @map("modulo_id")
   nombre    String    @db.VarChar(255)
   codigo    String    @unique @db.VarChar(255)
   createdAt DateTime? @db.Timestamp
@@ -238,9 +244,10 @@ model Item {
 }
 
 model Permission {
-  id        BigInt    @id @default(autoincrement())
-  userId    String    @map("user_id")
-  itemId    BigInt    @map("item_id")
+  id        Int       @id @default(autoincrement())
+  userId    Int       @map("user_id")
+  itemId    Int       @map("item_id")
+  estado    String    @default("A") @db.Char(1)
   createdAt DateTime? @db.Timestamp
   updatedAt DateTime? @updatedAt @db.Timestamp
 

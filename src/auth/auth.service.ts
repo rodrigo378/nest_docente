@@ -21,7 +21,17 @@ export class AuthService {
   ) {}
 
   async signup(signupDto: SignupDto) {
-    const { email, password, googleId, microsoftId } = signupDto;
+    const {
+      email,
+      password,
+      googleId,
+      microsoftId,
+      nombre,
+      apellido,
+      genero,
+      grado,
+      estado,
+    } = signupDto;
 
     // Verificar si ya existe un usuario con este correo
     const existingUser = await this.prismaService.user.findUnique({
@@ -56,6 +66,11 @@ export class AuthService {
         googleId,
         microsoftId,
         authProvider,
+        nombre,
+        apellido,
+        genero,
+        grado,
+        estado,
       },
     });
 

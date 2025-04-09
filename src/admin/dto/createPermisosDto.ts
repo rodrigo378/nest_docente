@@ -1,0 +1,21 @@
+import { Type } from 'class-transformer';
+import {
+  IsArray,
+  IsInt,
+  IsNotEmpty,
+  ArrayNotEmpty,
+  IsNumber,
+} from 'class-validator';
+
+export class CreatePermisosDto {
+  @IsInt()
+  @Type(() => Number)
+  @IsNotEmpty()
+  user_id: number;
+
+  @IsArray()
+  @ArrayNotEmpty()
+  @IsNumber({}, { each: true })
+  @Type(() => Number)
+  items_id: number[];
+}

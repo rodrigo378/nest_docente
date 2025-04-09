@@ -1,6 +1,11 @@
 -- CreateTable
 CREATE TABLE `User` (
-    `id` VARCHAR(191) NOT NULL,
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `nombre` VARCHAR(191) NULL,
+    `apellido` VARCHAR(191) NULL,
+    `genero` VARCHAR(191) NULL,
+    `grado` VARCHAR(191) NULL,
+    `estado` CHAR(1) NOT NULL DEFAULT 'A',
     `email` VARCHAR(191) NOT NULL,
     `password` VARCHAR(191) NULL,
     `googleId` VARCHAR(191) NULL,
@@ -43,7 +48,7 @@ CREATE TABLE `Distrito` (
 
 -- CreateTable
 CREATE TABLE `Modulo` (
-    `id` BIGINT NOT NULL AUTO_INCREMENT,
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
     `nombre` VARCHAR(255) NOT NULL,
     `codigo` VARCHAR(255) NOT NULL,
     `icono` TEXT NULL,
@@ -57,8 +62,8 @@ CREATE TABLE `Modulo` (
 
 -- CreateTable
 CREATE TABLE `Item` (
-    `id` BIGINT NOT NULL AUTO_INCREMENT,
-    `modulo_id` BIGINT NOT NULL,
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `modulo_id` INTEGER NOT NULL,
     `nombre` VARCHAR(255) NOT NULL,
     `codigo` VARCHAR(255) NOT NULL,
     `createdAt` TIMESTAMP NULL,
@@ -70,9 +75,10 @@ CREATE TABLE `Item` (
 
 -- CreateTable
 CREATE TABLE `Permission` (
-    `id` BIGINT NOT NULL AUTO_INCREMENT,
-    `user_id` VARCHAR(191) NOT NULL,
-    `item_id` BIGINT NOT NULL,
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `user_id` INTEGER NOT NULL,
+    `item_id` INTEGER NOT NULL,
+    `estado` CHAR(1) NOT NULL DEFAULT 'A',
     `createdAt` TIMESTAMP NULL,
     `updatedAt` TIMESTAMP NULL,
 
