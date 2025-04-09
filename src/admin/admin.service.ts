@@ -1,6 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreatePermisosDto } from './dto/createPermisosDto';
+import { GetPermisoToDto } from './dto/getPermisoToDto';
 
 @Injectable()
 export class AdminService {
@@ -50,5 +51,50 @@ export class AdminService {
     }
 
     return { message: 'Permisos actualizados correctamente.' };
+  }
+
+  async getPermisos(user_id: number) {
+    return await this.prismaService.permission.findMany({
+      where: {
+        userId: user_id,
+        estado: 'A',
+      },
+      select: {
+        item: {
+          select: {
+            codigo: true,
+            modulo: {
+              select: {
+                codigo: true,
+              },
+            },
+          },
+        },
+      },
+    });
+  }
+
+  async getPermisosTo(getPermisoTo: GetPermisoToDto) {
+    const { email } = getPermisoTo;
+
+    const user = await this.prismaService.user.findFirst({
+      where: { email },
+    });
+
+    if (!user) {
+      throw new NotFoundException('Este email no existe');
+    }
+
+    const permisos = await this.prismaService.permission.findMany({
+      where: { userId: user.id },
+    });
+
+    return { permisos, user };
+  }
+
+  async getModulos() {
+    return await this.prismaService.modulo.findMany({
+      include: { Item: true },
+    });
   }
 }
