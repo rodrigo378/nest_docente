@@ -248,14 +248,6 @@ export class HorarioService {
             };
           }
 
-          // const idCursos = cursosAgrupados.map((g) => g.curso_id);
-
-          // await this.prismaService.horario.deleteMany({
-          //   where: {
-          //     curso_id: { in: idCursos },
-          //   },
-          // });
-
           for (const horario of horarios) {
             if (horario.docente_id) {
               await this.prismaService.docente.update({
@@ -623,6 +615,7 @@ export class HorarioService {
           h.docente_id && e.docente_id && h.docente_id === e.docente_id;
 
         if (
+          cur?.cursosPadres.length !== 0 &&
           cur?.cursosPadres[0].tipo !== 0 &&
           cruce &&
           (mismoAula || mismoDocente)
