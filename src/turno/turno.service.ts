@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UpdateTurnoDto } from './dto/updateTurnoDto';
 import { CreateTurnoDto } from './dto/createTurnoDto';
@@ -8,6 +12,22 @@ export class TurnoService {
   constructor(private readonly prismaService: PrismaService) {}
 
   async createTurno(createTurnoDto: CreateTurnoDto) {
+    const turno = await this.prismaService.turno.findFirst({
+      where: {
+        n_codper: createTurnoDto.n_codper,
+        n_codpla: createTurnoDto.n_codpla,
+        c_codfac: createTurnoDto.c_codfac,
+        c_codesp: createTurnoDto.c_codesp,
+        c_grpcur: createTurnoDto.c_grpcur,
+        c_codmod: createTurnoDto.c_codmod,
+        n_ciclo: createTurnoDto.n_ciclo,
+      },
+    });
+
+    if (turno) {
+      throw new ConflictException('Ya existe un turno con estos datos.');
+    }
+
     const newTurno = await this.prismaService.turno.create({
       data: {
         ...createTurnoDto,
