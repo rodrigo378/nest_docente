@@ -571,6 +571,7 @@ export class HorarioService {
             h1.docente_id && h2.docente_id && h1.docente_id === h2.docente_id;
 
           if (
+            cur?.cursosPadres.length !== 0 &&
             cur?.cursosPadres[0].tipo !== 0 &&
             cruceHoras &&
             (mismoAula || mismoDocente)
