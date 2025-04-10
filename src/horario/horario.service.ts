@@ -627,7 +627,6 @@ export class HorarioService {
         }
       }
     }
-
     return {
       success: errores.length === 0,
       errores,
@@ -641,6 +640,8 @@ export class HorarioService {
   ): Promise<string[]> {
     const errores: string[] = [];
 
+    const cursosGrupoId = cursosAgrupados.map((c) => c.curso_id);
+
     for (const cursoAgrupado of cursosAgrupados) {
       const curso = await this.prismaService.curso.findUnique({
         where: { id: cursoAgrupado.curso_id },
@@ -649,7 +650,7 @@ export class HorarioService {
       if (!curso) continue;
 
       const turnoHorarios = await this.prismaService.horario.findMany({
-        where: { turno_id: curso.turno_id },
+        where: { turno_id: curso.turno_id, curso_id: { notIn: cursosGrupoId } },
         include: { curso: true },
       });
 
@@ -661,11 +662,6 @@ export class HorarioService {
         if (!inicioNuevo || !finNuevo) continue;
 
         for (const hExistente of turnoHorarios) {
-          if (hNuevo.turno_id !== hExistente.turno_id) continue;
-
-          // Excluir el mismo horario si está siendo actualizado
-          if (hNuevo.id && hExistente.id === hNuevo.id) continue;
-
           if (hNuevo.dia !== hExistente.dia) continue;
 
           const inicioExistente = this.parseHora(hExistente.h_inicio);
@@ -682,7 +678,6 @@ export class HorarioService {
         }
       }
     }
-
     return errores;
   }
 
