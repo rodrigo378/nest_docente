@@ -30,3 +30,7 @@ export class AdminController {
     return this.adminService.getModulos();
   }
 }
+
+//cambiar horarios
+//cambiar logica de docente
+7;

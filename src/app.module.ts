@@ -9,12 +9,13 @@ import { SiguModule } from './sigu/sigu.module';
 import { HorarioModule } from './horario/horario.module';
 import { AulaModule } from './aula/aula.module';
 import { AdminModule } from './admin/admin.module';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
     AuthModule,
     PrismaModule,
-    ConfigModule.forRoot({ isGlobal: true }),
     UbicacionModule,
     DocenteModule,
     TurnoModule,
@@ -22,6 +23,7 @@ import { AdminModule } from './admin/admin.module';
     HorarioModule,
     AulaModule,
     AdminModule,
+    UserModule,
   ],
   controllers: [],
   providers: [],
