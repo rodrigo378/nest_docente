@@ -56,6 +56,11 @@ export class HorarioUpdateDto {
   @Type(() => Number)
   @IsInt()
   turno_id?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  h_umaPlus?: number;
 }
 
 export class CursoUpdateDto {

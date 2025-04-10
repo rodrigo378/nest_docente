@@ -37,25 +37,30 @@ export class HorarioDto {
   @IsNotEmpty()
   c_color: string;
 
+  @IsNotEmpty()
   @Type(() => Number)
   @IsInt()
-  @IsNotEmpty()
   turno_id: number;
 
   @Type(() => Number)
   @IsInt()
   @IsOptional()
-  aula_id: number;
+  aula_id?: number;
 
+  @IsOptional()
   @Type(() => Number)
   @IsInt()
-  @IsOptional()
-  @IsNotEmpty()
-  docente_id: number;
+  docente_id?: number;
 
-  @IsInt()
   @IsOptional()
-  curso_id: number;
+  @Type(() => Number)
+  @IsInt()
+  curso_id?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  h_umaPlus?: number;
 }
 
 export class CursoDto {
@@ -102,28 +107,28 @@ export class CursoDto {
   //equivalentes
   @IsString()
   @IsOptional()
-  n_codper_equ: string;
+  n_codper_equ?: string;
 
   @IsInt()
   @Type(() => Number)
   @IsOptional()
-  c_codmod_equ: number;
+  c_codmod_equ?: number;
 
   @IsString()
   @IsOptional()
-  c_codfac_equ: string;
+  c_codfac_equ?: string;
 
   @IsString()
   @IsOptional()
-  c_codesp_equ: string;
+  c_codesp_equ?: string;
 
   @IsString()
   @IsOptional()
-  c_codcur_equ: string;
+  c_codcur_equ?: string;
 
   @IsString()
   @IsOptional()
-  c_nomcur_equ: string;
+  c_nomcur_equ?: string;
 }
 
 export class CreateCursoHorarioDto {

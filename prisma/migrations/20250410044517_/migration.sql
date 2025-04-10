@@ -145,6 +145,7 @@ CREATE TABLE `Horario` (
     `n_horas` INTEGER NOT NULL,
     `c_color` VARCHAR(191) NOT NULL,
     `tipo` VARCHAR(191) NOT NULL,
+    `h_umaPlus` INTEGER NULL,
     `aula_id` INTEGER NULL,
     `docente_id` INTEGER NULL,
     `curso_id` INTEGER NOT NULL,

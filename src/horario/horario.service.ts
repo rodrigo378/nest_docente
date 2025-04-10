@@ -274,6 +274,7 @@ export class HorarioService {
                   curso_id: cursoHijo.id,
                   aula_id: horario.aula_id || null,
                   docente_id: horario.docente_id || null,
+                  h_umaPlus: horario.h_umaPlus || null,
                 },
               });
 
@@ -298,6 +299,7 @@ export class HorarioService {
             curso_id: cursoCreado?.id || 0,
             aula_id: horario.aula_id || null,
             docente_id: horario.docente_id || null,
+            h_umaPlus: horario.h_umaPlus || null,
           },
         });
 
@@ -847,6 +849,7 @@ export class HorarioService {
                 curso_id: cursoHijo.id,
                 aula_id: horario.aula_id ?? null,
                 docente_id: horario.docente_id ?? null,
+                h_umaPlus: horario.h_umaPlus,
               },
             });
 

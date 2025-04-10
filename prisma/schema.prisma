@@ -318,15 +318,15 @@ model grupo_sincro {
 }
 
 model Horario {
-  id       Int      @id @default(autoincrement())
-  dia      String
-  h_inicio DateTime
-  h_fin    DateTime
-  n_horas  Int
-  c_color  String
-  tipo     String //teorico practico
+  id        Int      @id @default(autoincrement())
+  dia       String
+  h_inicio  DateTime
+  h_fin     DateTime
+  n_horas   Int
+  c_color   String
+  tipo      String //teorico practico
   // c_codmod Int 
-  // h_umaPlus Int
+  h_umaPlus Int?
 
   aula_id Int?
   aula    Aula? @relation(fields: [aula_id], references: [id], onDelete: Cascade)
@@ -352,12 +352,13 @@ model Aula {
 }
 
 model Docente {
-  id        Int       @id @default(autoincrement())
-  categoria String
-  c_nomdoc  String
-  h_min     Int
-  h_max     Int
-  tipo      Int
-  h_total   Float     @default(0)
-  Horario   Horario[]
+  id       Int       @id @default(autoincrement())
+  c_codfac String
+  nom_fac  String
+  c_nomdoc String
+  h_min    Int
+  h_max    Int
+  tipo     Int
+  h_total  Float     @default(0)
+  Horario  Horario[]
 }

@@ -33,4 +33,3 @@ export class AdminController {
 
 //cambiar horarios
 //cambiar logica de docente
-7;
