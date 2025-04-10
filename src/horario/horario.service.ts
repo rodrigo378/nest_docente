@@ -734,208 +734,221 @@ export class HorarioService {
           include: { cursosPadres: true },
         });
         cursosCreados++;
-      } else {
-        if (
-          cursoCreado?.cursosPadres.length !== 0 &&
-          cursoCreado?.cursosPadres[0].tipo === 0
-        ) {
-          const cursosAgrupados =
-            await this.prismaService.grupo_sincro.findMany({
-              where: {
-                padre_curso_id: cursoCreado.cursosPadres[0].padre_curso_id,
-              },
-              include: {
-                cursosHijo: true,
-              },
-            });
-
-          const errores = await this.verificarCruzesCursosTransversalesUpdate(
-            cursosAgrupados,
-            horarios,
-          );
-
-          if (errores.length > 0) {
-            return {
-              success: false,
-              errores,
-            };
-          }
-
-          const idCursos = cursosAgrupados.map((g) => g.curso_id);
-
-          for (const horario of horarios) {
-            if (horario.docente_id) {
-              const h = await this.prismaService.horario.findUnique({
-                where: { id: horario.id },
-              });
-
-              if (h && h.n_horas != null) {
-                const diferencia = (horario.n_horas ?? 0) - h.n_horas;
-
-                await this.prismaService.docente.update({
-                  where: { id: horario.docente_id },
-                  data: {
-                    h_total: {
-                      increment: diferencia,
-                    },
-                  },
-                });
-              }
-            }
-          }
-
-          await this.prismaService.horario.deleteMany({
-            where: {
-              curso_id: { in: idCursos },
-            },
-          });
-
-          // 4️⃣ Volver a crear los mismos horarios para todos los cursos sincronizados
-          for (const grupo of cursosAgrupados) {
-            const cursoHijo = grupo.cursosHijo;
-
-            for (const horario of horarios) {
-              let dia = horario.dia;
-              let h_inicio = horario.h_inicio;
-              let h_fin = horario.h_fin;
-              let n_horas = horario.n_horas;
-              let c_color = horario.c_color;
-              let tipo = horario.tipo;
-              let aula_id = horario.aula_id;
-              let docente_id = horario.docente_id;
-
-              // Si el horario tiene ID, traer su info de BD si faltan campos
-              if (horario.id) {
-                const horarioBD = await this.prismaService.horario.findUnique({
-                  where: { id: horario.id },
-                });
-
-                if (horarioBD) {
-                  dia = dia ?? horarioBD.dia;
-                  h_inicio =
-                    h_inicio ??
-                    (horarioBD.h_inicio
-                      ? horarioBD.h_inicio.toISOString()
-                      : '');
-                  h_fin =
-                    h_fin ??
-                    (horarioBD.h_fin ? horarioBD.h_fin.toISOString() : '');
-                  n_horas = n_horas ?? horarioBD.n_horas;
-                  c_color = c_color ?? horarioBD.c_color;
-                  tipo = tipo ?? horarioBD.tipo;
-                  aula_id =
-                    aula_id ??
-                    (horarioBD.aula_id !== null
-                      ? horarioBD.aula_id
-                      : undefined);
-                  docente_id =
-                    docente_id ??
-                    (horarioBD.docente_id !== null
-                      ? horarioBD.docente_id
-                      : undefined);
-                }
-              }
-
-              // Si falta algo importante, omitir
-              if (!dia || !h_inicio || !h_fin) continue;
-
-              await this.prismaService.horario.create({
-                data: {
-                  dia,
-                  h_inicio: new Date(h_inicio),
-                  h_fin: new Date(h_fin),
-                  n_horas: n_horas ?? 0,
-                  c_color: c_color ?? '#000000',
-                  tipo: tipo ?? 'Teoría',
-                  turno_id: cursoHijo.turno_id,
-                  curso_id: cursoHijo.id,
-                  aula_id: aula_id ?? null,
-                  docente_id: docente_id ?? null,
-                },
-              });
-
-              horariosCreados++;
-            }
-          }
-
-          continue;
-        }
       }
 
-      for (const horario of horarios) {
-        if (horario.id) {
-          const existe = await this.prismaService.horario.findUnique({
-            where: { id: horario.id },
-          });
+      // Caso transversal
+      if (
+        cursoCreado?.cursosPadres.length !== 0 &&
+        cursoCreado?.cursosPadres[0].tipo === 0
+      ) {
+        const cursosAgrupados = await this.prismaService.grupo_sincro.findMany({
+          where: {
+            padre_curso_id: cursoCreado.cursosPadres[0].padre_curso_id,
+          },
+          include: {
+            cursosHijo: true,
+          },
+        });
 
-          if (existe) {
-            await this.prismaService.horario.update({
-              where: { id: horario.id },
+        const errores = await this.verificarCruzesCursosTransversalesUpdate(
+          cursosAgrupados,
+          horarios,
+        );
+
+        if (errores.length > 0) {
+          return {
+            success: false,
+            errores,
+          };
+        }
+
+        const idCursos = cursosAgrupados.map((g) => g.curso_id);
+
+        // 🔹 Actualizar carga docente solo una vez antes del deleteMany
+        const horariosBD = await this.prismaService.horario.findMany({
+          where: {
+            id: {
+              in: horarios
+                .map((h) => h.id)
+                .filter((id): id is number => id !== undefined),
+            },
+          },
+          select: {
+            id: true,
+            docente_id: true,
+            n_horas: true,
+          },
+        });
+
+        const mapHorarioBD = new Map<
+          number,
+          { docente_id: number | null; n_horas: number | null }
+        >();
+        horariosBD.forEach((h) => mapHorarioBD.set(h.id, h));
+
+        for (const horario of horarios) {
+          const nuevoDocenteId = horario.docente_id;
+          const nuevasHoras = horario.n_horas ?? 0;
+
+          if (horario.id && mapHorarioBD.has(horario.id)) {
+            const anterior = mapHorarioBD.get(horario.id);
+
+            if (anterior?.docente_id !== nuevoDocenteId) {
+              if (anterior?.docente_id && anterior.n_horas != null) {
+                await this.prismaService.docente.update({
+                  where: { id: anterior.docente_id },
+                  data: { h_total: { decrement: anterior.n_horas } },
+                });
+              }
+              if (nuevoDocenteId) {
+                await this.prismaService.docente.update({
+                  where: { id: nuevoDocenteId },
+                  data: { h_total: { increment: nuevasHoras } },
+                });
+              }
+            } else if (nuevoDocenteId && anterior?.n_horas != null) {
+              const diferencia = nuevasHoras - anterior.n_horas;
+              if (diferencia !== 0) {
+                await this.prismaService.docente.update({
+                  where: { id: nuevoDocenteId },
+                  data: { h_total: { increment: diferencia } },
+                });
+              }
+            }
+          } else if (!horario.id && nuevoDocenteId) {
+            await this.prismaService.docente.update({
+              where: { id: nuevoDocenteId },
+              data: { h_total: { increment: nuevasHoras } },
+            });
+          }
+        }
+
+        await this.prismaService.horario.deleteMany({
+          where: {
+            curso_id: { in: idCursos },
+          },
+        });
+
+        for (const grupo of cursosAgrupados) {
+          const cursoHijo = grupo.cursosHijo;
+
+          for (const horario of horarios) {
+            if (!horario.dia || !horario.h_inicio || !horario.h_fin) continue;
+
+            await this.prismaService.horario.create({
               data: {
                 dia: horario.dia,
-                h_inicio: new Date(horario.h_inicio || ''),
-                h_fin: new Date(horario.h_fin || ''),
-                n_horas: horario.n_horas,
-                c_color: horario.c_color,
-                tipo: horario.tipo,
+                h_inicio: new Date(horario.h_inicio),
+                h_fin: new Date(horario.h_fin),
+                n_horas: horario.n_horas ?? 0,
+                c_color: horario.c_color ?? '#000000',
+                tipo: horario.tipo ?? 'Teoría',
+                turno_id: cursoHijo.turno_id,
+                curso_id: cursoHijo.id,
                 aula_id: horario.aula_id ?? null,
                 docente_id: horario.docente_id ?? null,
               },
             });
 
-            const nuevaHoras = horario.n_horas || 0;
-            const anteriorHoras = existe.n_horas || 0;
-
-            if (horario.docente_id !== existe.docente_id) {
-              if (existe.docente_id) {
-                await this.prismaService.docente.update({
-                  where: { id: existe.docente_id },
-                  data: { h_total: { decrement: anteriorHoras } },
-                });
-              }
-
-              if (horario.docente_id) {
-                await this.prismaService.docente.update({
-                  where: { id: horario.docente_id },
-                  data: { h_total: { increment: nuevaHoras } },
-                });
-              }
-            } else if (horario.docente_id) {
-              const diferencia = nuevaHoras - anteriorHoras;
-              await this.prismaService.docente.update({
-                where: { id: horario.docente_id },
-                data: { h_total: { increment: diferencia } },
-              });
-            }
-
-            horariosActualizados++;
-            continue;
+            horariosCreados++;
           }
         }
 
-        await this.prismaService.horario.create({
-          data: {
-            dia: horario.dia || '',
-            h_inicio: new Date(horario.h_inicio || ''),
-            h_fin: new Date(horario.h_fin || ''),
-            n_horas: horario.n_horas || 0,
-            c_color: horario.c_color || '',
-            tipo: horario.tipo || '',
-            turno_id: curso.turno_id,
-            aula_id: horario.aula_id ?? null,
-            docente_id: horario.docente_id ?? null,
-            curso_id: cursoExistente?.id || 0,
+        continue;
+      }
+
+      // Caso no-transversal: actualizar o crear normalmente
+      const horariosBD = await this.prismaService.horario.findMany({
+        where: {
+          id: {
+            in: horarios
+              .map((h) => h.id)
+              .filter((id): id is number => id !== undefined),
           },
-        });
+        },
+        select: {
+          id: true,
+          docente_id: true,
+          n_horas: true,
+        },
+      });
 
-        if (horario.docente_id) {
-          await this.prismaService.docente.update({
-            where: { id: horario.docente_id },
-            data: { h_total: { increment: horario.n_horas } },
+      const mapHorarioBD = new Map<
+        number,
+        { docente_id: number | null; n_horas: number | null }
+      >();
+      horariosBD.forEach((h) => mapHorarioBD.set(h.id, h));
+
+      for (const horario of horarios) {
+        const nuevoDocenteId = horario.docente_id;
+        const nuevasHoras = horario.n_horas ?? 0;
+
+        if (horario.id && mapHorarioBD.has(horario.id)) {
+          const anterior = mapHorarioBD.get(horario.id);
+
+          if (anterior?.docente_id !== nuevoDocenteId) {
+            if (anterior?.docente_id && anterior.n_horas != null) {
+              await this.prismaService.docente.update({
+                where: { id: anterior.docente_id },
+                data: { h_total: { decrement: anterior.n_horas } },
+              });
+            }
+            if (nuevoDocenteId) {
+              await this.prismaService.docente.update({
+                where: { id: nuevoDocenteId },
+                data: { h_total: { increment: nuevasHoras } },
+              });
+            }
+          } else if (nuevoDocenteId && anterior?.n_horas != null) {
+            const diferencia = nuevasHoras - anterior.n_horas;
+            if (diferencia !== 0) {
+              await this.prismaService.docente.update({
+                where: { id: nuevoDocenteId },
+                data: { h_total: { increment: diferencia } },
+              });
+            }
+          }
+
+          await this.prismaService.horario.update({
+            where: { id: horario.id },
+            data: {
+              dia: horario.dia,
+              h_inicio: new Date(horario.h_inicio || ''),
+              h_fin: new Date(horario.h_fin || ''),
+              n_horas: horario.n_horas,
+              c_color: horario.c_color,
+              tipo: horario.tipo,
+              aula_id: horario.aula_id ?? null,
+              docente_id: horario.docente_id ?? null,
+            },
           });
-        }
 
-        horariosCreados++;
+          horariosActualizados++;
+        } else {
+          await this.prismaService.horario.create({
+            data: {
+              dia: horario.dia || '',
+              h_inicio: new Date(horario.h_inicio || ''),
+              h_fin: new Date(horario.h_fin || ''),
+              n_horas: horario.n_horas || 0,
+              c_color: horario.c_color || '',
+              tipo: horario.tipo || '',
+              turno_id: curso.turno_id,
+              aula_id: horario.aula_id ?? null,
+              docente_id: horario.docente_id ?? null,
+              curso_id: cursoExistente?.id || 0,
+            },
+          });
+
+          if (horario.docente_id) {
+            await this.prismaService.docente.update({
+              where: { id: horario.docente_id },
+              data: { h_total: { increment: horario.n_horas } },
+            });
+          }
+
+          horariosCreados++;
+        }
       }
     }
 
@@ -947,7 +960,6 @@ export class HorarioService {
       horarios_actualizados: horariosActualizados,
     };
   }
-
   async deleteHorarioArray(deleteHorarioArray: DeleteHorarioArrayDto) {
     for (const horario_id of deleteHorarioArray.horarios_id) {
       const horario = await this.prismaService.horario.findFirst({
@@ -1277,3 +1289,344 @@ export class HorarioService {
     };
   }
 }
+
+/**
+ *   async updateHorarioArray(updateHorarioArrayDto: UpdateHorarioArrayDto) {
+    const verificacion = await this.verificarCruzeUpdate(updateHorarioArrayDto);
+
+    if (!verificacion.success && updateHorarioArrayDto.verificar) {
+      return {
+        success: false,
+        errores: verificacion.errores,
+      };
+    }
+
+    const { dataArray } = updateHorarioArrayDto;
+
+    let cursosCreados = 0;
+    let horariosCreados = 0;
+    let horariosActualizados = 0;
+
+    for (const { curso, horarios } of dataArray) {
+      const cursoExistente = await this.prismaService.curso.findFirst({
+        where: {
+          n_codper: curso.n_codper,
+          c_codfac: curso.c_codfac,
+          c_codesp: curso.c_codesp,
+          c_codcur: curso.c_codcur,
+          n_ciclo: curso.n_ciclo,
+          turno_id: curso.turno_id,
+        },
+        include: { cursosPadres: true },
+      });
+
+      let cursoCreado = cursoExistente;
+
+      if (!cursoExistente) {
+        cursoCreado = await this.prismaService.curso.create({
+          data: {
+            n_codper: curso.n_codper,
+            c_codmod: curso.c_codmod,
+            c_codfac: curso.c_codfac,
+            c_codesp: curso.c_codesp,
+            c_codcur: curso.c_codcur,
+            c_nomcur: curso.c_nomcur,
+            n_ciclo: curso.n_ciclo,
+            c_area: curso.c_area,
+            turno_id: curso.turno_id,
+            n_codper_equ: curso.n_codper_equ,
+            c_codmod_equ: Number(curso.c_codmod_equ),
+            c_codfac_equ: curso.c_codfac_equ,
+            c_codesp_equ: curso.c_codesp_equ,
+            c_codcur_equ: curso.c_codcur_equ,
+            c_nomcur_equ: curso.c_nomcur_equ,
+          },
+          include: { cursosPadres: true },
+        });
+        cursosCreados++;
+      } else {
+        if (
+          cursoCreado?.cursosPadres.length !== 0 &&
+          cursoCreado?.cursosPadres[0].tipo === 0
+        ) {
+          const cursosAgrupados =
+            await this.prismaService.grupo_sincro.findMany({
+              where: {
+                padre_curso_id: cursoCreado.cursosPadres[0].padre_curso_id,
+              },
+              include: {
+                cursosHijo: true,
+              },
+            });
+
+          const errores = await this.verificarCruzesCursosTransversalesUpdate(
+            cursosAgrupados,
+            horarios,
+          );
+
+          if (errores.length > 0) {
+            return {
+              success: false,
+              errores,
+            };
+          }
+
+          const idCursos = cursosAgrupados.map((g) => g.curso_id);
+
+          for (const horario of horarios) {
+            if (horario.docente_id) {
+              // 1️⃣ Obtener los horarios actuales desde la base de datos (para comparación completa)
+              const horariosBD = await this.prismaService.horario.findMany({
+                where: {
+                  id: {
+                    in: horarios
+                      .map((h) => h.id)
+                      .filter((id): id is number => id !== undefined),
+                  },
+                },
+                select: {
+                  id: true,
+                  docente_id: true,
+                  n_horas: true,
+                },
+              });
+
+              // 2️⃣ Crear un mapa rápido de acceso por ID
+              const mapHorarioBD = new Map<
+                number,
+                { docente_id: number | null; n_horas: number | null }
+              >();
+              horariosBD.forEach((h) =>
+                mapHorarioBD.set(h.id, {
+                  docente_id: h.docente_id,
+                  n_horas: h.n_horas,
+                }),
+              );
+
+              // 3️⃣ Evaluar cada nuevo horario
+              for (const horario of horarios) {
+                const nuevoDocenteId = horario.docente_id;
+                const nuevasHoras = horario.n_horas ?? 0;
+
+                // Caso: Horario existente (actualización)
+                if (horario.id && mapHorarioBD.has(horario.id)) {
+                  const original = mapHorarioBD.get(horario.id);
+
+                  // 3.1 Cambio de horas con mismo docente
+                  if (
+                    original?.docente_id === nuevoDocenteId &&
+                    original?.n_horas != null
+                  ) {
+                    const diferencia = nuevasHoras - original.n_horas;
+
+                    if (diferencia !== 0 && nuevoDocenteId) {
+                      await this.prismaService.docente.update({
+                        where: { id: nuevoDocenteId },
+                        data: {
+                          h_total: { increment: diferencia },
+                        },
+                      });
+                    }
+                  }
+
+                  // 3.2 Cambio de docente
+                  else {
+                    // Restar al docente anterior si existía
+                    if (original?.docente_id && original.n_horas != null) {
+                      await this.prismaService.docente.update({
+                        where: { id: original.docente_id },
+                        data: {
+                          h_total: { decrement: original.n_horas },
+                        },
+                      });
+                    }
+
+                    // Sumar al nuevo docente
+                    if (nuevoDocenteId) {
+                      await this.prismaService.docente.update({
+                        where: { id: nuevoDocenteId },
+                        data: {
+                          h_total: { increment: nuevasHoras },
+                        },
+                      });
+                    }
+                  }
+                }
+
+                // Caso: Nuevo horario (sin ID)
+                else if (!horario.id && nuevoDocenteId) {
+                  await this.prismaService.docente.update({
+                    where: { id: nuevoDocenteId },
+                    data: {
+                      h_total: { increment: nuevasHoras },
+                    },
+                  });
+                }
+              }
+            }
+          }
+
+          await this.prismaService.horario.deleteMany({
+            where: {
+              curso_id: { in: idCursos },
+            },
+          });
+
+          // 4️⃣ Volver a crear los mismos horarios para todos los cursos sincronizados
+          for (const grupo of cursosAgrupados) {
+            const cursoHijo = grupo.cursosHijo;
+
+            for (const horario of horarios) {
+              let dia = horario.dia;
+              let h_inicio = horario.h_inicio;
+              let h_fin = horario.h_fin;
+              let n_horas = horario.n_horas;
+              let c_color = horario.c_color;
+              let tipo = horario.tipo;
+              let aula_id = horario.aula_id;
+              let docente_id = horario.docente_id;
+
+              // Si el horario tiene ID, traer su info de BD si faltan campos
+              if (horario.id) {
+                const horarioBD = await this.prismaService.horario.findUnique({
+                  where: { id: horario.id },
+                });
+
+                if (horarioBD) {
+                  dia = dia ?? horarioBD.dia;
+                  h_inicio =
+                    h_inicio ??
+                    (horarioBD.h_inicio
+                      ? horarioBD.h_inicio.toISOString()
+                      : '');
+                  h_fin =
+                    h_fin ??
+                    (horarioBD.h_fin ? horarioBD.h_fin.toISOString() : '');
+                  n_horas = n_horas ?? horarioBD.n_horas;
+                  c_color = c_color ?? horarioBD.c_color;
+                  tipo = tipo ?? horarioBD.tipo;
+                  aula_id =
+                    aula_id ??
+                    (horarioBD.aula_id !== null
+                      ? horarioBD.aula_id
+                      : undefined);
+                  docente_id =
+                    docente_id ??
+                    (horarioBD.docente_id !== null
+                      ? horarioBD.docente_id
+                      : undefined);
+                }
+              }
+
+              // Si falta algo importante, omitir
+              if (!dia || !h_inicio || !h_fin) continue;
+
+              await this.prismaService.horario.create({
+                data: {
+                  dia,
+                  h_inicio: new Date(h_inicio),
+                  h_fin: new Date(h_fin),
+                  n_horas: n_horas ?? 0,
+                  c_color: c_color ?? '#000000',
+                  tipo: tipo ?? 'Teoría',
+                  turno_id: cursoHijo.turno_id,
+                  curso_id: cursoHijo.id,
+                  aula_id: aula_id ?? null,
+                  docente_id: docente_id ?? null,
+                },
+              });
+
+              horariosCreados++;
+            }
+          }
+
+          continue;
+        }
+      }
+
+      for (const horario of horarios) {
+        if (horario.id) {
+          const existe = await this.prismaService.horario.findUnique({
+            where: { id: horario.id },
+          });
+
+          if (existe) {
+            await this.prismaService.horario.update({
+              where: { id: horario.id },
+              data: {
+                dia: horario.dia,
+                h_inicio: new Date(horario.h_inicio || ''),
+                h_fin: new Date(horario.h_fin || ''),
+                n_horas: horario.n_horas,
+                c_color: horario.c_color,
+                tipo: horario.tipo,
+                aula_id: horario.aula_id ?? null,
+                docente_id: horario.docente_id ?? null,
+              },
+            });
+
+            const nuevaHoras = horario.n_horas || 0;
+            const anteriorHoras = existe.n_horas || 0;
+
+            if (horario.docente_id !== existe.docente_id) {
+              if (existe.docente_id) {
+                await this.prismaService.docente.update({
+                  where: { id: existe.docente_id },
+                  data: { h_total: { decrement: anteriorHoras } },
+                });
+              }
+
+              if (horario.docente_id) {
+                await this.prismaService.docente.update({
+                  where: { id: horario.docente_id },
+                  data: { h_total: { increment: nuevaHoras } },
+                });
+              }
+            } else if (horario.docente_id) {
+              const diferencia = nuevaHoras - anteriorHoras;
+              await this.prismaService.docente.update({
+                where: { id: horario.docente_id },
+                data: { h_total: { increment: diferencia } },
+              });
+            }
+
+            horariosActualizados++;
+            continue;
+          }
+        }
+
+        await this.prismaService.horario.create({
+          data: {
+            dia: horario.dia || '',
+            h_inicio: new Date(horario.h_inicio || ''),
+            h_fin: new Date(horario.h_fin || ''),
+            n_horas: horario.n_horas || 0,
+            c_color: horario.c_color || '',
+            tipo: horario.tipo || '',
+            turno_id: curso.turno_id,
+            aula_id: horario.aula_id ?? null,
+            docente_id: horario.docente_id ?? null,
+            curso_id: cursoExistente?.id || 0,
+          },
+        });
+
+        if (horario.docente_id) {
+          await this.prismaService.docente.update({
+            where: { id: horario.docente_id },
+            data: { h_total: { increment: horario.n_horas } },
+          });
+        }
+
+        horariosCreados++;
+      }
+    }
+
+    return {
+      success: true,
+      mensaje: '✅ Cursos y horarios procesados correctamente',
+      cursos_nuevos: cursosCreados,
+      horarios_creados: horariosCreados,
+      horarios_actualizados: horariosActualizados,
+    };
+  }
+ */
