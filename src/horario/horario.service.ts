@@ -1277,8 +1277,3 @@ export class HorarioService {
     };
   }
 }
-
-//agrupas cusos
-//el botom para copiar => pensarlo mejor
-//virtuales
-//uma plus
