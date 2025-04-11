@@ -530,11 +530,41 @@ export class DocenteService {
   //   });
   // }
 
-  async getDocentes(horario: boolean = false, curso: boolean = false) {
+  async getDocentes(
+    horario: boolean = false,
+    curso: boolean = false,
+    aula: boolean = false,
+  ) {
     const include: { Horario: any } = { Horario: false };
 
+    console.log('horario => ', horario);
+    console.log('curso => ', curso);
+    console.log('aula => ', aula);
+
     if (horario) {
-      include.Horario = curso ? { include: { curso: true } } : true;
+      include.Horario = {
+        orderBy: { id: 'desc' },
+        distinct: ['dia'],
+        select: {
+          id: true,
+          dia: true,
+          h_inicio: true,
+          h_fin: true,
+          n_horas: true,
+          tipo: true,
+          aula: aula
+            ? {
+                select: {
+                  id: true,
+                  c_codaula: true,
+                  n_piso: true,
+                  pabellon: true,
+                },
+              }
+            : false,
+          curso: curso ? { select: { id: true, c_nomcur: true } } : false,
+        },
+      };
     }
 
     return this.prismaService.docente.findMany({ include });

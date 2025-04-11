@@ -98,7 +98,7 @@ CREATE TABLE `Turno` (
     `c_codmod` INTEGER NOT NULL,
     `c_nommod` VARCHAR(191) NOT NULL,
     `n_ciclo` INTEGER NOT NULL,
-    `estado` INTEGER NOT NULL DEFAULT 1,
+    `estado` INTEGER NOT NULL DEFAULT 0,
 
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -169,7 +169,8 @@ CREATE TABLE `Aula` (
 -- CreateTable
 CREATE TABLE `Docente` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `categoria` VARCHAR(191) NOT NULL,
+    `c_codfac` VARCHAR(191) NOT NULL,
+    `nom_fac` VARCHAR(191) NOT NULL,
     `c_nomdoc` VARCHAR(191) NOT NULL,
     `h_min` INTEGER NOT NULL,
     `h_max` INTEGER NOT NULL,

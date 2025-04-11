@@ -3,18 +3,8 @@ import {
   Controller,
   Get,
   Query,
-  // Get,
-  // Param,
-  // Patch,
-  // Post,
-  // Req,
-  // UseGuards,
 } from '@nestjs/common';
 import { DocenteService } from './docente.service';
-// import { CreateDocenteDto } from './dto/createDocenteDto';
-// import { UpdateDocenteDto } from './dto/updateDocenteDto';
-// import { JwtAuthGuard } from 'src/auth/guard/jwt-auth/jwt-auth.guard';
-// import { AuthenticatedRequest } from 'src/auth/interface/request.interface';
 
 @Controller('docente')
 export class DocenteController {
@@ -24,8 +14,9 @@ export class DocenteController {
   getDocentes(
     @Query('horario') horario?: boolean,
     @Query('curso') curso?: boolean,
+    @Query('aula') aula?: boolean,
   ) {
-    return this.docenteService.getDocentes(horario, curso);
+    return this.docenteService.getDocentes(horario, curso, aula);
   }
 
   // @Post('')
