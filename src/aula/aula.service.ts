@@ -10,26 +10,23 @@ export class AulaService {
     curso: boolean = false,
     docente: boolean = false,
   ) {
-    const include: {
-      Horario: { include: { Docente: boolean; curso: boolean } } | boolean;
-    } = { Horario: false };
+    const include: { Horario: any } = { Horario: false };
 
     if (horario) {
-      include.Horario = { include: { Docente: false, curso: false } };
-
-      if (curso || docente) {
-        include.Horario.include = { Docente: false, curso: false };
-
-        if (curso) {
-          include.Horario.include.curso = true;
-        }
-
-        if (docente) {
-          include.Horario.include.Docente = true;
-        }
-      } else {
-        include.Horario = true;
-      }
+      include.Horario = {
+        orderBy: { id: 'desc' },
+        distinct: ['dia'],
+        select: {
+          id: true,
+          dia: true,
+          h_inicio: true,
+          h_fin: true,
+          n_horas: true,
+          tipo: true,
+          curso: curso ? true : false,
+          Docente: docente ? true : false,
+        },
+      };
     }
 
     return await this.prismaService.aula.findMany({
