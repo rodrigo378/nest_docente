@@ -537,10 +537,6 @@ export class DocenteService {
   ) {
     const include: { Horario: any } = { Horario: false };
 
-    console.log('horario => ', horario);
-    console.log('curso => ', curso);
-    console.log('aula => ', aula);
-
     if (horario) {
       include.Horario = {
         orderBy: { id: 'desc' },
@@ -552,17 +548,8 @@ export class DocenteService {
           h_fin: true,
           n_horas: true,
           tipo: true,
-          aula: aula
-            ? {
-                select: {
-                  id: true,
-                  c_codaula: true,
-                  n_piso: true,
-                  pabellon: true,
-                },
-              }
-            : false,
-          curso: curso ? { select: { id: true, c_nomcur: true } } : false,
+          curso: curso ? true : false,
+          aula: aula ? true : false,
         },
       };
     }
