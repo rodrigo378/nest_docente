@@ -270,7 +270,7 @@ model Turno {
   c_codmod Int
   c_nommod String
   n_ciclo  Int
-  estado   Int    @default(1)
+  estado   Int    @default(0)
 
   Horario Horario[]
   Curso   Curso[]
