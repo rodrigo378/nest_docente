@@ -35,7 +35,7 @@ export class HorarioService {
   }
 
   async createHorarioAsync(createHorarioAsyncDto: CreateHorarioAsyncDto) {
-    const { curso, horarios } = createHorarioAsyncDto;
+    const { curso, horario } = createHorarioAsyncDto;
     let cursosCreados = 0;
 
     const cursoExistente = await this.prismaService.curso.findFirst({
@@ -79,16 +79,14 @@ export class HorarioService {
       console.log(cursosCreados);
     }
 
-    for (const horario of horarios) {
-      await this.prismaService.horario.create({
-        data: {
-          n_horas: horario.n_horas,
-          tipo: horario.tipo,
-          curso_id: cursoCreado?.id || 0,
-          turno_id: horario.turno_id,
-        },
-      });
-    }
+    await this.prismaService.horario.create({
+      data: {
+        n_horas: horario.n_horas,
+        tipo: horario.tipo,
+        curso_id: cursoCreado?.id || 0,
+        turno_id: horario.turno_id,
+      },
+    });
 
     // const { n_horas, tipo, curso_id, turno_id } = createHorarioAsyncDto;
     // const cursoAsync = await this.prismaService.horario.create({

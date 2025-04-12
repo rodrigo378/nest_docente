@@ -14,9 +14,9 @@ export class CreateHorarioAsyncDto {
   curso: CursoDto;
 
   @IsArray()
-  @ValidateNested({ each: true })
+  @ValidateNested()
   @Type(() => HorarioAsyncDto)
-  horarios: HorarioAsyncDto[];
+  horario: HorarioAsyncDto;
 }
 
 export class CursoDto {
