@@ -318,12 +318,12 @@ model grupo_sincro {
 }
 
 model Horario {
-  id        Int      @id @default(autoincrement())
-  dia       String
-  h_inicio  DateTime
-  h_fin     DateTime
+  id        Int       @id @default(autoincrement())
+  dia       String?
+  h_inicio  DateTime?
+  h_fin     DateTime?
   n_horas   Int
-  c_color   String
+  c_color   String?
   tipo      String //teorico practico
   // c_codmod Int 
   h_umaPlus Int?

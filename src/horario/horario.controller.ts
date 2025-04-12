@@ -14,6 +14,7 @@ import { DeleteHorarioArrayDto } from './dto/deleteHorarioArrayDto';
 import { CreateHorarioArrayDto } from './dto/createHorarioArrayDto';
 import { UpdateHorarioArrayDto } from './dto/updateHorarioArrayDto';
 import { CreateTransversalDto } from './dto/createTransversalDto';
+import { CreateHorarioAsyncDto } from './dto/createHorarioAsyncDto';
 
 @Controller('horario')
 export class HorarioController {
@@ -22,6 +23,11 @@ export class HorarioController {
   @Post('')
   createHorarioArray(@Body() createHorarioArray: CreateHorarioArrayDto) {
     return this.horarioService.createHorarioArray(createHorarioArray);
+  }
+
+  @Post('async')
+  createHorarioAsync(@Body() crcreateHorarioAsyncDto: CreateHorarioAsyncDto) {
+    return this.horarioService.createHorarioAsync(crcreateHorarioAsyncDto);
   }
 
   @Delete('')

@@ -17,6 +17,7 @@ import {
 } from './dto/updateHorarioArrayDto';
 import { CreateTransversalDto } from './dto/createTransversalDto';
 import { grupo_sincro } from '@prisma/client';
+import { CreateHorarioAsyncDto } from './dto/createHorarioAsyncDto';
 
 @Injectable()
 export class HorarioService {
@@ -31,6 +32,21 @@ export class HorarioService {
     const h = hora.getHours().toString().padStart(2, '0');
     const m = hora.getMinutes().toString().padStart(2, '0');
     return `${h}:${m}`;
+  }
+
+  async createHorarioAsync(createHorarioAsyncDto: CreateHorarioAsyncDto) {
+    const { n_horas, tipo, curso_id, turno_id } = createHorarioAsyncDto;
+
+    const cursoAsync = await this.prismaService.horario.create({
+      data: {
+        n_horas,
+        tipo,
+        curso_id,
+        turno_id,
+      },
+    });
+
+    return { message: 'curso Asyncrono creado', newCurso: cursoAsync };
   }
 
   async verificarCruze(createHorarioArrayDto: CreateHorarioArrayDto) {
@@ -96,8 +112,8 @@ export class HorarioService {
       const fin1 = this.parseHora(h.h_fin);
 
       for (const e of existentes) {
-        const inicio2 = this.parseHora(e.h_inicio);
-        const fin2 = this.parseHora(e.h_fin);
+        const inicio2 = this.parseHora(e.h_inicio || '');
+        const fin2 = this.parseHora(e.h_fin || '');
         const cruce = inicio1 < fin2 && fin1 > inicio2;
 
         const mismoAula = h.aula_id && e.aula_id && h.aula_id === e.aula_id;
@@ -145,8 +161,8 @@ export class HorarioService {
         for (const hExistente of turnoHorarios) {
           if (hNuevo.dia !== hExistente.dia) continue;
 
-          const inicioExistente = this.parseHora(hExistente.h_inicio);
-          const finExistente = this.parseHora(hExistente.h_fin);
+          const inicioExistente = this.parseHora(hExistente.h_inicio || '');
+          const finExistente = this.parseHora(hExistente.h_fin || '');
 
           const cruceHoras =
             inicioNuevo < finExistente && finNuevo > inicioExistente;
@@ -608,8 +624,8 @@ export class HorarioService {
       if (!inicio1 || !fin1) continue;
 
       for (const e of existentes) {
-        const inicio2 = this.parseHora(e.h_inicio);
-        const fin2 = this.parseHora(e.h_fin);
+        const inicio2 = this.parseHora(e.h_inicio || '');
+        const fin2 = this.parseHora(e.h_fin || '');
 
         const cruce = inicio1 < fin2 && fin1 > inicio2;
         const mismoAula = h.aula_id && e.aula_id && h.aula_id === e.aula_id;
@@ -666,8 +682,8 @@ export class HorarioService {
         for (const hExistente of turnoHorarios) {
           if (hNuevo.dia !== hExistente.dia) continue;
 
-          const inicioExistente = this.parseHora(hExistente.h_inicio);
-          const finExistente = this.parseHora(hExistente.h_fin);
+          const inicioExistente = this.parseHora(hExistente.h_inicio || '');
+          const finExistente = this.parseHora(hExistente.h_fin || '');
 
           const cruceHoras =
             inicioNuevo < finExistente && finNuevo > inicioExistente;
@@ -1053,8 +1069,8 @@ export class HorarioService {
     const turnosIds = cursosHijos.map((c) => c.turno_id);
 
     for (const padreHorario of padreHorarios) {
-      const inicio1 = this.parseHora(padreHorario.h_inicio);
-      const fin1 = this.parseHora(padreHorario.h_fin);
+      const inicio1 = this.parseHora(padreHorario.h_inicio || '');
+      const fin1 = this.parseHora(padreHorario.h_fin || '');
 
       const horariosBd = await this.prismaService.horario.findMany({
         where: {
@@ -1065,8 +1081,8 @@ export class HorarioService {
       });
 
       for (const horarioBD of horariosBd) {
-        const inicio2 = this.parseHora(horarioBD.h_inicio);
-        const fin2 = this.parseHora(horarioBD.h_fin);
+        const inicio2 = this.parseHora(horarioBD.h_inicio || '');
+        const fin2 = this.parseHora(horarioBD.h_fin || '');
 
         const cruceHoras = inicio1 < fin2 && fin1 > inicio2;
         const mismoAula =
