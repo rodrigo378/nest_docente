@@ -8,17 +8,6 @@ import {
   ValidateNested,
 } from 'class-validator';
 
-export class CreateHorarioAsyncDto {
-  @ValidateNested()
-  @Type(() => CursoDto)
-  curso: CursoDto;
-
-  @IsArray()
-  @ValidateNested()
-  @Type(() => HorarioAsyncDto)
-  horario: HorarioAsyncDto;
-}
-
 export class CursoDto {
   @IsInt()
   @IsOptional()
@@ -101,4 +90,14 @@ export class HorarioAsyncDto {
   @IsInt()
   @IsNotEmpty()
   turno_id: number;
+}
+
+export class CreateHorarioAsyncDto {
+  @ValidateNested()
+  @Type(() => CursoDto)
+  curso: CursoDto;
+
+  @ValidateNested()
+  @Type(() => HorarioAsyncDto)
+  horario: HorarioAsyncDto;
 }

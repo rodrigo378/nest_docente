@@ -38,6 +38,7 @@ export class HorarioService {
     const { curso, horario } = createHorarioAsyncDto;
     let cursosCreados = 0;
 
+    // Verificar si el curso ya existe
     const cursoExistente = await this.prismaService.curso.findFirst({
       where: {
         n_codper: curso.n_codper,
@@ -52,6 +53,7 @@ export class HorarioService {
 
     let cursoCreado = cursoExistente;
 
+    // Crear el curso si no existe
     if (!cursoExistente) {
       cursoCreado = await this.prismaService.curso.create({
         data: {
@@ -73,13 +75,12 @@ export class HorarioService {
         },
         include: { cursosPadres: true },
       });
-      console.log(cursoCreado);
 
       cursosCreados++;
-      console.log(cursosCreados);
     }
 
-    await this.prismaService.horario.create({
+    // Crear el horario
+    const horarioCreado = await this.prismaService.horario.create({
       data: {
         n_horas: horario.n_horas,
         tipo: horario.tipo,
@@ -88,16 +89,13 @@ export class HorarioService {
       },
     });
 
-    // const { n_horas, tipo, curso_id, turno_id } = createHorarioAsyncDto;
-    // const cursoAsync = await this.prismaService.horario.create({
-    //   data: {
-    //     n_horas,
-    //     tipo,
-    //     curso_id,
-    //     turno_id,
-    //   },
-    // });
-    // return { message: 'curso Asyncrono creado', curso: cursoAsync };
+    return {
+      success: true,
+      mensaje: '✅ Horario registrado exitosamente',
+      curso_id: cursoCreado?.id,
+      horario_id: horarioCreado.id,
+      cursos_creados: cursosCreados,
+    };
   }
 
   async verificarCruze(createHorarioArrayDto: CreateHorarioArrayDto) {
