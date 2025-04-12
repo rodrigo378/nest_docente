@@ -1,7 +1,93 @@
 import { Type } from 'class-transformer';
-import { IsInt, IsNotEmpty, IsString } from 'class-validator';
+import {
+  IsArray,
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
 
 export class CreateHorarioAsyncDto {
+  @ValidateNested()
+  @Type(() => CursoDto)
+  curso: CursoDto;
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => HorarioAsyncDto)
+  horarios: HorarioAsyncDto[];
+}
+
+export class CursoDto {
+  @IsInt()
+  @IsOptional()
+  id: number;
+
+  @IsString()
+  @IsNotEmpty()
+  n_codper: string;
+
+  @IsInt()
+  @Type(() => Number)
+  c_codmod: number;
+
+  @IsString()
+  @IsNotEmpty()
+  c_codfac: string;
+
+  @IsString()
+  @IsNotEmpty()
+  c_codesp: string;
+
+  @IsString()
+  @IsNotEmpty()
+  c_codcur: string;
+
+  @IsString()
+  @IsNotEmpty()
+  c_nomcur: string;
+
+  @IsInt()
+  @Type(() => Number)
+  n_ciclo: number;
+
+  @IsString()
+  @IsNotEmpty()
+  c_area: string;
+
+  @IsInt()
+  @Type(() => Number)
+  turno_id: number;
+
+  //equivalentes
+  @IsString()
+  @IsOptional()
+  n_codper_equ?: string;
+
+  @IsInt()
+  @Type(() => Number)
+  @IsOptional()
+  c_codmod_equ?: number;
+
+  @IsString()
+  @IsOptional()
+  c_codfac_equ?: string;
+
+  @IsString()
+  @IsOptional()
+  c_codesp_equ?: string;
+
+  @IsString()
+  @IsOptional()
+  c_codcur_equ?: string;
+
+  @IsString()
+  @IsOptional()
+  c_nomcur_equ?: string;
+}
+
+export class HorarioAsyncDto {
   @Type(() => Number)
   @IsInt()
   @IsNotEmpty()
@@ -10,11 +96,6 @@ export class CreateHorarioAsyncDto {
   @IsString()
   @IsNotEmpty()
   tipo: string;
-
-  @Type(() => Number)
-  @IsInt()
-  @IsNotEmpty()
-  curso_id: number;
 
   @Type(() => Number)
   @IsInt()

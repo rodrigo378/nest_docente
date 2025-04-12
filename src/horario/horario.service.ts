@@ -35,18 +35,71 @@ export class HorarioService {
   }
 
   async createHorarioAsync(createHorarioAsyncDto: CreateHorarioAsyncDto) {
-    const { n_horas, tipo, curso_id, turno_id } = createHorarioAsyncDto;
+    const { curso, horarios } = createHorarioAsyncDto;
+    let cursosCreados = 0;
 
-    const cursoAsync = await this.prismaService.horario.create({
-      data: {
-        n_horas,
-        tipo,
-        curso_id,
-        turno_id,
+    const cursoExistente = await this.prismaService.curso.findFirst({
+      where: {
+        n_codper: curso.n_codper,
+        c_codfac: curso.c_codfac,
+        c_codesp: curso.c_codesp,
+        c_codcur: curso.c_codcur,
+        n_ciclo: curso.n_ciclo,
+        turno_id: curso.turno_id,
       },
+      include: { cursosPadres: true },
     });
 
-    return { message: 'curso Asyncrono creado', curso: cursoAsync };
+    let cursoCreado = cursoExistente;
+
+    if (!cursoExistente) {
+      cursoCreado = await this.prismaService.curso.create({
+        data: {
+          n_codper: curso.n_codper,
+          c_codmod: curso.c_codmod,
+          c_codfac: curso.c_codfac,
+          c_codesp: curso.c_codesp,
+          c_codcur: curso.c_codcur,
+          c_nomcur: curso.c_nomcur,
+          n_ciclo: curso.n_ciclo,
+          c_area: curso.c_area,
+          turno_id: curso.turno_id,
+          n_codper_equ: curso.n_codper_equ || null,
+          c_codmod_equ: Number(curso.c_codmod_equ) || null,
+          c_codfac_equ: curso.c_codfac_equ || null,
+          c_codesp_equ: curso.c_codesp_equ || null,
+          c_codcur_equ: curso.c_codcur_equ || null,
+          c_nomcur_equ: curso.c_nomcur_equ || null,
+        },
+        include: { cursosPadres: true },
+      });
+      console.log(cursoCreado);
+
+      cursosCreados++;
+      console.log(cursosCreados);
+    }
+
+    for (const horario of horarios) {
+      await this.prismaService.horario.create({
+        data: {
+          n_horas: horario.n_horas,
+          tipo: horario.tipo,
+          curso_id: cursoCreado?.id || 0,
+          turno_id: horario.turno_id,
+        },
+      });
+    }
+
+    // const { n_horas, tipo, curso_id, turno_id } = createHorarioAsyncDto;
+    // const cursoAsync = await this.prismaService.horario.create({
+    //   data: {
+    //     n_horas,
+    //     tipo,
+    //     curso_id,
+    //     turno_id,
+    //   },
+    // });
+    // return { message: 'curso Asyncrono creado', curso: cursoAsync };
   }
 
   async verificarCruze(createHorarioArrayDto: CreateHorarioArrayDto) {
