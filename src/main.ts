@@ -21,3 +21,16 @@ async function bootstrap() {
 }
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
 bootstrap();
+
+//rodrigo ======
+//Aulas front
+//testear
+//Subir
+//agrupar
+//arreglar update
+//comentario
+
+//Victor =======
+//Crear asyncronos
+//Docentes
+//testear

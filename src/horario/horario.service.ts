@@ -590,7 +590,17 @@ export class HorarioService {
   //   };
   // }
 
+  //   const esCursoRegular =
+  //   cur?.cursosPadres.length !== 0 &&
+  //   cur?.cursosPadres[0].tipo !== 0;
+
+  // if (esCursoRegular && cruce && (mismoAula || mismoDocente)) {
+  //   errores.push(...);
+  // }
+
   async verificarCruzeUpdate(updateHorarioArrayDto: UpdateHorarioArrayDto) {
+    console.log('inicio funcion updateHorarioArrayDto');
+
     const errores: string[] = [];
 
     const todosLosHorarios: {
@@ -616,6 +626,7 @@ export class HorarioService {
 
         for (let j = i + 1; j < horarios.length; j++) {
           const h2 = horarios[j];
+
           if (h1.dia !== h2.dia) continue;
 
           const inicio2 = h2.h_inicio ? this.parseHora(h2.h_inicio) : null;
@@ -646,6 +657,8 @@ export class HorarioService {
       }
     }
 
+    console.log('todosLosHorarios => ', todosLosHorarios);
+
     // 2️⃣ Verificación con la BD excluyendo los horarios originales si ya existen
     for (const { h, curso } of todosLosHorarios) {
       const cur = await this.prismaService.curso.findFirst({
@@ -656,7 +669,12 @@ export class HorarioService {
       if (h.aula_id) condicionesOR.push({ aula_id: h.aula_id });
       if (h.docente_id) condicionesOR.push({ docente_id: h.docente_id });
 
+      console.log('h.aula_id => ', h.aula_id);
+      console.log('h.docente_id => ', h.docente_id);
+
       if (condicionesOR.length === 0) continue;
+
+      console.log('condicionesOR => ', condicionesOR);
 
       const existentes = await this.prismaService.horario.findMany({
         where: {
@@ -667,10 +685,15 @@ export class HorarioService {
         include: { curso: true },
       });
 
+      console.log('existentes => ', existentes);
+
       const inicio1 = h.h_inicio ? this.parseHora(h.h_inicio) : null;
       const fin1 = h.h_fin ? this.parseHora(h.h_fin) : null;
 
       if (!inicio1 || !fin1) continue;
+
+      console.log('inicio1 => ', inicio1);
+      console.log('fin1 => ', fin1);
 
       for (const e of existentes) {
         const inicio2 = this.parseHora(e.h_inicio || '');
@@ -681,12 +704,24 @@ export class HorarioService {
         const mismoDocente =
           h.docente_id && e.docente_id && h.docente_id === e.docente_id;
 
-        if (
-          cur?.cursosPadres.length !== 0 &&
-          cur?.cursosPadres[0].tipo !== 0 &&
-          cruce &&
-          (mismoAula || mismoDocente)
-        ) {
+        console.log('=========================');
+        console.log('cruce => ', cruce);
+        console.log('mismoAula => ', mismoAula);
+        console.log('mismoDocente => ', mismoDocente);
+        console.log(
+          'cur?.cursosPadres.length !== 0 => ',
+          cur?.cursosPadres.length !== 0,
+        );
+
+        console.log('cur?.cursosPadres.length => ', cur?.cursosPadres.length);
+        console.log('=========================');
+
+        const esCursoRegular =
+          cur?.cursosPadres.length !== 0 && cur?.cursosPadres[0].tipo !== 0;
+        console.log('esCursoRegular => ', esCursoRegular);
+
+        if (esCursoRegular && cruce && (mismoAula || mismoDocente)) {
+          console.log('entro');
           errores.push(
             `⛔ Conflicto con "${e.curso?.c_nomcur}" en BD el día ${h.dia}` +
               ` (${mismoAula ? 'misma aula' : ''}${mismoAula && mismoDocente ? ' y ' : ''}${mismoDocente ? 'mismo docente' : ''})`,
@@ -694,6 +729,8 @@ export class HorarioService {
         }
       }
     }
+
+    console.log('fin funcion updateHorarioArrayDto');
     return {
       success: errores.length === 0,
       errores,
@@ -751,12 +788,14 @@ export class HorarioService {
   async updateHorarioArray(updateHorarioArrayDto: UpdateHorarioArrayDto) {
     const verificacion = await this.verificarCruzeUpdate(updateHorarioArrayDto);
 
+    console.log('ver 1');
     if (!verificacion.success && updateHorarioArrayDto.verificar) {
       return {
         success: false,
         errores: verificacion.errores,
       };
     }
+    console.log('despues 1');
 
     const { dataArray } = updateHorarioArrayDto;
 
