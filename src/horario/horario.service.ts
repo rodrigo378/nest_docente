@@ -46,7 +46,7 @@ export class HorarioService {
       },
     });
 
-    return { message: 'curso Asyncrono creado', newCurso: cursoAsync };
+    return { message: 'curso Asyncrono creado', curso: cursoAsync };
   }
 
   async verificarCruze(createHorarioArrayDto: CreateHorarioArrayDto) {

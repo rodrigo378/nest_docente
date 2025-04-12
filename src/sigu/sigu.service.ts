@@ -178,6 +178,10 @@ export class SiguService {
         ...curso,
         tipoAgrupado: cursoMatch?.cursosPadres?.[0]?.tipo ?? null,
         vacante: Math.floor(Math.random() * (30 - 10 + 1)) + 10,
+        h_umaPlus:
+          Math.random() < 0.6
+            ? 0
+            : Math.floor(Math.random() * ((curso.n_ht ?? 1) - 1) + 1),
       };
     });
 

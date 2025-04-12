@@ -530,6 +530,23 @@ export class DocenteService {
   //   });
   // }
 
+  // async createDocente() {
+  //   const { c_codfac, nom_fac, c_nomdoc, h_min, h_max, tipo } = rea;
+
+  //   const newDocente = await this.prismaService.docente.create({
+  //     data: {
+  //       c_codfac,
+  //       nom_fac,
+  //       c_nomdoc,
+  //       h_min,
+  //       h_max,
+  //       tipo,
+  //     },
+  //   });
+
+  //   return { message: 'Docente creado', docente: newDocente };
+  // }
+
   async getDocentes(
     horario: boolean = false,
     curso: boolean = false,

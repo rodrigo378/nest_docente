@@ -14,7 +14,6 @@ datasource db {
 }
 
 model User {
-  // id           String       @id @default(uuid())
   id           Int          @id @default(autoincrement())
   nombre       String?
   apellido     String?
