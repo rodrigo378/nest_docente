@@ -49,7 +49,7 @@ export async function seedTurno() {
   `);
 
   const turnosConvertidos: any[] = turnosBD.map(
-    (turno: { any; c_codmod: string }) => ({
+    (turno: { any: any; c_codmod: string }) => ({
       ...turno,
       c_codmod: parseInt(turno.c_codmod, 10),
     }),

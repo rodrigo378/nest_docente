@@ -238,7 +238,7 @@ export class OtrosDto {
   nivel_learning?: string;
 }
 
-export class CreateDocenteDto {
+export class CreateDocenteDtdsadasdo {
   // Información Personal Docente
   @IsNotEmpty()
   @IsString()

@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { CreateDocenteDto } from './dto/createDocenteDto';
 
 @Injectable()
 export class DocenteService {
@@ -530,22 +531,23 @@ export class DocenteService {
   //   });
   // }
 
-  // async createDocente() {
-  //   const { c_codfac, nom_fac, c_nomdoc, h_min, h_max, tipo } = rea;
+  async createDocente(createDocenteDto: CreateDocenteDto) {
+    const { c_codfac, nom_fac, c_nomdoc, h_min, h_max, tipo } =
+      createDocenteDto;
 
-  //   const newDocente = await this.prismaService.docente.create({
-  //     data: {
-  //       c_codfac,
-  //       nom_fac,
-  //       c_nomdoc,
-  //       h_min,
-  //       h_max,
-  //       tipo,
-  //     },
-  //   });
+    const newDocente = await this.prismaService.docente.create({
+      data: {
+        c_codfac,
+        nom_fac,
+        c_nomdoc,
+        h_min,
+        h_max,
+        tipo,
+      },
+    });
 
-  //   return { message: 'Docente creado', docente: newDocente };
-  // }
+    return { message: 'Docente creado', docente: newDocente };
+  }
 
   async getDocentes(
     horario: boolean = false,

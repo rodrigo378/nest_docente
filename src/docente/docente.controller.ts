@@ -1,10 +1,13 @@
 import {
+  Body,
   // Body,
   Controller,
   Get,
+  Post,
   Query,
 } from '@nestjs/common';
 import { DocenteService } from './docente.service';
+import { CreateDocenteDto } from './dto/createDocenteDto';
 
 @Controller('docente')
 export class DocenteController {
@@ -19,6 +22,10 @@ export class DocenteController {
     return this.docenteService.getDocentes(horario, curso, aula);
   }
 
+  @Post('')
+  createDocente(@Body() createDocenteDto: CreateDocenteDto) {
+    return this.docenteService.createDocente(createDocenteDto);
+  }
   // @Post('')
   // @UseGuards(JwtAuthGuard)
   // createDocente(
