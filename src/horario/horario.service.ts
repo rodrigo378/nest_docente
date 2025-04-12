@@ -1207,6 +1207,7 @@ export class HorarioService {
       tipo: 1,
       shortname,
     }));
+
     dataGrupo.push({
       curso_id: padre_id,
       padre_curso_id: padre_id,
