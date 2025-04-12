@@ -15,7 +15,7 @@ export class AulaService {
     if (horario) {
       include.Horario = {
         orderBy: { id: 'desc' },
-        distinct: ['dia'],
+        distinct: ['dia', 'h_inicio', 'h_fin'],
         select: {
           id: true,
           dia: true,
