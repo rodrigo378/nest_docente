@@ -8,7 +8,7 @@ export async function seedTurno() {
   console.log('🌱 Seeding Turno...');
 
   const turnosBD: any[] = await prismaReadonly.$queryRawUnsafe(`
-    SELECT
+    SELECT DISTINCT
       a.n_codper,
       a.n_codpla,
       b.c_codfac,
