@@ -62,4 +62,17 @@ export class AuthController {
   signin(@Body() signinDto: SigninDto) {
     return this.authService.signin(signinDto);
   }
+
+  @Post('logout')
+  logout(@Res({ passthrough: true }) res: Response) {
+    // Borra la cookie llamada 'token'
+    res.clearCookie('token', {
+      httpOnly: true,
+      secure: false, // Usa true si estás en producción con HTTPS
+      sameSite: 'strict',
+      path: '/',
+    });
+
+    return { message: 'Sesión cerrada correctamente' };
+  }
 }
