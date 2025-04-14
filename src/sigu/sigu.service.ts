@@ -122,6 +122,7 @@ export class SiguService {
       GROUP BY
         tp.n_codper,
         tp.c_codmod,
+        tb.c_nommod,  
         tp.c_codfac,
         tp.c_codesp,
         tp.c_area,
