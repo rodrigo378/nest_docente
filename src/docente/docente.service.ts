@@ -568,7 +568,6 @@ export class DocenteService {
           n_horas: true,
           tipo: true,
           curso: curso ? { include: { cursosPadres: true } } : false,
-          // curso: ,
           aula: aula ? true : false,
         },
       };

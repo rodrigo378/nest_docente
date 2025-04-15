@@ -1306,6 +1306,7 @@ export class HorarioService {
     c_codfac?: string,
     c_codesp?: string,
     c_codcur?: string,
+    n_ciclo?: number,
     turno_id?: number,
     filtroBusqueda?: string,
     skip?: number,
@@ -1320,6 +1321,7 @@ export class HorarioService {
       ...(c_codfac && { c_codfac }),
       ...(c_codesp && { c_codesp }),
       ...(c_codcur && { c_codcur }),
+      ...(n_ciclo && { n_ciclo }),
       ...(turno_id && { turno_id }),
     };
 
@@ -1382,71 +1384,4 @@ export class HorarioService {
       totalPages: Math.ceil(total / take),
     };
   }
-
-  // async getCursos(
-  //   c_codmod?: number,
-  //   n_codper?: string,
-  //   c_codfac?: string,
-  //   c_codesp?: string,
-  //   c_codcur?: string,
-  //   turno_id?: number,
-  //   skip?: number,
-  //   take?: number,
-  // ) {
-  //   const where = {
-  //     ...(c_codmod && { c_codmod }),
-  //     ...(n_codper && { n_codper }),
-  //     ...(c_codfac && { c_codfac }),
-  //     ...(c_codesp && { c_codesp }),
-  //     ...(c_codcur && { c_codcur }),
-  //     ...(turno_id && { turno_id }),
-  //   };
-
-  //   if (take === undefined || take === 0) {
-  //     const data = await this.prismaService.curso.findMany({
-  //       where,
-  //       include: {
-  //         Horario: { include: { Docente: true, aula: true } },
-  //         turno: true,
-  //         cursosPadres: { include: { cursoPadre: true } },
-  //         cursosHijos: {
-  //           include: { cursosHijo: { include: { turno: true } } },
-  //         },
-  //       },
-  //     });
-
-  //     return {
-  //       data,
-  //       total: data.length,
-  //       skip: 0,
-  //       take: 0,
-  //       totalPages: 1,
-  //     };
-  //   }
-
-  //   const [data, total] = await Promise.all([
-  //     this.prismaService.curso.findMany({
-  //       where,
-  //       skip: skip || 0,
-  //       take,
-  //       include: {
-  //         Horario: { include: { Docente: true, aula: true } },
-  //         turno: true,
-  //         cursosPadres: { include: { cursoPadre: true } },
-  //         cursosHijos: {
-  //           include: { cursosHijo: { include: { turno: true } } },
-  //         },
-  //       },
-  //     }),
-  //     this.prismaService.curso.count({ where }),
-  //   ]);
-
-  //   return {
-  //     data,
-  //     total,
-  //     skip: skip || 0,
-  //     take,
-  //     totalPages: Math.ceil(total / take),
-  //   };
-  // }
 }

@@ -1,5 +1,6 @@
-import { Controller, Get } from '@nestjs/common';
+import { Body, Controller, Get, Put } from '@nestjs/common';
 import { UserService } from './user.service';
+import { UpdateUserDto } from './dto/updateUserDto';
 
 @Controller('user')
 export class UserController {
@@ -7,6 +8,11 @@ export class UserController {
 
   @Get('')
   getUsuarios() {
-    return this.userService.getUsuarios();
+    return this.userService.getUsers();
+  }
+
+  @Put('')
+  updateUser(@Body() updateUserDto: UpdateUserDto) {
+    return this.userService.updateUser(updateUserDto);
   }
 }
