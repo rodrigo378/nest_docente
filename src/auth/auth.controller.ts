@@ -69,7 +69,7 @@ export class AuthController {
     res.clearCookie('token', {
       httpOnly: true,
       secure: false, // Usa true si estás en producción con HTTPS
-      sameSite: 'strict',
+      // sameSite: 'strict',
       path: '/',
     });
 

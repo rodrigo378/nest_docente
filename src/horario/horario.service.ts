@@ -599,9 +599,8 @@ export class HorarioService {
   // }
 
   async verificarCruzeUpdate(updateHorarioArrayDto: UpdateHorarioArrayDto) {
-    console.log('inicio funcion updateHorarioArrayDto');
-
-    const errores: string[] = [];
+    // const errores: string[] = [];
+    const errores = new Set<string>();
 
     const todosLosHorarios: {
       h: HorarioUpdateDto;
@@ -610,11 +609,6 @@ export class HorarioService {
 
     for (const data of updateHorarioArrayDto.dataArray) {
       const { curso, horarios } = data;
-
-      const cur = await this.prismaService.curso.findFirst({
-        where: { c_codcur: curso.c_codcur, turno_id: curso.turno_id },
-        include: { cursosPadres: true },
-      });
 
       for (let i = 0; i < horarios.length; i++) {
         const h1 = horarios[i];
@@ -640,13 +634,8 @@ export class HorarioService {
           const mismoDocente =
             h1.docente_id && h2.docente_id && h1.docente_id === h2.docente_id;
 
-          if (
-            cur?.cursosPadres.length !== 0 &&
-            cur?.cursosPadres[0].tipo !== 0 &&
-            cruceHoras &&
-            (mismoAula || mismoDocente)
-          ) {
-            errores.push(
+          if (cruceHoras && (mismoAula || mismoDocente)) {
+            errores.add(
               `⛔ Conflicto interno en curso "${curso.c_nomcur}" el día ${h1.dia}` +
                 ` (${mismoAula ? 'misma aula' : ''}${mismoAula && mismoDocente ? ' y ' : ''}${mismoDocente ? 'mismo docente' : ''})`,
             );
@@ -656,8 +645,6 @@ export class HorarioService {
         todosLosHorarios.push({ h: h1, curso });
       }
     }
-
-    console.log('todosLosHorarios => ', todosLosHorarios);
 
     // 2️⃣ Verificación con la BD excluyendo los horarios originales si ya existen
     for (const { h, curso } of todosLosHorarios) {
@@ -669,12 +656,7 @@ export class HorarioService {
       if (h.aula_id) condicionesOR.push({ aula_id: h.aula_id });
       if (h.docente_id) condicionesOR.push({ docente_id: h.docente_id });
 
-      console.log('h.aula_id => ', h.aula_id);
-      console.log('h.docente_id => ', h.docente_id);
-
       if (condicionesOR.length === 0) continue;
-
-      console.log('condicionesOR => ', condicionesOR);
 
       const existentes = await this.prismaService.horario.findMany({
         where: {
@@ -685,15 +667,10 @@ export class HorarioService {
         include: { curso: true },
       });
 
-      console.log('existentes => ', existentes);
-
       const inicio1 = h.h_inicio ? this.parseHora(h.h_inicio) : null;
       const fin1 = h.h_fin ? this.parseHora(h.h_fin) : null;
 
       if (!inicio1 || !fin1) continue;
-
-      console.log('inicio1 => ', inicio1);
-      console.log('fin1 => ', fin1);
 
       for (const e of existentes) {
         const inicio2 = this.parseHora(e.h_inicio || '');
@@ -704,25 +681,11 @@ export class HorarioService {
         const mismoDocente =
           h.docente_id && e.docente_id && h.docente_id === e.docente_id;
 
-        console.log('=========================');
-        console.log('cruce => ', cruce);
-        console.log('mismoAula => ', mismoAula);
-        console.log('mismoDocente => ', mismoDocente);
-        console.log(
-          'cur?.cursosPadres.length !== 0 => ',
-          cur?.cursosPadres.length !== 0,
-        );
+        // const esCursoRegular =
+        //   cur?.cursosPadres.length !== 0 && cur?.cursosPadres[0].tipo !== 0;
 
-        console.log('cur?.cursosPadres.length => ', cur?.cursosPadres.length);
-        console.log('=========================');
-
-        const esCursoRegular =
-          cur?.cursosPadres.length !== 0 && cur?.cursosPadres[0].tipo !== 0;
-        console.log('esCursoRegular => ', esCursoRegular);
-
-        if (esCursoRegular && cruce && (mismoAula || mismoDocente)) {
-          console.log('entro');
-          errores.push(
+        if (cruce && (mismoAula || mismoDocente)) {
+          errores.add(
             `⛔ Conflicto con "${e.curso?.c_nomcur}" en BD el día ${h.dia}` +
               ` (${mismoAula ? 'misma aula' : ''}${mismoAula && mismoDocente ? ' y ' : ''}${mismoDocente ? 'mismo docente' : ''})`,
           );
@@ -730,10 +693,9 @@ export class HorarioService {
       }
     }
 
-    console.log('fin funcion updateHorarioArrayDto');
     return {
-      success: errores.length === 0,
-      errores,
+      success: errores.size === 0,
+      errores: Array.from(errores),
     };
   }
 
@@ -788,14 +750,12 @@ export class HorarioService {
   async updateHorarioArray(updateHorarioArrayDto: UpdateHorarioArrayDto) {
     const verificacion = await this.verificarCruzeUpdate(updateHorarioArrayDto);
 
-    console.log('ver 1');
     if (!verificacion.success && updateHorarioArrayDto.verificar) {
       return {
         success: false,
         errores: verificacion.errores,
       };
     }
-    console.log('despues 1');
 
     const { dataArray } = updateHorarioArrayDto;
 
