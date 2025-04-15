@@ -10,6 +10,7 @@ export class UserService {
   async getUsers() {
     return await this.prismaService.user.findMany({
       select: {
+        id: true,
         nombre: true,
         apellido: true,
         genero: true,
