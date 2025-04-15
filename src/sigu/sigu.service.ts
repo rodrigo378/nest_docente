@@ -70,122 +70,120 @@ export class SiguService {
   }
 
   async getCursos(getCursoDto: GetCursoDto) {
+    const turno = await this.prismaService.turno.findFirst({
+      where: {
+        c_codfac: getCursoDto.c_codfac,
+        c_codesp: getCursoDto.c_codesp,
+        n_ciclo: Number(getCursoDto.n_ciclo),
+        c_codmod: Number(getCursoDto.c_codmod),
+        c_grpcur: getCursoDto.c_grpcur,
+      },
+    });
+
+    console.log('turno => ', turno);
+
+    if (!turno) {
+      return [];
+    }
+
     const cursosSigu = await this.prismaReadonly.$queryRawUnsafe<CursoQuery[]>(
       `SELECT
-        tp.n_codper,
-        tp.c_codmod,
-        tb.c_nommod,
-        tp.c_codfac,
-        t_f.nom_fac,
-        tp.c_codesp,
-        t_e.nomesp,
-        tp.c_area,
-        tpec.c_nom_cur_area,
-        tp.n_ciclo,	
-        tp.c_ciclo,
-        tp.c_codcur,
-        tp.c_nomcur,
-        tp.n_ht,
-        tp.n_hp,
-        tpee.n_codper_equ,
-        tpee.c_codmod_equ,
-        tpee.c_codfac_equ,
-        tpee.c_codesp_equ,
-        tpee.c_codcur_equ,
-        tpee.c_nomcur_equ,
-        tp.c_curup as h_umaPlus
-      FROM
-        tb_plan_estudio_curso tp
-        INNER JOIN tb_modalidad tb ON tb.c_codmod = tp.c_codmod 
-        INNER JOIN tb_plan_estudio_curso_area tpec ON tpec.c_cod_cur_area = tp.c_area
-        INNER JOIN tb_facultad t_f ON t_f.cod_fac = tp.c_codfac
-		INNER JOIN tb_especialidad t_e ON t_e.codesp = tp.c_codesp
-        left JOIN (SELECT distinct
-					te.c_codcur,
-					te.c_codfac,
-					te.c_codesp,
-					te.c_codmod,
-					te.n_codper_equ,
-					te.c_codmod_equ,
-					te.c_codfac_equ,
-					te.c_codesp_equ,
-					te.c_codcur_equ,
-					tp2.c_nomcur AS c_nomcur_equ
-			FROM tb_plan_estudio_equ te
-			INNER JOIN tb_plan_estudio_curso tp2 ON te.c_codcur_equ = tp2.c_codcur
-			WHERE te.n_codper_equ in (2023, 2025)) tpee 
-			ON tpee.c_codcur = tp.c_codcur 
-			and tpee.c_codmod = tp.c_codmod 
-			and tpee.c_codfac = tp.c_codfac
-			and tpee.c_codesp = tp.c_codesp
-      WHERE
-        tp.n_codper IN ( 2023, 2025 ) 
-        AND tp.c_codfac = ?
-        AND tp.c_codesp = ?
-        AND tp.n_ciclo = ?
-        AND tp.c_codmod = ?
-      GROUP BY
-        tp.n_codper,
-        tp.c_codmod,
-        tb.c_nommod,
-        tp.c_codfac,
-        t_f.nom_fac,
-        tp.c_codesp,
-        t_e.nomesp,
-        tp.c_area,
-        tpec.c_nom_cur_area,
-        tp.c_codcur,
-        tp.c_nomcur,
-        tp.n_ciclo,
-        tp.c_ciclo,
-        tp.n_ht,
-        tp.n_hp,
-        tpee.n_codper_equ,
-        tpee.c_codmod_equ,
-        tpee.c_codfac_equ,
-        tpee.c_codesp_equ,
-        tpee.c_codcur_equ,
-        tpee.c_nomcur_equ,
-        tp.c_curup
-      ORDER BY
-        tp.c_nomcur;
-      `,
+          tp.n_codper,
+          tp.c_codmod,
+          tb.c_nommod,
+          tp.c_codfac,
+          t_f.nom_fac,
+          tp.c_codesp,
+          t_e.nomesp,
+          tp.c_area,
+          tpec.c_nom_cur_area,
+          tp.n_ciclo,	
+          tp.c_ciclo,
+          tp.c_codcur,
+          tp.c_nomcur,
+          tp.n_ht,
+          tp.n_hp,
+          tpee.n_codper_equ,
+          tpee.c_codmod_equ,
+          tpee.c_codfac_equ,
+          tpee.c_codesp_equ,
+          tpee.c_codcur_equ,
+          tpee.c_nomcur_equ,
+          tp.c_curup as h_umaPlus
+        FROM
+          tb_plan_estudio_curso tp
+          INNER JOIN tb_modalidad tb ON tb.c_codmod = tp.c_codmod 
+          INNER JOIN tb_plan_estudio_curso_area tpec ON tpec.c_cod_cur_area = tp.c_area
+          INNER JOIN tb_facultad t_f ON t_f.cod_fac = tp.c_codfac
+          INNER JOIN tb_especialidad t_e ON t_e.codesp = tp.c_codesp
+          LEFT JOIN (
+              SELECT DISTINCT
+                te.c_codcur,
+                te.c_codfac,
+                te.c_codesp,
+                te.c_codmod,
+                te.n_codper_equ,
+                te.c_codmod_equ,
+                te.c_codfac_equ,
+                te.c_codesp_equ,
+                te.c_codcur_equ,
+                tp2.c_nomcur AS c_nomcur_equ
+              FROM tb_plan_estudio_equ te
+              INNER JOIN tb_plan_estudio_curso tp2 ON te.c_codcur_equ = tp2.c_codcur
+              WHERE te.n_codper_equ IN (2023, 2025)
+          ) tpee 
+            ON tpee.c_codcur = tp.c_codcur 
+           AND tpee.c_codmod = tp.c_codmod 
+           AND tpee.c_codfac = tp.c_codfac
+           AND tpee.c_codesp = tp.c_codesp
+           AND tpee.n_codper_equ = tp.n_codper
+        WHERE
+          tp.n_codper IN (2023, 2025) 
+          AND tp.c_codfac = ?
+          AND tp.c_codesp = ?
+          AND tp.n_ciclo = ?
+          AND tp.c_codmod = ?
+        GROUP BY
+          tp.n_codper, tp.c_codmod, tb.c_nommod, tp.c_codfac, t_f.nom_fac,
+          tp.c_codesp, t_e.nomesp, tp.c_area, tpec.c_nom_cur_area,
+          tp.c_codcur, tp.c_nomcur, tp.n_ciclo, tp.c_ciclo,
+          tp.n_ht, tp.n_hp,
+          tpee.n_codper_equ, tpee.c_codmod_equ, tpee.c_codfac_equ,
+          tpee.c_codesp_equ, tpee.c_codcur_equ, tpee.c_nomcur_equ,
+          tp.c_curup
+        ORDER BY tp.c_nomcur;`,
       getCursoDto.c_codfac,
       getCursoDto.c_codesp,
       getCursoDto.n_ciclo,
       getCursoDto.c_codmod,
     );
 
-    // 🔍 Buscar si alguno de los cursosSigu tiene cursosPadres en base de datos
-    const cursosConAgrupacion = await this.prismaService.curso.findMany({
+    const cursosLocales = await this.prismaService.curso.findMany({
       where: {
-        OR: cursosSigu.map((c) => ({
-          n_codper: String(c.n_codper),
-          c_codmod: Number(c.c_codmod),
-          c_codfac: c.c_codfac,
-          c_codesp: c.c_codesp,
-          c_codcur: c.c_codcur,
-        })),
+        turno_id: turno.id,
       },
       include: {
         cursosPadres: true,
       },
     });
 
-    // 🧠 Mapear y retornar cursos con campo `agrupado`
     const cursosFinal = cursosSigu.map((curso) => {
-      const cursoMatch = cursosConAgrupacion.find(
+      const match = cursosLocales.find(
         (c) =>
-          Number(c.n_codper) === curso.n_codper &&
-          c.c_codmod === Number(curso.c_codmod) &&
+          String(c.n_codper) === String(curso.n_codper) &&
+          Number(c.c_codmod) === Number(curso.c_codmod) &&
           c.c_codfac === curso.c_codfac &&
           c.c_codesp === curso.c_codesp &&
           c.c_codcur === curso.c_codcur,
       );
 
+      const tipoAgrupado = match?.cursosPadres?.length
+        ? match.cursosPadres[0].tipo
+        : null;
+
       return {
         ...curso,
-        tipoAgrupado: cursoMatch?.cursosPadres?.[0]?.tipo ?? null,
+        tipoAgrupado,
         vacante: Math.floor(Math.random() * (30 - 10 + 1)) + 10,
       };
     });

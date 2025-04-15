@@ -288,6 +288,7 @@ model Turno {
   Horario Horario[]
   Curso   Curso[]
 
+  @@unique([n_codper, n_codpla, c_codfac, c_codesp, c_grpcur, c_codmod, n_ciclo])
   @@map("turno")
 }
 

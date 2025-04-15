@@ -1282,21 +1282,28 @@ export class HorarioService {
   async deleteAgrupado(padre_curso_id: number) {
     const grupoIds = await this.prismaService.grupo_sincro.findMany({
       where: { padre_curso_id },
-      select: { id: true },
+      select: { id: true, curso_id: true },
     });
 
     const ids = grupoIds.map((g) => g.id);
+    const cursoIds = grupoIds.map((g) => g.curso_id);
+
+    console.log('cursoIds => ', cursoIds);
+
+    await this.prismaService.horario.deleteMany({
+      where: { curso_id: { in: cursoIds } },
+    });
 
     if (ids.length === 0) return;
 
-    const results = await this.prismaService.grupo_sincro.deleteMany({
+    await this.prismaService.grupo_sincro.deleteMany({
       where: {
         id: { in: ids },
       },
     });
 
     return {
-      message: `Se eliminaron el grupo_sincro con padre_id ${padre_curso_id} total => ${results.count}`,
+      message: `Se elimino grupo de cursos`,
     };
   }
 
