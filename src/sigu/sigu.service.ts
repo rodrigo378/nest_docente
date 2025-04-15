@@ -90,7 +90,8 @@ export class SiguService {
         tpee.c_codfac_equ,
         tpee.c_codesp_equ,
         tpee.c_codcur_equ,
-        tpee.c_nomcur_equ
+        tpee.c_nomcur_equ,
+        tp.c_curup as h_umaPlus
       FROM
         tb_plan_estudio_curso tp
         INNER JOIN tb_modalidad tb ON tb.c_codmod = tp.c_codmod 
@@ -133,12 +134,13 @@ export class SiguService {
         tp.c_ciclo,
         tp.n_ht,
         tp.n_hp,
-		tpee.n_codper_equ,
+        tpee.n_codper_equ,
         tpee.c_codmod_equ,
         tpee.c_codfac_equ,
         tpee.c_codesp_equ,
         tpee.c_codcur_equ,
-        tpee.c_nomcur_equ
+        tpee.c_nomcur_equ,
+        tp.c_curup
       ORDER BY
         tp.c_nomcur;
       `,
@@ -179,10 +181,6 @@ export class SiguService {
         ...curso,
         tipoAgrupado: cursoMatch?.cursosPadres?.[0]?.tipo ?? null,
         vacante: Math.floor(Math.random() * (30 - 10 + 1)) + 10,
-        h_umaPlus:
-          Math.random() < 0.6
-            ? 0
-            : Math.floor(Math.random() * ((curso.n_ht ?? 1) - 1) + 1),
       };
     });
 
