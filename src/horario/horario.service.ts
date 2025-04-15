@@ -1105,7 +1105,7 @@ export class HorarioService {
     const { padre_id, hijos_id } = createTransversalDto;
     const errores: string[] = [];
 
-    // Obtener datos del curso padre con su turno
+    // 1. Obtener datos del curso padre con su turno
     const cursoPadre = await this.prismaService.curso.findUnique({
       where: { id: padre_id },
       include: { turno: true },
@@ -1123,6 +1123,7 @@ export class HorarioService {
 
     const turnosIds = cursosHijos.map((c) => c.turno_id);
 
+    // 2. Validar conflictos de horarios, aula y docente
     for (const padreHorario of padreHorarios) {
       const inicio1 = this.parseHora(padreHorario.h_inicio || '');
       const fin1 = this.parseHora(padreHorario.h_fin || '');
@@ -1151,7 +1152,7 @@ export class HorarioService {
 
         if (cruceHoras || mismoAula || mismoDocente) {
           errores.push(
-            `⛔ Conflicto con curso "${horarioBD.curso.c_nomcur}" en BD el día ${padreHorario.dia} ` +
+            `⛔ Conflicto con curso "${horarioBD.curso.c_nomcur}" el día ${padreHorario.dia} ` +
               `entre ${this.formatoHora(inicio1)} - ${this.formatoHora(fin1)} y ${this.formatoHora(inicio2)} - ${this.formatoHora(fin2)} ` +
               `(${mismoAula ? 'misma aula' : ''}${mismoAula && mismoDocente ? ' y ' : ''}${mismoDocente ? 'mismo docente' : ''})`,
           );
@@ -1159,7 +1160,7 @@ export class HorarioService {
       }
     }
 
-    // Mostrar errores si existen y no continuar
+    // 3. Detener si hay errores
     if (errores.length > 0) {
       throw new BadRequestException({
         mensaje:
@@ -1168,39 +1169,54 @@ export class HorarioService {
       });
     }
 
-    // Iniciar shortname con datos del padre
+    // 4. Generar shortname inicial
     let shortname = `${cursoPadre.c_codcur}-1-${cursoPadre.n_codper.slice(-3)}-${cursoPadre.turno.c_grpcur}`;
-
     for (const hijo_id of hijos_id) {
       const cursoHijo = await this.prismaService.curso.findUnique({
         where: { id: hijo_id },
         include: { turno: true },
       });
-
       if (!cursoHijo) continue;
-
       shortname += cursoHijo.turno.c_grpcur;
     }
 
+    // 5. Verificar unicidad del shortname y generar uno único
+    let finalShortname = shortname;
+    let intento = 1;
+
+    while (
+      await this.prismaService.grupo_sincro.findFirst({
+        where: { shortname: finalShortname },
+      })
+    ) {
+      intento++;
+      finalShortname = `${shortname}-${intento}`;
+    }
+
+    // 6. Preparar datos para crear vínculos
     const dataGrupo = hijos_id.map((hijo_id) => ({
       curso_id: hijo_id,
       padre_curso_id: padre_id,
       tipo: 0,
-      shortname: shortname,
+      shortname: finalShortname,
     }));
+
     dataGrupo.push({
       curso_id: padre_id,
       padre_curso_id: padre_id,
       tipo: 0,
-      shortname: shortname,
+      shortname: finalShortname,
     });
 
+    // 7. Crear vínculos en grupo_sincro
     await this.prismaService.grupo_sincro.createMany({ data: dataGrupo });
 
+    // 8. Eliminar horarios anteriores de los hijos
     await this.prismaService.horario.deleteMany({
       where: { curso_id: { in: hijos_id } },
     });
 
+    // 9. Clonar los horarios del padre a cada hijo
     for (const hijo_id of hijos_id) {
       const cursoHijo = await this.prismaService.curso.findUnique({
         where: { id: hijo_id },
@@ -1217,7 +1233,7 @@ export class HorarioService {
             tipo: padreHorario.tipo,
             aula_id: padreHorario.aula_id,
             docente_id: padreHorario.docente_id,
-            curso_id: padreHorario.curso_id,
+            curso_id: hijo_id,
             turno_id: cursoHijo?.turno_id || 0,
           },
         });
@@ -1226,7 +1242,7 @@ export class HorarioService {
 
     return {
       mensaje: '✅ Cursos transversales asociados correctamente',
-      shortname,
+      shortname: finalShortname,
     };
   }
 

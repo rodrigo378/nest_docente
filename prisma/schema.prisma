@@ -336,6 +336,7 @@ model grupo_sincro {
 
   shortname String
 
+  @@unique([shortname])
   @@map("grupo_sincro")
 }
 
