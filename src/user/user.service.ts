@@ -21,6 +21,20 @@ export class UserService {
     });
   }
 
+  async getUser(id: number) {
+    return await this.prismaService.user.findMany({
+      where: { id },
+      select: {
+        nombre: true,
+        apellido: true,
+        genero: true,
+        grado: true,
+        estado: true,
+        email: true,
+      },
+    });
+  }
+
   async updateUser(updateUserDto: UpdateUserDto) {
     const { id, password, ...rest } = updateUserDto;
 
