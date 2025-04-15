@@ -76,10 +76,12 @@ export class SiguService {
         tp.c_codmod,
         tb.c_nommod,
         tp.c_codfac,
+        t_f.nom_fac,
         tp.c_codesp,
+        t_e.nomesp,
         tp.c_area,
         tpec.c_nom_cur_area,
-        tp.n_ciclo,
+        tp.n_ciclo,	
         tp.c_ciclo,
         tp.c_codcur,
         tp.c_nomcur,
@@ -96,6 +98,8 @@ export class SiguService {
         tb_plan_estudio_curso tp
         INNER JOIN tb_modalidad tb ON tb.c_codmod = tp.c_codmod 
         INNER JOIN tb_plan_estudio_curso_area tpec ON tpec.c_cod_cur_area = tp.c_area
+        INNER JOIN tb_facultad t_f ON t_f.cod_fac = tp.c_codfac
+		INNER JOIN tb_especialidad t_e ON t_e.codesp = tp.c_codesp
         left JOIN (SELECT distinct
 					te.c_codcur,
 					te.c_codfac,
@@ -123,9 +127,11 @@ export class SiguService {
       GROUP BY
         tp.n_codper,
         tp.c_codmod,
-        tb.c_nommod,  
+        tb.c_nommod,
         tp.c_codfac,
+        t_f.nom_fac,
         tp.c_codesp,
+        t_e.nomesp,
         tp.c_area,
         tpec.c_nom_cur_area,
         tp.c_codcur,

@@ -17,7 +17,9 @@ export async function seedCurso() {
         tp.c_codmod,
         tb.c_nommod,
         tp.c_codfac,
+        t_f.nom_fac,
         tp.c_codesp,
+        t_e.nomesp,
         tp.c_area,
         tpec.c_nom_cur_area,
         tp.n_ciclo,
@@ -34,9 +36,11 @@ export async function seedCurso() {
         tpee.c_nomcur_equ
       FROM
         tb_plan_estudio_curso tp
-        INNER JOIN tb_modalidad tb ON tb.c_codmod = tp.c_codmod
-        INNER JOIN tb_plan_estudio_curso_area tpec ON tpec.c_cod_cur_area = tp.c_area
-        left JOIN (SELECT distinct
+      INNER JOIN tb_modalidad tb ON tb.c_codmod = tp.c_codmod
+      INNER JOIN tb_plan_estudio_curso_area tpec ON tpec.c_cod_cur_area = tp.c_area
+      INNER JOIN tb_facultad t_f ON t_f.cod_fac = tp.c_codfac
+      INNER JOIN tb_especialidad t_e ON t_e.codesp = tp.c_codesp
+      left JOIN (SELECT distinct
           te.c_codcur,
           te.c_codfac,
           te.c_codesp,
@@ -65,7 +69,9 @@ export async function seedCurso() {
         tp.c_codmod,
         tb.c_nommod,   
         tp.c_codfac,
+        t_f.nom_fac,
         tp.c_codesp,
+        t_e.nomesp,
         tp.c_area,
         tpec.c_nom_cur_area,
         tp.c_codcur,
@@ -94,7 +100,9 @@ export async function seedCurso() {
       n_codper: String(curso.n_codper),
       c_codmod: Number(curso.c_codmod),
       c_codfac: curso.c_codfac,
+      nom_fac: curso.nom_fac,
       c_codesp: curso.c_codesp,
+      nomesp: curso.nomesp,
       c_codcur: curso.c_codcur,
       c_nomcur: curso.c_nomcur,
       n_ciclo: curso.n_ciclo,

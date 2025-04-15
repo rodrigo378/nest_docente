@@ -296,7 +296,9 @@ model Curso {
   n_codper String
   c_codmod Int
   c_codfac String
+  nom_fac  String
   c_codesp String
+  nomesp   String
   c_codcur String
   c_nomcur String
   n_ciclo  Int

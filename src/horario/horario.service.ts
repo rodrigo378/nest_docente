@@ -60,7 +60,9 @@ export class HorarioService {
           n_codper: curso.n_codper,
           c_codmod: curso.c_codmod,
           c_codfac: curso.c_codfac,
+          nom_fac: curso.nom_fac,
           c_codesp: curso.c_codesp,
+          nomesp: curso.nomesp,
           c_codcur: curso.c_codcur,
           c_nomcur: curso.c_nomcur,
           n_ciclo: curso.n_ciclo,
@@ -268,7 +270,9 @@ export class HorarioService {
             n_codper: curso.n_codper,
             c_codmod: curso.c_codmod,
             c_codfac: curso.c_codfac,
+            nom_fac: curso.nom_fac,
             c_codesp: curso.c_codesp,
+            nomesp: curso.nomesp,
             c_codcur: curso.c_codcur,
             c_nomcur: curso.c_nomcur,
             n_ciclo: curso.n_ciclo,
@@ -785,7 +789,9 @@ export class HorarioService {
             n_codper: curso.n_codper,
             c_codmod: curso.c_codmod,
             c_codfac: curso.c_codfac,
+            nom_fac: curso.nom_fac,
             c_codesp: curso.c_codesp,
+            nomesp: curso.nomesp,
             c_codcur: curso.c_codcur,
             c_nomcur: curso.c_nomcur,
             n_ciclo: curso.n_ciclo,
@@ -1301,10 +1307,14 @@ export class HorarioService {
     c_codesp?: string,
     c_codcur?: string,
     turno_id?: number,
+    filtroBusqueda?: string,
     skip?: number,
     take?: number,
   ) {
-    const where = {
+    const where: {
+      [key: string]: any;
+      AND?: any[];
+    } = {
       ...(c_codmod && { c_codmod }),
       ...(n_codper && { n_codper }),
       ...(c_codfac && { c_codfac }),
@@ -1313,17 +1323,36 @@ export class HorarioService {
       ...(turno_id && { turno_id }),
     };
 
-    if (take === undefined || take === 0) {
+    if (filtroBusqueda) {
+      const texto = filtroBusqueda.toLowerCase();
+
+      if (!Array.isArray(where.AND)) {
+        where.AND = [];
+      }
+
+      where.AND.push({
+        OR: [
+          { c_codcur: { contains: texto } },
+          { c_nomcur: { contains: texto } },
+          { nom_fac: { contains: texto } },
+          { nomesp: { contains: texto } },
+        ],
+      });
+    }
+
+    const includeConfig = {
+      Horario: { include: { Docente: true, aula: true } },
+      turno: true,
+      cursosPadres: { include: { cursoPadre: true } },
+      cursosHijos: {
+        include: { cursosHijo: { include: { turno: true } } },
+      },
+    };
+
+    if (!take || take === 0) {
       const data = await this.prismaService.curso.findMany({
         where,
-        include: {
-          Horario: { include: { Docente: true, aula: true } },
-          turno: true,
-          cursosPadres: { include: { cursoPadre: true } },
-          cursosHijos: {
-            include: { cursosHijo: { include: { turno: true } } },
-          },
-        },
+        include: includeConfig,
       });
 
       return {
@@ -1340,14 +1369,7 @@ export class HorarioService {
         where,
         skip: skip || 0,
         take,
-        include: {
-          Horario: { include: { Docente: true, aula: true } },
-          turno: true,
-          cursosPadres: { include: { cursoPadre: true } },
-          cursosHijos: {
-            include: { cursosHijo: { include: { turno: true } } },
-          },
-        },
+        include: includeConfig,
       }),
       this.prismaService.curso.count({ where }),
     ]);
@@ -1360,4 +1382,71 @@ export class HorarioService {
       totalPages: Math.ceil(total / take),
     };
   }
+
+  // async getCursos(
+  //   c_codmod?: number,
+  //   n_codper?: string,
+  //   c_codfac?: string,
+  //   c_codesp?: string,
+  //   c_codcur?: string,
+  //   turno_id?: number,
+  //   skip?: number,
+  //   take?: number,
+  // ) {
+  //   const where = {
+  //     ...(c_codmod && { c_codmod }),
+  //     ...(n_codper && { n_codper }),
+  //     ...(c_codfac && { c_codfac }),
+  //     ...(c_codesp && { c_codesp }),
+  //     ...(c_codcur && { c_codcur }),
+  //     ...(turno_id && { turno_id }),
+  //   };
+
+  //   if (take === undefined || take === 0) {
+  //     const data = await this.prismaService.curso.findMany({
+  //       where,
+  //       include: {
+  //         Horario: { include: { Docente: true, aula: true } },
+  //         turno: true,
+  //         cursosPadres: { include: { cursoPadre: true } },
+  //         cursosHijos: {
+  //           include: { cursosHijo: { include: { turno: true } } },
+  //         },
+  //       },
+  //     });
+
+  //     return {
+  //       data,
+  //       total: data.length,
+  //       skip: 0,
+  //       take: 0,
+  //       totalPages: 1,
+  //     };
+  //   }
+
+  //   const [data, total] = await Promise.all([
+  //     this.prismaService.curso.findMany({
+  //       where,
+  //       skip: skip || 0,
+  //       take,
+  //       include: {
+  //         Horario: { include: { Docente: true, aula: true } },
+  //         turno: true,
+  //         cursosPadres: { include: { cursoPadre: true } },
+  //         cursosHijos: {
+  //           include: { cursosHijo: { include: { turno: true } } },
+  //         },
+  //       },
+  //     }),
+  //     this.prismaService.curso.count({ where }),
+  //   ]);
+
+  //   return {
+  //     data,
+  //     total,
+  //     skip: skip || 0,
+  //     take,
+  //     totalPages: Math.ceil(total / take),
+  //   };
+  // }
 }

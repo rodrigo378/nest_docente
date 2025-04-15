@@ -78,7 +78,15 @@ export class CursoUpdateDto {
 
   @IsString()
   @IsNotEmpty()
+  nom_fac: string;
+
+  @IsString()
+  @IsNotEmpty()
   c_codesp: string;
+
+  @IsString()
+  @IsNotEmpty()
+  nomesp: string;
 
   @IsString()
   @IsNotEmpty()

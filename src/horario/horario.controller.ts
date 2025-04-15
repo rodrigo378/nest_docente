@@ -53,6 +53,7 @@ export class HorarioController {
     @Query('c_codesp') c_codesp?: string,
     @Query('c_codcur') c_codcur?: string,
     @Query('turno_id') turno_id?: string,
+    @Query('filtroBusqueda') filtroBusqueda?: string,
     @Query('skip') skip?: string,
     @Query('take') take?: string,
   ) {
@@ -63,6 +64,7 @@ export class HorarioController {
       c_codesp,
       c_codcur,
       turno_id ? Number(turno_id) : undefined,
+      filtroBusqueda,
       skip ? Number(skip) : undefined,
       skip ? Number(take) : undefined,
     );
