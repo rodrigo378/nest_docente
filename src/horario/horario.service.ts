@@ -1338,6 +1338,7 @@ export class HorarioService {
           { c_nomcur: { contains: texto } },
           { nom_fac: { contains: texto } },
           { nomesp: { contains: texto } },
+          { turno: { c_grpcur: { contains: texto } } },
         ],
       });
     }
