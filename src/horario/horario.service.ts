@@ -647,11 +647,12 @@ export class HorarioService {
     }
 
     // 2️⃣ Verificación con la BD excluyendo los horarios originales si ya existen
-    for (const { h, curso } of todosLosHorarios) {
-      const cur = await this.prismaService.curso.findFirst({
-        where: { c_codcur: curso.c_codcur, turno_id: curso.turno_id },
-        include: { cursosPadres: true },
-      });
+    // for (const { h, curso } of todosLosHorarios) {
+    for (const { h } of todosLosHorarios) {
+      // const cur = await this.prismaService.curso.findFirst({
+      //   where: { c_codcur: curso.c_codcur, turno_id: curso.turno_id },
+      //   include: { cursosPadres: true },
+      // });
       const condicionesOR: any[] = [];
       if (h.aula_id) condicionesOR.push({ aula_id: h.aula_id });
       if (h.docente_id) condicionesOR.push({ docente_id: h.docente_id });
