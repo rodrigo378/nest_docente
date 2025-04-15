@@ -335,8 +335,6 @@ model grupo_sincro {
   tipo Int // 0 => transversal, 1=> agrupado
 
   shortname String
-
-  @@unique([shortname])
 }
 
 model Horario {
