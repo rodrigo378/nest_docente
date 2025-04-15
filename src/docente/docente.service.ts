@@ -1,6 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateDocenteDto } from './dto/createDocenteDto';
+import { UpdateDocenteDto } from './dto/updateDocenteDto';
 
 @Injectable()
 export class DocenteService {
@@ -574,5 +575,57 @@ export class DocenteService {
     }
 
     return this.prismaService.docente.findMany({ include });
+  }
+
+  async getDocente(
+    id: number,
+    horario: boolean = false,
+    curso: boolean = false,
+    aula: boolean = false,
+  ) {
+    const include: { Horario: any } = { Horario: false };
+
+    if (horario) {
+      include.Horario = {
+        orderBy: { id: 'desc' },
+        distinct: ['dia', 'h_inicio', 'h_fin'],
+        select: {
+          id: true,
+          dia: true,
+          h_inicio: true,
+          h_fin: true,
+          n_horas: true,
+          tipo: true,
+          curso: curso ? { include: { cursosPadres: true } } : false,
+          aula: aula ? true : false,
+        },
+      };
+    }
+
+    return this.prismaService.docente.findMany({ where: { id }, include });
+  }
+
+  async updateDocente(updateDocenteDto: UpdateDocenteDto) {
+    const docente = await this.prismaService.docente.findUnique({
+      where: { id: updateDocenteDto.id },
+    });
+
+    if (!docente) {
+      throw new NotFoundException(
+        `Docente con id ${updateDocenteDto.id} no encontrado`,
+      );
+    }
+
+    const updatedDocente = await this.prismaService.docente.update({
+      where: { id: updateDocenteDto.id },
+      data: {
+        ...updateDocenteDto,
+      },
+    });
+
+    return {
+      message: 'Docente actualizado correctamente',
+      docente: updatedDocente,
+    };
   }
 }

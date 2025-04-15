@@ -3,11 +3,15 @@ import {
   // Body,
   Controller,
   Get,
+  Param,
+  ParseIntPipe,
   Post,
+  Put,
   Query,
 } from '@nestjs/common';
 import { DocenteService } from './docente.service';
 import { CreateDocenteDto } from './dto/createDocenteDto';
+import { UpdateDocenteDto } from './dto/updateDocenteDto';
 
 @Controller('docente')
 export class DocenteController {
@@ -22,9 +26,24 @@ export class DocenteController {
     return this.docenteService.getDocentes(horario, curso, aula);
   }
 
+  @Get(':id')
+  getDocente(
+    @Param('id', ParseIntPipe) id: number,
+    @Query('horario') horario?: boolean,
+    @Query('curso') curso?: boolean,
+    @Query('aula') aula?: boolean,
+  ) {
+    return this.docenteService.getDocente(id, horario, curso, aula);
+  }
+
   @Post('')
   createDocente(@Body() createDocenteDto: CreateDocenteDto) {
     return this.docenteService.createDocente(createDocenteDto);
+  }
+
+  @Put('')
+  updateDocente(@Body() updateDocenteDto: UpdateDocenteDto) {
+    return this.docenteService.updateDocente(updateDocenteDto);
   }
   // @Post('')
   // @UseGuards(JwtAuthGuard)
