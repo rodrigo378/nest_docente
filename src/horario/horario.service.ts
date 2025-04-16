@@ -651,12 +651,13 @@ export class HorarioService {
     }
 
     // 2️⃣ Verificación con la BD excluyendo los horarios originales si ya existen
-    // for (const { h, curso } of todosLosHorarios) {
-    for (const { h } of todosLosHorarios) {
-      // const cur = await this.prismaService.curso.findFirst({
-      //   where: { c_codcur: curso.c_codcur, turno_id: curso.turno_id },
-      //   include: { cursosPadres: true },
-      // });
+    for (const { h, curso } of todosLosHorarios) {
+      // for (const { h } of todosLosHorarios) {
+      const cur = await this.prismaService.curso.findFirst({
+        where: { c_codcur: curso.c_codcur, turno_id: curso.turno_id },
+        include: { cursosPadres: true },
+      });
+
       const condicionesOR: any[] = [];
       if (h.aula_id) condicionesOR.push({ aula_id: h.aula_id });
       if (h.docente_id) condicionesOR.push({ docente_id: h.docente_id });
@@ -686,10 +687,10 @@ export class HorarioService {
         const mismoDocente =
           h.docente_id && e.docente_id && h.docente_id === e.docente_id;
 
-        // const esCursoRegular =
-        //   cur?.cursosPadres.length !== 0 && cur?.cursosPadres[0].tipo !== 0;
+        const esCursoRegular =
+          cur?.cursosPadres.length !== 0 && cur?.cursosPadres[0].tipo === 0;
 
-        if (cruce && (mismoAula || mismoDocente)) {
+        if (!esCursoRegular && cruce && (mismoAula || mismoDocente)) {
           errores.add(
             `⛔ Conflicto con "${e.curso?.c_nomcur}" en BD el día ${h.dia}` +
               ` (${mismoAula ? 'misma aula' : ''}${mismoAula && mismoDocente ? ' y ' : ''}${mismoDocente ? 'mismo docente' : ''})`,
@@ -1303,8 +1304,6 @@ export class HorarioService {
 
     const ids = grupoIds.map((g) => g.id);
     const cursoIds = grupoIds.map((g) => g.curso_id);
-
-    console.log('cursoIds => ', cursoIds);
 
     await this.prismaService.horario.deleteMany({
       where: { curso_id: { in: cursoIds } },

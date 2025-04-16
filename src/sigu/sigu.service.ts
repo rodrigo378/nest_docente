@@ -80,8 +80,6 @@ export class SiguService {
       },
     });
 
-    console.log('turno => ', turno);
-
     if (!turno) {
       return [];
     }
