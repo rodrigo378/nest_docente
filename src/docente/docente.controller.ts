@@ -45,6 +45,12 @@ export class DocenteController {
   updateDocente(@Body() updateDocenteDto: UpdateDocenteDto) {
     return this.docenteService.updateDocente(updateDocenteDto);
   }
+
+  @Get('estadisticas/horas')
+  getHorasPorDocente() {
+    return this.docenteService.getHorasPorDocente();
+  }
+
   // @Post('')
   // @UseGuards(JwtAuthGuard)
   // createDocente(
