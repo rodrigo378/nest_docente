@@ -57,6 +57,8 @@ export class HorarioController {
     @Query('filtroBusqueda') filtroBusqueda?: string,
     @Query('skip') skip?: string,
     @Query('take') take?: string,
+    @Query('sortField') sortField?: string,
+    @Query('sortOrder') sortOrder?: 'asc' | 'desc',
   ) {
     return this.horarioService.getCursos(
       Number(c_codmod),
@@ -68,7 +70,9 @@ export class HorarioController {
       turno_id ? Number(turno_id) : undefined,
       filtroBusqueda,
       skip ? Number(skip) : undefined,
-      skip ? Number(take) : undefined,
+      take ? Number(take) : undefined,
+      sortField,
+      sortOrder || 'asc',
     );
   }
 

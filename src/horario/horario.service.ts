@@ -1333,6 +1333,8 @@ export class HorarioService {
     filtroBusqueda?: string,
     skip?: number,
     take?: number,
+    sortField?: string,
+    sortOrder: 'asc' | 'desc' = 'asc',
   ) {
     const where: {
       [key: string]: any;
@@ -1389,11 +1391,14 @@ export class HorarioService {
       };
     }
 
+    const orderBy = sortField ? { [sortField]: sortOrder } : undefined;
+
     const [data, total] = await Promise.all([
       this.prismaService.curso.findMany({
         where,
         skip: skip || 0,
         take,
+        orderBy,
         include: includeConfig,
       }),
       this.prismaService.curso.count({ where }),

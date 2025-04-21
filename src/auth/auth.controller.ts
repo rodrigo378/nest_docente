@@ -12,6 +12,7 @@ import { SignupDto } from './dto/signupDto';
 import { AuthGuard } from '@nestjs/passport';
 import { Request, Response } from 'express';
 import { SigninDto } from './dto/signinDto';
+import { JwtAuthGuard } from './guard/jwt-auth/jwt-auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -36,21 +37,6 @@ export class AuthController {
     return res.redirect(
       `http://localhost:4200/login?token=${user.accessToken}`,
     );
-
-    // 🔹 Redirigir al frontend con el token en la URL
-    // return res.redirect(`http://localhost:4200/login?token=${user.accessToken}`);
-
-    // return {
-    //   message: 'Inicio de sesión exitoso',
-    //   user: {
-    //     id: user.user.id,
-    //     email: user.user.email,
-    //     authProvider: user.user.authProvider,
-    //     createdAt: user.user.createdAt,
-    //     updatedAt: user.user.updatedAt,
-    //   },
-    //   accessToken: user.accessToken,
-    // };
   }
 
   @Post('signup')
@@ -59,20 +45,37 @@ export class AuthController {
   }
 
   @Post('signin')
-  signin(@Body() signinDto: SigninDto) {
-    return this.authService.signin(signinDto);
+  async signin(
+    @Body() signinDto: SigninDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const result = await this.authService.signin(signinDto);
+
+    res.cookie('token', result.token, {
+      httpOnly: true,
+      secure: false,
+      path: '/',
+      maxAge: 1000 * 60 * 60 * 24,
+    });
+
+    return { user: result.user };
   }
 
   @Post('logout')
   logout(@Res({ passthrough: true }) res: Response) {
-    // Borra la cookie llamada 'token'
     res.clearCookie('token', {
       httpOnly: true,
-      secure: false, // Usa true si estás en producción con HTTPS
-      // sameSite: 'strict',
+      secure: false,
       path: '/',
     });
 
     return { message: 'Sesión cerrada correctamente' };
+  }
+
+  // auth.controller.ts
+  @UseGuards(JwtAuthGuard)
+  @Get('verificar')
+  me(@Req() req: Request) {
+    return req['user'];
   }
 }

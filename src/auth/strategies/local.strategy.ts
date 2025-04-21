@@ -1,6 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
+import { Request } from 'express';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PrismaService } from 'src/prisma/prisma.service';
 
@@ -16,7 +17,12 @@ export class StrategyService extends PassportStrategy(Strategy) {
     private readonly prismaService: PrismaService,
   ) {
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        (req: Request): string | null => {
+          const token = req.cookies?.token as string | undefined;
+          return token ?? null;
+        },
+      ]),
       secretOrKey: configService.get('JWT_SECRET') || 'supersecreto',
       ignoreExpiration: false,
     });

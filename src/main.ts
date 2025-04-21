@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
+import * as cookieParser from 'cookie-parser'; // ✔️ Correcto para CommonJS
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -9,8 +10,8 @@ async function bootstrap() {
       transform: true,
     }),
   );
+  app.use(cookieParser());
 
-  // Habilitar CORS
   app.enableCors({
     origin: ['http://localhost:4200', 'http://161.97.115.144:7000'],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
@@ -21,16 +22,3 @@ async function bootstrap() {
 }
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
 bootstrap();
-
-//rodrigo ======
-//Aulas front
-//testear
-//Subir
-//agrupar
-//arreglar update
-//comentario
-
-//Victor =======>
-//Crear asyncronos
-//Docentes
-//testear
