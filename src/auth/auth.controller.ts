@@ -31,12 +31,20 @@ export class AuthController {
     const user = req.user as { accessToken: string };
 
     if (!user || !user.accessToken) {
-      return res.redirect(`http://localhost:4200/login?error=NoAccessToken`);
+      return res.redirect(
+        `http://161.97.115.144:4200/login?error=NoAccessToken`,
+      );
     }
 
-    return res.redirect(
-      `http://localhost:4200/login?token=${user.accessToken}`,
-    );
+    res.cookie('token', user.accessToken, {
+      httpOnly: true,
+      secure: false,
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 1000 * 60 * 60 * 24,
+    });
+
+    return res.redirect(`http://161.97.115.144:4200/welcome`);
   }
 
   @Post('signup')
