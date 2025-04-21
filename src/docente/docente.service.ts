@@ -629,31 +629,20 @@ export class DocenteService {
     };
   }
 
-  async getHorasPorDocente(): Promise<{ categories: string[], data: number[] }> {
+  async getHorasPorDocente() {
     const docentes = await this.prismaService.docente.findMany({
-      include: {
-        Horario: {
-          select: { n_horas: true }
-        }
-      }
+      select: {
+        c_nomdoc: true,
+        h_total: true,
+      },
+      orderBy: { h_total: 'desc' },
+      skip: 0,
+      take: 10,
     });
-  
-    // Procesar total de horas por docente
-    const docentesConHoras = docentes.map(d => ({
-      nombre: `${d.c_nomdoc}`,
-      totalHoras: d.Horario.reduce((sum, h) => sum + h.n_horas, 0)
-    }));
-  
-    // Ordenar por mayor cantidad de horas y tomar top 10
-    const topDocentes = docentesConHoras
-      .sort((a, b) => b.totalHoras - a.totalHoras)
-      .slice(0, 10);
-  
-    // Formatear para el gráfico
-    const categories = topDocentes.map(d => d.nombre);
-    const data = topDocentes.map(d => d.totalHoras);
-  
+
+    const categories = docentes.map((d) => d.c_nomdoc);
+    const data = docentes.map((d) => d.h_total);
+
     return { categories, data };
   }
-  
 }
