@@ -45,9 +45,14 @@ export class DashboardService {
     });
 
     const categories = docentes.map((d) => d.c_nomdoc);
+    const docente = categories.map((c) => {
+      const array = c.split(' ');
+      return `${array[0]} ${array[2]}`;
+    });
+
     const data = docentes.map((d) => d.h_total);
 
-    return { categories, data };
+    return { docente, data };
   }
 
   async dash_TipoCurso() {
