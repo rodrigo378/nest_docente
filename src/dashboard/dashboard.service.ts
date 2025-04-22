@@ -75,11 +75,11 @@ export class DashboardService {
     });
 
     const countTurnoEstado_1 = await this.prismaService.turno.count({
-      where: { estado: 0 },
+      where: { estado: 1 },
     });
 
     const countTurnoEstado_2 = await this.prismaService.turno.count({
-      where: { estado: 0 },
+      where: { estado: 2 },
     });
 
     return { countTurnoEstado_0, countTurnoEstado_1, countTurnoEstado_2 };
