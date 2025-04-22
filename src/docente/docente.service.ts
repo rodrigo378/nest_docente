@@ -628,21 +628,4 @@ export class DocenteService {
       docente: updatedDocente,
     };
   }
-
-  async getHorasPorDocente() {
-    const docentes = await this.prismaService.docente.findMany({
-      select: {
-        c_nomdoc: true,
-        h_total: true,
-      },
-      orderBy: { h_total: 'desc' },
-      skip: 0,
-      take: 10,
-    });
-
-    const categories = docentes.map((d) => d.c_nomdoc);
-    const data = docentes.map((d) => d.h_total);
-
-    return { categories, data };
-  }
 }

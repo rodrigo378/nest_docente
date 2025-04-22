@@ -32,4 +32,51 @@ export class DashboardService {
       porAsignacion,
     };
   }
+
+  async dash_Docente() {
+    const docentes = await this.prismaService.docente.findMany({
+      select: {
+        c_nomdoc: true,
+        h_total: true,
+      },
+      orderBy: { h_total: 'desc' },
+      skip: 0,
+      take: 10,
+    });
+
+    const categories = docentes.map((d) => d.c_nomdoc);
+    const data = docentes.map((d) => d.h_total);
+
+    return { categories, data };
+  }
+
+  async dash_TipoCurso() {
+    const countCursos = await this.prismaService.curso.count();
+
+    const countTransversales = await this.prismaService.grupo_sincro.count({
+      where: { tipo: 0 },
+    });
+
+    const countAgrupados = await this.prismaService.grupo_sincro.count({
+      where: { tipo: 1 },
+    });
+
+    return { countCursos, countTransversales, countAgrupados };
+  }
+
+  async dash_EstadoTurno() {
+    const countTurnoEstado_0 = await this.prismaService.turno.count({
+      where: { estado: 0 },
+    });
+
+    const countTurnoEstado_1 = await this.prismaService.turno.count({
+      where: { estado: 0 },
+    });
+
+    const countTurnoEstado_2 = await this.prismaService.turno.count({
+      where: { estado: 0 },
+    });
+
+    return { countTurnoEstado_0, countTurnoEstado_1, countTurnoEstado_2 };
+  }
 }
