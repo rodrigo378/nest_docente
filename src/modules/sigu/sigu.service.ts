@@ -131,9 +131,9 @@ export class SiguService {
               WHERE te.n_codper_equ IN (2023, 2025)
           ) tpee 
             ON tpee.c_codcur = tp.c_codcur 
-           AND tpee.c_codmod = tp.c_codmod 
-           AND tpee.c_codfac = tp.c_codfac
-           AND tpee.c_codesp = tp.c_codesp
+            AND tpee.c_codmod = tp.c_codmod 
+            AND tpee.c_codfac = tp.c_codfac
+            AND tpee.c_codesp = tp.c_codesp
         WHERE
           tp.n_codper IN (2023, 2025) 
           AND tp.c_codfac = ?

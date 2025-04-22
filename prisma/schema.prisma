@@ -30,6 +30,7 @@ model User {
   updatedAt  DateTime     @updatedAt
   // Docente    Docente?
   Permission Permission[]
+  Log        Log[]
 
   @@map("user")
 }
@@ -355,7 +356,7 @@ model Horario {
   docente_id Int?
 
   curso_id Int
-  curso    Curso @relation(fields: [curso_id], references: [id])
+  curso    Curso @relation(fields: [curso_id], references: [id], onDelete: Cascade)
 
   Turno    Turno @relation(fields: [turno_id], references: [id])
   turno_id Int
@@ -387,4 +388,19 @@ model Docente {
   Horario  Horario[]
 
   @@map("docente")
+}
+
+model Log {
+  id          Int      @id @default(autoincrement())
+  userId      Int?     @map("user_id")
+  user        User?    @relation(fields: [userId], references: [id])
+  entidad     String   @db.VarChar(100)
+  accion      String   @db.VarChar(50)
+  descripcion String?  @db.Text
+  before      Json?
+  after       Json?
+  ip          String?  @db.VarChar(45)
+  createdAt   DateTime @default(now())
+
+  @@map("log")
 }

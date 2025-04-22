@@ -11,6 +11,7 @@ import { SignupDto } from './dto/signupDto';
 import { AuthProvider } from '@prisma/client';
 import * as argon2 from 'argon2';
 import { SigninDto } from './dto/signinDto';
+import { createLog } from 'src/common/utils/log.util';
 
 @Injectable()
 export class AuthService {
@@ -20,7 +21,8 @@ export class AuthService {
     private readonly configService: ConfigService,
   ) {}
 
-  async signup(signupDto: SignupDto) {
+  //se agrego log
+  async signup(user_id: number, signupDto: SignupDto) {
     const {
       email,
       password,
@@ -76,6 +78,18 @@ export class AuthService {
 
     // Retornar el usuario sin la contraseña
     Reflect.deleteProperty(newUser, 'password');
+
+    await createLog(
+      this.prismaService,
+      user_id,
+      'user',
+      'CREATE',
+      'Se creo user',
+      null,
+      {},
+      newUser,
+    );
+
     return { message: 'Usuario registrado correctamente', user: newUser };
   }
 

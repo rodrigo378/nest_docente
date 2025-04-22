@@ -1,17 +1,20 @@
 import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { CreatePermisosDto } from './dto/createPermisosDto';
-import { JwtAuthGuard } from 'src/auth/guard/jwt-auth/jwt-auth.guard';
-import { AuthenticatedRequest } from 'src/auth/interface/request.interface';
 import { GetPermisoToDto } from './dto/getPermisoToDto';
+import { JwtAuthGuard } from '../auth/guard/jwt-auth/jwt-auth.guard';
+import { AuthenticatedRequest } from '../auth/interface/request.interface';
 
 @Controller('admin')
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
   @Post('permisos')
-  createPermisos(@Body() createPermisosDto: CreatePermisosDto) {
-    return this.adminService.actualizarPermisos(createPermisosDto);
+  createPermisos(
+    @Req() req: AuthenticatedRequest,
+    @Body() createPermisosDto: CreatePermisosDto,
+  ) {
+    return this.adminService.actualizarPermisos(req.user.id, createPermisosDto);
   }
 
   @Get('permisos/me')

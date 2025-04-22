@@ -2,12 +2,17 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreatePermisosDto } from './dto/createPermisosDto';
 import { GetPermisoToDto } from './dto/getPermisoToDto';
+import { createLog } from 'src/common/utils/log.util';
 
 @Injectable()
 export class AdminService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async actualizarPermisos(createPermisosDto: CreatePermisosDto) {
+  //se agrego log
+  async actualizarPermisos(
+    admin_user_id: number,
+    createPermisosDto: CreatePermisosDto,
+  ) {
     const { user_id, items_id } = createPermisosDto;
 
     // 1. Desactivar permisos que ya no están marcados
@@ -49,6 +54,18 @@ export class AdminService {
         });
       }
     }
+
+    // 3. Log con datos reales
+    await createLog(
+      this.prismaService,
+      admin_user_id,
+      'permission',
+      'UPDATE',
+      `Se actualizaron los permisos del usuario con ID ${user_id}`,
+      null,
+      {},
+      { permisosAsignados: items_id },
+    );
 
     return { message: 'Permisos actualizados correctamente.' };
   }

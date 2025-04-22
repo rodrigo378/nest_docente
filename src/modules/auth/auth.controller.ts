@@ -13,6 +13,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { Request, Response } from 'express';
 import { SigninDto } from './dto/signinDto';
 import { JwtAuthGuard } from './guard/jwt-auth/jwt-auth.guard';
+import { AuthenticatedRequest } from './interface/request.interface';
 
 @Controller('auth')
 export class AuthController {
@@ -47,9 +48,10 @@ export class AuthController {
     return res.redirect(`http://161.97.115.144:4200/welcome`);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post('signup')
-  signup(@Body() signupDto: SignupDto) {
-    return this.authService.signup(signupDto);
+  signup(@Req() req: AuthenticatedRequest, @Body() signupDto: SignupDto) {
+    return this.authService.signup(req.user.id, signupDto);
   }
 
   @Post('signin')

@@ -5,9 +5,13 @@ import {
   Param,
   ParseIntPipe,
   Put,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UpdateUserDto } from './dto/updateUserDto';
+import { AuthenticatedRequest } from '../auth/interface/request.interface';
+import { JwtAuthGuard } from '../auth/guard/jwt-auth/jwt-auth.guard';
 
 @Controller('user')
 export class UserController {
@@ -23,8 +27,12 @@ export class UserController {
     return this.userService.getUser(id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Put('')
-  updateUser(@Body() updateUserDto: UpdateUserDto) {
-    return this.userService.updateUser(updateUserDto);
+  updateUser(
+    @Body() updateUserDto: UpdateUserDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.userService.updateUser(updateUserDto, req.user.id);
   }
 }

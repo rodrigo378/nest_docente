@@ -6,40 +6,11 @@ import {
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UpdateTurnoDto } from './dto/updateTurnoDto';
 import { CreateTurnoDto } from './dto/createTurnoDto';
+import { createLog } from 'src/common/utils/log.util';
 
 @Injectable()
 export class TurnoService {
   constructor(private readonly prismaService: PrismaService) {}
-
-  async createTurno(createTurnoDto: CreateTurnoDto) {
-    const turno = await this.prismaService.turno.findFirst({
-      where: {
-        n_codper: createTurnoDto.n_codper,
-        n_codpla: createTurnoDto.n_codpla,
-        c_codfac: createTurnoDto.c_codfac,
-        c_codesp: createTurnoDto.c_codesp,
-        c_grpcur: createTurnoDto.c_grpcur,
-        c_codmod: createTurnoDto.c_codmod,
-        n_ciclo: createTurnoDto.n_ciclo,
-      },
-    });
-
-    if (turno) {
-      throw new ConflictException('Ya existe un turno con estos datos.');
-    }
-
-    const newTurno = await this.prismaService.turno.create({
-      data: {
-        ...createTurnoDto,
-      },
-    });
-
-    return {
-      success: true,
-      mensaje: '✅ Turno creado correctamente',
-      turno: newTurno,
-    };
-  }
 
   async getTurnos(
     c_codfac?: string,
@@ -75,22 +46,81 @@ export class TurnoService {
     return turno;
   }
 
-  async updateTurno(id: number, updateTurnoDto: UpdateTurnoDto) {
+  //se agrego log
+  async createTurno(user_id: number, createTurnoDto: CreateTurnoDto) {
+    const turno = await this.prismaService.turno.findFirst({
+      where: {
+        n_codper: createTurnoDto.n_codper,
+        n_codpla: createTurnoDto.n_codpla,
+        c_codfac: createTurnoDto.c_codfac,
+        c_codesp: createTurnoDto.c_codesp,
+        c_grpcur: createTurnoDto.c_grpcur,
+        c_codmod: createTurnoDto.c_codmod,
+        n_ciclo: createTurnoDto.n_ciclo,
+      },
+    });
+
+    if (turno) {
+      throw new ConflictException('Ya existe un turno con estos datos.');
+    }
+
+    const newTurno = await this.prismaService.turno.create({
+      data: {
+        ...createTurnoDto,
+      },
+    });
+
+    await createLog(
+      this.prismaService,
+      user_id,
+      'turno',
+      'CREATE',
+      'Se creo turrno',
+      null,
+      {},
+      newTurno,
+    );
+
+    return {
+      success: true,
+      mensaje: '✅ Turno creado correctamente',
+      turno: newTurno,
+    };
+  }
+
+  //se agrego log
+  async updateTurno(
+    user_id: number,
+    id: number,
+    updateTurnoDto: UpdateTurnoDto,
+  ) {
     const turno = await this.prismaService.turno.findFirst({ where: { id } });
 
     if (!turno) {
       throw new NotFoundException('Este turno no existe');
     }
 
-    const newTurno = await this.prismaService.turno.update({
+    const updateTurno = await this.prismaService.turno.update({
       where: { id },
       data: { ...updateTurnoDto },
     });
 
-    return newTurno;
+    await createLog(
+      this.prismaService,
+      user_id,
+      'turno',
+      'UPDATE',
+      'Se actualizo turrno',
+      null,
+      turno,
+      updateTurno,
+    );
+
+    return updateTurno;
   }
 
-  async deleteTurno(id: number) {
+  //se agrego log
+  async deleteTurno(user_id: number, id: number) {
     const turnoExistente = await this.prismaService.turno.findUnique({
       where: { id },
     });
@@ -101,6 +131,17 @@ export class TurnoService {
     await this.prismaService.turno.delete({
       where: { id },
     });
+
+    await createLog(
+      this.prismaService,
+      user_id,
+      'turno',
+      'DELETE',
+      'Se borro turrno',
+      null,
+      turnoExistente,
+      {},
+    );
 
     return {
       success: true,

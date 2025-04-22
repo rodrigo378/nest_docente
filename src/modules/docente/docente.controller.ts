@@ -8,10 +8,14 @@ import {
   Post,
   Put,
   Query,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
 import { DocenteService } from './docente.service';
 import { CreateDocenteDto } from './dto/createDocenteDto';
 import { UpdateDocenteDto } from './dto/updateDocenteDto';
+import { AuthenticatedRequest } from '../auth/interface/request.interface';
+import { JwtAuthGuard } from '../auth/guard/jwt-auth/jwt-auth.guard';
 
 @Controller('docente')
 export class DocenteController {
@@ -36,14 +40,22 @@ export class DocenteController {
     return this.docenteService.getDocente(id, horario, curso, aula);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post('')
-  createDocente(@Body() createDocenteDto: CreateDocenteDto) {
-    return this.docenteService.createDocente(createDocenteDto);
+  createDocente(
+    @Req() req: AuthenticatedRequest,
+    @Body() createDocenteDto: CreateDocenteDto,
+  ) {
+    return this.docenteService.createDocente(req.user.id, createDocenteDto);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Put('')
-  updateDocente(@Body() updateDocenteDto: UpdateDocenteDto) {
-    return this.docenteService.updateDocente(updateDocenteDto);
+  updateDocente(
+    @Req() req: AuthenticatedRequest,
+    @Body() updateDocenteDto: UpdateDocenteDto,
+  ) {
+    return this.docenteService.updateDocente(req.user.id, updateDocenteDto);
   }
 
   // @Post('')

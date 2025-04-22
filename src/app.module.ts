@@ -1,15 +1,15 @@
 import { Module } from '@nestjs/common';
-import { AuthModule } from './auth/auth.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ConfigModule } from '@nestjs/config';
-import { DocenteModule } from './docente/docente.module';
-import { TurnoModule } from './turno/turno.module';
-import { SiguModule } from './sigu/sigu.module';
-import { HorarioModule } from './horario/horario.module';
-import { AulaModule } from './aula/aula.module';
-import { AdminModule } from './admin/admin.module';
-import { UserModule } from './user/user.module';
-import { DashboardModule } from './dashboard/dashboard.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { DocenteModule } from './modules/docente/docente.module';
+import { TurnoModule } from './modules/turno/turno.module';
+import { SiguModule } from './modules/sigu/sigu.module';
+import { HorarioModule } from './modules/horario/horario.module';
+import { AulaModule } from './modules/aula/aula.module';
+import { AdminModule } from './modules/admin/admin.module';
+import { UserModule } from './modules/user/user.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
 
 @Module({
   imports: [

@@ -8,10 +8,14 @@ import {
   Post,
   Put,
   Query,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
 import { TurnoService } from './turno.service';
 import { UpdateTurnoDto } from './dto/updateTurnoDto';
 import { CreateTurnoDto } from './dto/createTurnoDto';
+import { JwtAuthGuard } from '../auth/guard/jwt-auth/jwt-auth.guard';
+import { AuthenticatedRequest } from '../auth/interface/request.interface';
 
 @Controller('turno')
 export class TurnoController {
@@ -43,21 +47,31 @@ export class TurnoController {
     return this.turnoService.getTurno(id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Put(':id')
   updateTurno(
+    @Req() req: AuthenticatedRequest,
     @Param('id', ParseIntPipe) id: number,
     @Body() updateTurnoDto: UpdateTurnoDto,
   ) {
-    return this.turnoService.updateTurno(id, updateTurnoDto);
+    return this.turnoService.updateTurno(req.user.id, id, updateTurnoDto);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post('')
-  createTurno(@Body() createTurnoDto: CreateTurnoDto) {
-    return this.turnoService.createTurno(createTurnoDto);
+  createTurno(
+    @Req() req: AuthenticatedRequest,
+    @Body() createTurnoDto: CreateTurnoDto,
+  ) {
+    return this.turnoService.createTurno(req.user.id, createTurnoDto);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  deleteTurno(@Param('id', ParseIntPipe) id: number) {
-    return this.turnoService.deleteTurno(id);
+  deleteTurno(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    return this.turnoService.deleteTurno(req.user.id, id);
   }
 }
