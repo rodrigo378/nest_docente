@@ -21,7 +21,7 @@ export class TurnoService {
     n_ciclo?: number,
     estado?: number,
   ) {
-    return await this.prismaService.turno.findMany({
+    const turnos = await this.prismaService.turno.findMany({
       where: {
         ...(c_codfac && { c_codfac }),
         ...(c_codesp && { c_codesp }),
@@ -33,6 +33,22 @@ export class TurnoService {
       },
       include: { periodo: true },
     });
+
+    const fechaActual = new Date();
+
+    // Agregar el campo `vencio` según comparación con la fecha de cierre
+    const turnosConVencimiento = turnos.map((turno) => {
+      const vencio = turno.periodo?.f_cierre
+        ? new Date(turno.periodo.f_cierre) < fechaActual
+        : false;
+
+      return {
+        ...turno,
+        vencio,
+      };
+    });
+
+    return turnosConVencimiento;
   }
 
   async getTurno(id: number) {

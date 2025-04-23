@@ -8,7 +8,7 @@ export async function seedPeriodo() {
   const data: Periodo[] = [
     {
       n_codper: 20241,
-      f_cierre: new Date('2025-06-01'),
+      f_cierre: new Date('2025-01-01'),
     },
     {
       n_codper: 20242,
@@ -16,7 +16,7 @@ export async function seedPeriodo() {
     },
     {
       n_codper: 20251,
-      f_cierre: new Date('2025-01-01'),
+      f_cierre: new Date('2025-06-01'),
     },
   ];
 
