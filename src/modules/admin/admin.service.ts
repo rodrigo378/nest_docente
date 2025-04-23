@@ -61,7 +61,7 @@ export class AdminService {
       admin_user_id,
       'permission',
       'UPDATE',
-      `Se actualizaron los permisos del usuario con ID ${user_id}`,
+      `Se actualizaron los permisos del usuario con ID ${admin_user_id}`,
       null,
       {},
       { permisosAsignados: items_id },

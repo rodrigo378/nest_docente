@@ -9,6 +9,7 @@ import { AuthenticatedRequest } from '../auth/interface/request.interface';
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
+  @UseGuards(JwtAuthGuard)
   @Post('permisos')
   createPermisos(
     @Req() req: AuthenticatedRequest,

@@ -33,7 +33,7 @@ export async function seedTurno() {
       AND a.c_codfac = d.codfac
     INNER JOIN tb_modalidad e
       ON a.c_codmod = e.c_codmod
-    WHERE a.n_codper = 20251
+    WHERE a.n_codper in (20241, 20242, 20251)
     AND a.c_codfac IN ('E', 'S')
     GROUP BY
       a.n_codper,
