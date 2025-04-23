@@ -8,6 +8,8 @@ import {
   Post,
   Put,
   Query,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
 import { HorarioService } from './horario.service';
 import { DeleteHorarioArrayDto } from './dto/deleteHorarioArrayDto';
@@ -15,29 +17,59 @@ import { CreateHorarioArrayDto } from './dto/createHorarioArrayDto';
 import { UpdateHorarioArrayDto } from './dto/updateHorarioArrayDto';
 import { CreateTransversalDto } from './dto/createTransversalDto';
 import { CreateHorarioAsyncDto } from './dto/createHorarioAsyncDto';
+import { AuthenticatedRequest } from '../auth/interface/request.interface';
+import { JwtAuthGuard } from '../auth/guard/jwt-auth/jwt-auth.guard';
 
 @Controller('horario')
 export class HorarioController {
   constructor(private readonly horarioService: HorarioService) {}
 
+  @UseGuards(JwtAuthGuard)
   @Post('')
-  createHorarioArray(@Body() createHorarioArray: CreateHorarioArrayDto) {
-    return this.horarioService.createHorarioArray(createHorarioArray);
+  createHorarioArray(
+    @Req() req: AuthenticatedRequest,
+    @Body() createHorarioArray: CreateHorarioArrayDto,
+  ) {
+    return this.horarioService.createHorarioArray(
+      req.user.id,
+      createHorarioArray,
+    );
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post('async')
-  createHorarioAsync(@Body() crcreateHorarioAsyncDto: CreateHorarioAsyncDto) {
-    return this.horarioService.createHorarioAsync(crcreateHorarioAsyncDto);
+  createHorarioAsync(
+    @Req() req: AuthenticatedRequest,
+    @Body() crcreateHorarioAsyncDto: CreateHorarioAsyncDto,
+  ) {
+    return this.horarioService.createHorarioAsync(
+      req.user.id,
+      crcreateHorarioAsyncDto,
+    );
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete('')
-  deleteHorarioArray(@Body() deleteHorarioArray: DeleteHorarioArrayDto) {
-    return this.horarioService.deleteHorarioArray(deleteHorarioArray);
+  deleteHorarioArray(
+    @Req() req: AuthenticatedRequest,
+    @Body() deleteHorarioArray: DeleteHorarioArrayDto,
+  ) {
+    return this.horarioService.deleteHorarioArray(
+      req.user.id,
+      deleteHorarioArray,
+    );
   }
 
+  @UseGuards(JwtAuthGuard)
   @Put('')
-  updateHorarioArray(@Body() updateHorarioArrayDto: UpdateHorarioArrayDto) {
-    return this.horarioService.updateHorarioArray(updateHorarioArrayDto);
+  updateHorarioArray(
+    @Req() req: AuthenticatedRequest,
+    @Body() updateHorarioArrayDto: UpdateHorarioArrayDto,
+  ) {
+    return this.horarioService.updateHorarioArray(
+      req.user.id,
+      updateHorarioArrayDto,
+    );
   }
 
   @Get('/turno/:turno_id')
@@ -81,20 +113,36 @@ export class HorarioController {
     return this.horarioService.getHorario(id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post('curso/transversal')
-  createTransversal(@Body() createTransversalDto: CreateTransversalDto) {
-    return this.horarioService.createCursoTransversal(createTransversalDto);
+  createTransversal(
+    @Req() req: AuthenticatedRequest,
+    @Body() createTransversalDto: CreateTransversalDto,
+  ) {
+    return this.horarioService.createCursoTransversal(
+      req.user.id,
+      createTransversalDto,
+    );
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post('curso/grupo')
-  createGrupo(@Body() createTransversalDto: CreateTransversalDto) {
-    return this.horarioService.createCursoGrupo(createTransversalDto);
+  createGrupo(
+    @Req() req: AuthenticatedRequest,
+    @Body() createTransversalDto: CreateTransversalDto,
+  ) {
+    return this.horarioService.createCursoGrupo(
+      req.user.id,
+      createTransversalDto,
+    );
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete('curso/transversal/:padre_curso_id')
   deleteTransversal(
+    @Req() req: AuthenticatedRequest,
     @Param('padre_curso_id', ParseIntPipe) padre_curso_id: number,
   ) {
-    return this.horarioService.deleteAgrupado(padre_curso_id);
+    return this.horarioService.deleteAgrupado(req.user.id, padre_curso_id);
   }
 }
