@@ -148,10 +148,6 @@ export class TurnoService {
       mensaje: '✅ Turno eliminado correctamente',
     };
   }
-
-  async getPeriodo() {
-    return await this.prismaService.periodo.findMany();
-  }
 }
 
 // a1   a2

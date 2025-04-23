@@ -6,9 +6,17 @@ import { seedTurno } from './seed/turno';
 import { seedCurso } from './seed/cursos';
 import { seedAula } from './seed/aula';
 import { seedPeriodo } from './seed/periodo';
+import { seedUsers } from './seed/usuario';
+import { seedModulos } from './seed/modulo';
+import { seedItems } from './seed/item';
+import { seedPermissions } from './seed/permission';
 
 const prisma = new PrismaClient();
 async function main() {
+  await seedUsers();
+  await seedModulos();
+  await seedItems();
+  await seedPermissions();
   await seedDepartamentos();
   await seedProvincia();
   await seedDistrito();
