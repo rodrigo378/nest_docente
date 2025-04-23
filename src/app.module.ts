@@ -10,7 +10,7 @@ import { AulaModule } from './modules/aula/aula.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { UserModule } from './modules/user/user.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
-import { PeriodoModule } from './modules/periodo/periodo.module';
+import { PeriodoModule } from './periodo/periodo.module';
 
 @Module({
   imports: [
