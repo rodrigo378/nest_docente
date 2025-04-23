@@ -1232,6 +1232,7 @@ export class HorarioService {
   async getCursos(
     c_codmod?: number,
     n_codper?: string,
+    periodo?: number,
     c_codfac?: string,
     c_codesp?: string,
     c_codcur?: string,
@@ -1254,6 +1255,11 @@ export class HorarioService {
       ...(c_codcur && { c_codcur }),
       ...(n_ciclo && { n_ciclo }),
       ...(turno_id && { turno_id }),
+      ...(periodo && {
+        turno: {
+          n_codper: periodo,
+        },
+      }),
     };
 
     if (filtroBusqueda) {
@@ -1276,7 +1282,7 @@ export class HorarioService {
 
     const includeConfig = {
       Horario: { include: { Docente: true, aula: true } },
-      turno: true,
+      turno: { include: { periodo: true } },
       cursosPadres: { include: { cursoPadre: true } },
       cursosHijos: {
         include: { cursosHijo: { include: { turno: true } } },
@@ -1311,8 +1317,15 @@ export class HorarioService {
       this.prismaService.curso.count({ where }),
     ]);
 
+    const fechaActual = new Date();
+    const dataConVencimiento = data.map((curso) => {
+      const fCierre = curso.turno?.periodo?.f_cierre;
+      const vencio = fCierre ? fechaActual > new Date(fCierre) : false;
+      return { ...curso, vencio };
+    });
+
     return {
-      data,
+      data: dataConVencimiento,
       total,
       skip: skip || 0,
       take,

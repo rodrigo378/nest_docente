@@ -81,6 +81,7 @@ export class HorarioController {
   getCurso(
     @Query('c_codmod') c_codmod?: string,
     @Query('n_codper') n_codper?: string,
+    @Query('periodo') periodo?: string,
     @Query('c_codfac') c_codfac?: string,
     @Query('c_codesp') c_codesp?: string,
     @Query('c_codcur') c_codcur?: string,
@@ -95,6 +96,7 @@ export class HorarioController {
     return this.horarioService.getCursos(
       Number(c_codmod),
       n_codper,
+      Number(periodo),
       c_codfac,
       c_codesp,
       c_codcur,
