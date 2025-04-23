@@ -31,7 +31,7 @@ export class TurnoService {
         ...(n_ciclo && { n_ciclo }),
         ...(estado && { estado }),
       },
-      // include: { Horario: true },
+      include: { periodo: true },
     });
   }
 
@@ -147,6 +147,10 @@ export class TurnoService {
       success: true,
       mensaje: '✅ Turno eliminado correctamente',
     };
+  }
+
+  async getPeriodo() {
+    return await this.prismaService.periodo.findMany();
   }
 }
 

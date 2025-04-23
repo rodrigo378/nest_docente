@@ -17,11 +17,16 @@ import { CreateTurnoDto } from './dto/createTurnoDto';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth/jwt-auth.guard';
 import { AuthenticatedRequest } from '../auth/interface/request.interface';
 
-@Controller('turno')
+@Controller('')
 export class TurnoController {
   constructor(private readonly turnoService: TurnoService) {}
 
-  @Get('')
+  @Get('periodo')
+  getPeriodo() {
+    return this.turnoService.getPeriodo();
+  }
+
+  @Get('turno')
   getTurnos(
     @Query('c_codfac') c_codfac?: string,
     @Query('c_codesp') c_codesp?: string,
@@ -42,13 +47,13 @@ export class TurnoController {
     );
   }
 
-  @Get(':id')
+  @Get('turno/:id')
   getTurno(@Param('id', ParseIntPipe) id: number) {
     return this.turnoService.getTurno(id);
   }
 
   @UseGuards(JwtAuthGuard)
-  @Put(':id')
+  @Put('turno/:id')
   updateTurno(
     @Req() req: AuthenticatedRequest,
     @Param('id', ParseIntPipe) id: number,
@@ -58,7 +63,7 @@ export class TurnoController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Post('')
+  @Post('turno')
   createTurno(
     @Req() req: AuthenticatedRequest,
     @Body() createTurnoDto: CreateTurnoDto,
@@ -67,7 +72,7 @@ export class TurnoController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Delete(':id')
+  @Delete('turno/:id')
   deleteTurno(
     @Req() req: AuthenticatedRequest,
     @Param('id', ParseIntPipe) id: number,

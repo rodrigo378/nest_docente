@@ -272,6 +272,12 @@ model Permission {
   @@map("permission")
 }
 
+model Periodo {
+  n_codper Int      @id
+  f_cierre DateTime
+  turnos   Turno[] // Relación 1 a muchos: Un periodo tiene varios turnos
+}
+
 model Turno {
   id       Int    @id @default(autoincrement())
   n_codper Int
@@ -288,6 +294,7 @@ model Turno {
 
   Horario Horario[]
   Curso   Curso[]
+  periodo Periodo   @relation(fields: [n_codper], references: [n_codper])
 
   @@unique([n_codper, n_codpla, c_codfac, c_codesp, c_grpcur, c_codmod, n_ciclo])
   @@map("turno")
