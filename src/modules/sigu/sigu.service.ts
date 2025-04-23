@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaReadonlyService } from 'src/prisma/readonly.service';
 import { GetCursoDto } from './dto/getCursoDto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaReadonlyService } from 'src/prisma/readonly.service';
 
 interface CursoQuery {
   n_codper: number;

@@ -1,11 +1,11 @@
-import { Type } from 'class-transformer';
 import {
   IsInt,
+  IsString,
   IsNotEmpty,
   IsOptional,
-  IsString,
   ValidateNested,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class CursoDto {
   @IsInt()

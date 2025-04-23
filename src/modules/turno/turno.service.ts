@@ -1,12 +1,12 @@
 import {
-  ConflictException,
   Injectable,
+  ConflictException,
   NotFoundException,
 } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
 import { UpdateTurnoDto } from './dto/updateTurnoDto';
 import { CreateTurnoDto } from './dto/createTurnoDto';
 import { createLog } from 'src/common/utils/log.util';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class TurnoService {

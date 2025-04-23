@@ -1,8 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { UpdateUserDto } from './dto/updateUserDto';
 import * as argon2 from 'argon2';
+import { UpdateUserDto } from './dto/updateUserDto';
 import { createLog } from 'src/common/utils/log.util';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { Injectable, NotFoundException } from '@nestjs/common';
 
 @Injectable()
 export class UserService {

@@ -1,13 +1,13 @@
 import {
-  IsString,
-  IsDateString,
-  IsHexColor,
-  IsNotEmpty,
   IsInt,
   IsArray,
-  ValidateNested,
-  IsOptional,
+  IsString,
   IsBoolean,
+  IsHexColor,
+  IsNotEmpty,
+  IsOptional,
+  IsDateString,
+  ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 

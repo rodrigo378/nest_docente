@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { SiguController } from './sigu.controller';
 import { SiguService } from './sigu.service';
+import { SiguController } from './sigu.controller';
 import { PrismaModule } from 'src/prisma/prisma.module';
 
 @Module({

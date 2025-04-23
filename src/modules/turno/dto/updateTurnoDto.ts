@@ -1,5 +1,5 @@
-import { IsOptional, IsIn, IsInt, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
+import { IsOptional, IsIn, IsInt, IsString } from 'class-validator';
 
 export class UpdateTurnoDto {
   @Type(() => Number)

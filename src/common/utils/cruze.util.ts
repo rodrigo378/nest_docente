@@ -1,8 +1,8 @@
 import { grupo_sincro } from '@prisma/client';
 import {
-  CreateHorarioArrayDto,
   CursoDto,
   HorarioDto,
+  CreateHorarioArrayDto,
 } from 'src/modules/horario/dto/createHorarioArrayDto';
 import {
   CursoUpdateDto,

@@ -1,17 +1,17 @@
 import {
-  Body,
-  Controller,
   Get,
-  Param,
-  ParseIntPipe,
   Put,
   Req,
+  Body,
+  Param,
   UseGuards,
+  Controller,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UpdateUserDto } from './dto/updateUserDto';
-import { AuthenticatedRequest } from '../auth/interface/request.interface';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth/jwt-auth.guard';
+import { AuthenticatedRequest } from '../auth/interface/request.interface';
 
 @Controller('user')
 export class UserController {

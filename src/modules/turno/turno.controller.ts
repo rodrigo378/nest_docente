@@ -1,15 +1,15 @@
 import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  ParseIntPipe,
-  Post,
   Put,
-  Query,
   Req,
+  Get,
+  Post,
+  Body,
+  Query,
+  Param,
+  Delete,
   UseGuards,
+  Controller,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { TurnoService } from './turno.service';
 import { UpdateTurnoDto } from './dto/updateTurnoDto';

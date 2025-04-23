@@ -1,5 +1,5 @@
-import { IsString, IsNotEmpty, IsInt } from 'class-validator';
 import { Type } from 'class-transformer';
+import { IsString, IsNotEmpty, IsInt } from 'class-validator';
 
 export class CreateTurnoDto {
   @Type(() => Number)

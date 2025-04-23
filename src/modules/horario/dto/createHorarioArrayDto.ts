@@ -2,12 +2,12 @@ import {
   IsInt,
   IsArray,
   IsString,
-  IsDateString,
+  IsBoolean,
   IsHexColor,
   IsNotEmpty,
-  ValidateNested,
   IsOptional,
-  IsBoolean,
+  IsDateString,
+  ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 

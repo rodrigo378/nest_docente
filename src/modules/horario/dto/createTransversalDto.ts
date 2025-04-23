@@ -1,5 +1,5 @@
-import { IsNotEmpty, IsInt, IsArray, ArrayNotEmpty } from 'class-validator';
 import { Type } from 'class-transformer';
+import { IsNotEmpty, IsInt, IsArray, ArrayNotEmpty } from 'class-validator';
 
 export class CreateTransversalDto {
   @Type(() => Number)

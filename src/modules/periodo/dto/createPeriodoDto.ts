@@ -1,5 +1,5 @@
-import { IsInt, IsNotEmpty, IsDate } from 'class-validator';
 import { Type } from 'class-transformer';
+import { IsInt, IsNotEmpty, IsDate } from 'class-validator';
 
 export class CreatePeriodoDto {
   @IsInt()

@@ -1,19 +1,19 @@
 import {
-  Body,
-  Controller,
   Get,
-  Param,
-  ParseIntPipe,
-  Post,
   Put,
   Req,
+  Post,
+  Body,
+  Param,
   UseGuards,
+  Controller,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { PeriodoService } from './periodo.service';
-import { JwtAuthGuard } from '../auth/guard/jwt-auth/jwt-auth.guard';
 import { CreatePeriodoDto } from './dto/createPeriodoDto';
-import { AuthenticatedRequest } from '../auth/interface/request.interface';
 import { UpdatePeriodoDto } from './dto/updatePeriodoDto';
+import { JwtAuthGuard } from '../auth/guard/jwt-auth/jwt-auth.guard';
+import { AuthenticatedRequest } from '../auth/interface/request.interface';
 
 @Controller('periodo')
 export class PeriodoController {

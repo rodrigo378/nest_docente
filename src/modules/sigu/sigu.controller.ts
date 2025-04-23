@@ -1,6 +1,6 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { SiguService } from './sigu.service';
 import { GetCursoDto } from './dto/getCursoDto';
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 
 @Controller('sigu')
 export class SiguController {
