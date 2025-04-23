@@ -40,7 +40,6 @@ export class PeriodoService {
     n_codper: number,
     updateDto: UpdatePeriodoDto,
   ) {
-    // Buscar el periodo existente
     const oldPeriodo = await this.prismaService.periodo.findUnique({
       where: { n_codper },
     });
@@ -49,7 +48,6 @@ export class PeriodoService {
       throw new Error('Periodo no encontrado');
     }
 
-    // Actualizar el periodo
     const updatedPeriodo = await this.prismaService.periodo.update({
       where: { n_codper },
       data: {
@@ -57,7 +55,6 @@ export class PeriodoService {
       },
     });
 
-    // Generar log
     await createLog(
       this.prismaService,
       user_id,
