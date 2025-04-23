@@ -1,7 +1,7 @@
 import {
-  BadRequestException,
   Injectable,
   NotFoundException,
+  BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateHorarioArrayDto } from './dto/createHorarioArrayDto';
@@ -10,12 +10,12 @@ import { UpdateHorarioArrayDto } from './dto/updateHorarioArrayDto';
 import { CreateTransversalDto } from './dto/createTransversalDto';
 import { CreateHorarioAsyncDto } from './dto/createHorarioAsyncDto';
 import {
-  formatoHora,
   parseHora,
+  formatoHora,
+  verificarCruzeUpdate,
   verificarCruzeCreate,
   verificarCruzesCursosTransversales,
   verificarCruzesCursosTransversalesUpdate,
-  verificarCruzeUpdate,
 } from 'src/common/utils/cruze.util';
 import { createLog } from 'src/common/utils/log.util';
 

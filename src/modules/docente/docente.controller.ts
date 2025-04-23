@@ -1,21 +1,20 @@
 import {
-  Body,
-  // Body,
-  Controller,
   Get,
-  Param,
-  ParseIntPipe,
-  Post,
   Put,
-  Query,
   Req,
+  Post,
+  Body,
+  Query,
+  Param,
   UseGuards,
+  Controller,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { DocenteService } from './docente.service';
 import { CreateDocenteDto } from './dto/createDocenteDto';
 import { UpdateDocenteDto } from './dto/updateDocenteDto';
-import { AuthenticatedRequest } from '../auth/interface/request.interface';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth/jwt-auth.guard';
+import { AuthenticatedRequest } from '../auth/interface/request.interface';
 
 @Controller('docente')
 export class DocenteController {

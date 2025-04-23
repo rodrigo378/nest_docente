@@ -1,10 +1,10 @@
 import {
+  IsInt,
+  IsArray,
   IsString,
   IsDateString,
   IsHexColor,
   IsNotEmpty,
-  IsInt,
-  IsArray,
   ValidateNested,
   IsOptional,
   IsBoolean,

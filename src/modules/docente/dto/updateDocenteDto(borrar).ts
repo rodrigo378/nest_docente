@@ -1,12 +1,12 @@
 import {
-  IsString,
-  IsEmail,
-  IsDateString,
-  IsOptional,
-  IsArray,
-  ValidateNested,
   Length,
+  IsArray,
+  IsEmail,
   IsNumber,
+  IsString,
+  IsOptional,
+  IsDateString,
+  ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 

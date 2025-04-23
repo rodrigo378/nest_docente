@@ -1,17 +1,17 @@
 import {
-  BadRequestException,
-  ConflictException,
   Injectable,
+  ConflictException,
+  BadRequestException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { JwtService } from '@nestjs/jwt';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { SignupDto } from './dto/signupDto';
-import { AuthProvider } from '@prisma/client';
 import * as argon2 from 'argon2';
+import { JwtService } from '@nestjs/jwt';
+import { SignupDto } from './dto/signupDto';
 import { SigninDto } from './dto/signinDto';
+import { AuthProvider } from '@prisma/client';
+import { ConfigService } from '@nestjs/config';
 import { createLog } from 'src/common/utils/log.util';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class AuthService {

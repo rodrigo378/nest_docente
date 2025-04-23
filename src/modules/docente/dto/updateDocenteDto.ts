@@ -1,11 +1,11 @@
-import { Type } from 'class-transformer';
 import {
-  IsOptional,
-  IsString,
   IsInt,
+  IsString,
   IsNumber,
+  IsOptional,
   IsNotEmpty,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class UpdateDocenteDto {
   @Type(() => Number)

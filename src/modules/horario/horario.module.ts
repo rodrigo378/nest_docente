@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { HorarioService } from './horario.service';
-import { HorarioController } from './horario.controller';
 import { PrismaModule } from 'src/prisma/prisma.module';
+import { HorarioController } from './horario.controller';
 
 @Module({
   imports: [PrismaModule],

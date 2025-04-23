@@ -1,24 +1,24 @@
 import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  ParseIntPipe,
-  Post,
   Put,
-  Query,
   Req,
+  Get,
+  Body,
+  Post,
+  Query,
+  Param,
+  Delete,
   UseGuards,
+  Controller,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { HorarioService } from './horario.service';
+import { CreateTransversalDto } from './dto/createTransversalDto';
 import { DeleteHorarioArrayDto } from './dto/deleteHorarioArrayDto';
 import { CreateHorarioArrayDto } from './dto/createHorarioArrayDto';
 import { UpdateHorarioArrayDto } from './dto/updateHorarioArrayDto';
-import { CreateTransversalDto } from './dto/createTransversalDto';
 import { CreateHorarioAsyncDto } from './dto/createHorarioAsyncDto';
-import { AuthenticatedRequest } from '../auth/interface/request.interface';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth/jwt-auth.guard';
+import { AuthenticatedRequest } from '../auth/interface/request.interface';
 
 @Controller('horario')
 export class HorarioController {

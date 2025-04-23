@@ -1,17 +1,15 @@
 import {
-  IsNotEmpty,
-  IsString,
-  IsEmail,
-  IsDateString,
-  IsOptional,
-  IsArray,
-  ValidateNested,
   Length,
+  IsEmail,
+  IsArray,
   IsNumber,
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  IsDateString,
+  ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-
-// **📌 Subclases para Relaciones Anidadas**
 
 export class ContactoEmergenciaDto {
   @IsNotEmpty()

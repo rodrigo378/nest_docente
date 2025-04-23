@@ -1,9 +1,9 @@
-import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { PassportStrategy } from '@nestjs/passport';
+import { Injectable } from '@nestjs/common';
 import { AuthProvider } from '@prisma/client';
-import { Strategy } from 'passport-google-oauth20'; // ✅ CORRECTO
+import { ConfigService } from '@nestjs/config';
+import { Strategy } from 'passport-google-oauth20';
+import { PassportStrategy } from '@nestjs/passport';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()

@@ -1,5 +1,5 @@
-import { Controller, Get, Query } from '@nestjs/common';
 import { AulaService } from './aula.service';
+import { Controller, Get, Query } from '@nestjs/common';
 
 @Controller('aula')
 export class AulaController {

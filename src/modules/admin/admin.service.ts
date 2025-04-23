@@ -1,8 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { createLog } from 'src/common/utils/log.util';
+import { GetPermisoToDto } from './dto/getPermisoToDto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreatePermisosDto } from './dto/createPermisosDto';
-import { GetPermisoToDto } from './dto/getPermisoToDto';
-import { createLog } from 'src/common/utils/log.util';
+import { Injectable, NotFoundException } from '@nestjs/common';
 
 @Injectable()
 export class AdminService {

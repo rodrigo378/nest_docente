@@ -1,10 +1,10 @@
 import { Type } from 'class-transformer';
 import {
-  IsArray,
   IsInt,
+  IsArray,
+  IsNumber,
   IsNotEmpty,
   ArrayNotEmpty,
-  IsNumber,
 } from 'class-validator';
 
 export class CreatePermisosDto {

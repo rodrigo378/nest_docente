@@ -1,9 +1,9 @@
-import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 import { AdminService } from './admin.service';
-import { CreatePermisosDto } from './dto/createPermisosDto';
 import { GetPermisoToDto } from './dto/getPermisoToDto';
+import { CreatePermisosDto } from './dto/createPermisosDto';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth/jwt-auth.guard';
 import { AuthenticatedRequest } from '../auth/interface/request.interface';
+import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 
 @Controller('admin')
 export class AdminController {
