@@ -8,14 +8,16 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 export class AdminService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  //se agrego log
   async actualizarPermisos(
     admin_user_id: number,
     createPermisosDto: CreatePermisosDto,
   ) {
     const { user_id, items_id } = createPermisosDto;
 
-    // 1. Desactivar permisos que ya no están marcados
+    const permisosAntes = await this.prismaService.permission.findMany({
+      where: { userId: user_id },
+    });
+
     await this.prismaService.permission.updateMany({
       where: {
         userId: user_id,
@@ -28,7 +30,6 @@ export class AdminService {
       },
     });
 
-    // 2. Activar o crear permisos marcados
     for (const itemId of items_id) {
       const permisoExistente = await this.prismaService.permission.findFirst({
         where: {
@@ -55,16 +56,19 @@ export class AdminService {
       }
     }
 
-    // 3. Log con datos reales
+    const permisosDespues = await this.prismaService.permission.findMany({
+      where: { userId: user_id },
+    });
+
     await createLog(
       this.prismaService,
       admin_user_id,
       'permission',
       'UPDATE',
-      `Se actualizaron los permisos del usuario con ID ${admin_user_id}`,
+      `Se actualizaron los permisos del usuario con ID ${user_id}`,
       null,
-      {},
-      { permisosAsignados: items_id },
+      permisosAntes,
+      permisosDespues,
     );
 
     return { message: 'Permisos actualizados correctamente.' };

@@ -23,7 +23,7 @@ export class AulaService {
           h_fin: true,
           n_horas: true,
           tipo: true,
-          curso: curso ? true : false,
+          curso: curso ? { include: { cursosPadres: true } } : false,
           Docente: docente ? true : false,
         },
       };

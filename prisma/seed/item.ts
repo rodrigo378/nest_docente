@@ -56,6 +56,13 @@ export async function seedItems() {
       updatedAt: new Date(),
     },
     {
+      moduloId: 2,
+      nombre: 'Agregar Periodo',
+      codigo: '2.6',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    {
       moduloId: 3,
       nombre: 'Asignar Horarios',
       codigo: '3.1',
