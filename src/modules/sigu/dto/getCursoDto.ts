@@ -2,6 +2,16 @@ import { Type } from 'class-transformer';
 import { IsInt, IsNotEmpty, IsString } from 'class-validator';
 
 export class GetCursoDto {
+  @IsNotEmpty({ message: 'El n_codper es obligatorio' })
+  @IsInt()
+  @Type(() => Number)
+  n_codper: number;
+
+  @IsNotEmpty({ message: 'El n_codpla es obligatorio' })
+  @IsInt()
+  @Type(() => Number)
+  n_codpla: number;
+
   @IsNotEmpty({ message: 'El c_codfac es obligatorio' })
   @IsString()
   c_codfac: string;

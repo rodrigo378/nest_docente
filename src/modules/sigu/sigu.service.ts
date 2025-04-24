@@ -72,6 +72,8 @@ export class SiguService {
   async getCursos(getCursoDto: GetCursoDto) {
     const turno = await this.prismaService.turno.findFirst({
       where: {
+        n_codper: getCursoDto.n_codper,
+        n_codpla: getCursoDto.n_codpla,
         c_codfac: getCursoDto.c_codfac,
         c_codesp: getCursoDto.c_codesp,
         n_ciclo: Number(getCursoDto.n_ciclo),
