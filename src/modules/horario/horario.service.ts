@@ -18,6 +18,29 @@ import {
   verificarCruzesCursosTransversalesUpdate,
 } from 'src/common/utils/cruze.util';
 import { createLog } from 'src/common/utils/log.util';
+interface HorarioRaw {
+  tipo: number | null;
+  padre_curso_id: number | null;
+  curso_id: number;
+  n_codper: number;
+  nom_fac: string;
+  nomesp: string;
+  c_codcur: string;
+  c_nomcur: string;
+  c_grpcur: string;
+  c_nommod: string;
+  n_ciclo: number;
+  n_codpla: number;
+  c_nomdoc: string;
+  dia: string;
+  h_inicio: string;
+  h_fin: string;
+  n_horas: string;
+  tipoCurso: string;
+  c_codaula: string;
+  n_piso: string;
+  pabellon;
+}
 
 @Injectable()
 export class HorarioService {
@@ -1346,18 +1369,94 @@ export class HorarioService {
       Object.entries(filtros || {}).filter(([, v]) => v !== undefined),
     );
 
-    const horarios = await this.prismaService.horario.findMany({
-      where: {
-        Turno: Object.keys(whereTurno).length > 0 ? whereTurno : undefined,
-      },
-      include: {
-        Turno: true,
-        curso: true,
-        Docente: true,
-        aula: true,
-      },
+    const horariosData = await this.prismaService.$queryRawUnsafe<
+      HorarioRaw[]
+    >(`
+      select
+        g_s.tipo,
+        g_s.padre_curso_id,
+        h.curso_id,
+        t.n_codper,
+        t.nom_fac,
+        t.nomesp,
+        c.c_codcur,
+        c.c_nomcur,
+        t.c_grpcur,
+        t.c_nommod,
+        t.n_ciclo,
+        t.n_codpla,
+        d.c_nomdoc,
+        h.dia,
+        h.h_inicio,
+        h.h_fin,
+        h.n_horas,
+        h.tipo as tipoCurso,
+        a.c_codaula,
+        a.n_piso,
+      a.pabellon
+      from horario h
+      left join turno t on t.id = h.turno_id
+      left join curso c on c.id = h.curso_id
+      left join docente d on d.id = h.docente_id
+      left join aula a on a.id = h.aula_id
+      left join grupo_sincro g_s on g_s.curso_id = h.curso_id;
+    `);
+
+    const agrupado: {
+      n_codper: string;
+      nom_fac: string;
+      nomesp: string;
+      c_codcur: string;
+      c_nomcur: string;
+      c_grpcur: string;
+      modalidad: string;
+      n_ciclo: string;
+      n_codpla: string;
+      docentes: string;
+      dias: string;
+      horas_inicio: string;
+      horas_fin: string;
+      n_horas: string;
+      c_tipo: string;
+      aula: string;
+      piso: string;
+      pabellon: string;
+    }[] = Object.values(
+      horariosData.reduce((acc: Record<number, HorarioRaw[]>, item) => {
+        const agrupador =
+          item.tipo === 0
+            ? (item.padre_curso_id ?? item.curso_id)
+            : item.curso_id;
+
+        if (!acc[agrupador]) acc[agrupador] = [];
+        acc[agrupador].push(item);
+        return acc;
+      }, {}),
+    ).map((grupo) => {
+      console.log('grupo => ', grupo);
+
+      return {
+        n_codper: String(grupo[0].n_codper),
+        nom_fac: grupo[0].nom_fac,
+        nomesp: grupo[0].nomesp,
+        c_codcur: [...new Set(grupo.map((x) => x.c_codcur))].join(', '),
+        c_nomcur: [...new Set(grupo.map((x) => x.c_nomcur))].join(', '),
+        c_grpcur: [...new Set(grupo.map((x) => x.c_grpcur))].join(', '),
+        modalidad: grupo[0].c_nommod,
+        n_ciclo: [...new Set(grupo.map((x) => x.n_ciclo))].join(', '),
+        n_codpla: String(grupo[0].n_codpla),
+        docentes: [...new Set(grupo.map((x) => x.c_nomdoc))].join(', '),
+        dias: [...new Set(grupo.map((x) => x.dia))].join(', '),
+        horas_inicio: [...new Set(grupo.map((x) => x.h_inicio))].join(', '),
+        horas_fin: [...new Set(grupo.map((x) => x.h_fin))].join(', '),
+        n_horas: [...new Set(grupo.map((x) => x.n_horas))].join(', '),
+        c_tipo: String(grupo[0].tipo ?? ''),
+        aula: String(grupo[0].c_codaula ?? ''),
+        piso: String(grupo[0].n_piso ?? ''),
+        pabellon: String(grupo[0].pabellon ?? ''),
+      };
     });
 
-    return horarios;
+    return agrupado;
   }
 }
