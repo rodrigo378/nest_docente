@@ -1369,10 +1369,45 @@ export class HorarioService {
       Object.entries(filtros || {}).filter(([, v]) => v !== undefined),
     );
 
-    const horariosData = await this.prismaService.$queryRawUnsafe<
-      HorarioRaw[]
-    >(`
-      select
+    // Armamos la condición dinámica
+    const condiciones: string[] = [];
+    const valores: (string | number)[] = [];
+
+    if (whereTurno.n_codper) {
+      condiciones.push('t.n_codper = ?');
+      valores.push(whereTurno.n_codper);
+    }
+    if (whereTurno.c_codfac) {
+      condiciones.push('t.c_codfac = ?');
+      valores.push(whereTurno.c_codfac);
+    }
+    if (whereTurno.c_codesp) {
+      condiciones.push('t.c_codesp = ?');
+      valores.push(whereTurno.c_codesp);
+    }
+    if (whereTurno.c_grpcur) {
+      condiciones.push('t.c_grpcur = ?');
+      valores.push(whereTurno.c_grpcur);
+    }
+    if (whereTurno.c_codmod) {
+      condiciones.push('t.c_codmod = ?');
+      valores.push(whereTurno.c_codmod);
+    }
+    if (whereTurno.n_ciclo !== undefined) {
+      condiciones.push('t.n_ciclo = ?');
+      valores.push(whereTurno.n_ciclo);
+    }
+    if (whereTurno.n_codpla !== undefined) {
+      condiciones.push('t.n_codpla = ?');
+      valores.push(whereTurno.n_codpla);
+    }
+
+    const whereClause =
+      condiciones.length > 0 ? `WHERE ${condiciones.join(' AND ')}` : '';
+
+    const horariosData = await this.prismaService.$queryRawUnsafe<HorarioRaw[]>(
+      `
+      SELECT
         g_s.tipo,
         g_s.padre_curso_id,
         h.curso_id,
@@ -1393,14 +1428,18 @@ export class HorarioService {
         h.tipo as tipoCurso,
         a.c_codaula,
         a.n_piso,
-      a.pabellon
-      from horario h
-      left join turno t on t.id = h.turno_id
-      left join curso c on c.id = h.curso_id
-      left join docente d on d.id = h.docente_id
-      left join aula a on a.id = h.aula_id
-      left join grupo_sincro g_s on g_s.curso_id = h.curso_id;
-    `);
+        a.pabellon
+      FROM horario h
+      LEFT JOIN turno t ON t.id = h.turno_id
+      LEFT JOIN curso c ON c.id = h.curso_id
+      LEFT JOIN docente d ON d.id = h.docente_id
+      LEFT JOIN aula a ON a.id = h.aula_id
+      LEFT JOIN grupo_sincro g_s ON g_s.curso_id = h.curso_id
+      ${whereClause}
+      ;
+      `,
+      ...valores, // 🔥 Pasamos los valores parametrizados
+    );
 
     const agrupado: {
       n_codper: string;
@@ -1422,7 +1461,7 @@ export class HorarioService {
       piso: string;
       pabellon: string;
     }[] = Object.values(
-      horariosData.reduce((acc: Record<number, HorarioRaw[]>, item) => {
+      horariosData.reduce((acc: Record<string, HorarioRaw[]>, item) => {
         const agrupador =
           item.tipo === 0
             ? (item.padre_curso_id ?? item.curso_id)
@@ -1433,8 +1472,6 @@ export class HorarioService {
         return acc;
       }, {}),
     ).map((grupo) => {
-      console.log('grupo => ', grupo);
-
       return {
         n_codper: String(grupo[0].n_codper),
         nom_fac: grupo[0].nom_fac,
@@ -1447,8 +1484,28 @@ export class HorarioService {
         n_codpla: String(grupo[0].n_codpla),
         docentes: [...new Set(grupo.map((x) => x.c_nomdoc))].join(', '),
         dias: [...new Set(grupo.map((x) => x.dia))].join(', '),
-        horas_inicio: [...new Set(grupo.map((x) => x.h_inicio))].join(', '),
-        horas_fin: [...new Set(grupo.map((x) => x.h_fin))].join(', '),
+        horas_inicio: [
+          ...new Set(
+            grupo.map((x) =>
+              new Date(x.h_inicio).toLocaleTimeString('es-PE', {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false,
+              }),
+            ),
+          ),
+        ].join(', '),
+        horas_fin: [
+          ...new Set(
+            grupo.map((x) =>
+              new Date(x.h_fin).toLocaleTimeString('es-PE', {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false,
+              }),
+            ),
+          ),
+        ].join(', '),
         n_horas: [...new Set(grupo.map((x) => x.n_horas))].join(', '),
         c_tipo: String(grupo[0].tipo ?? ''),
         aula: String(grupo[0].c_codaula ?? ''),
