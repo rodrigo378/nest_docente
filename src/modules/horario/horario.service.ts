@@ -1332,4 +1332,32 @@ export class HorarioService {
       totalPages: Math.ceil(total / take),
     };
   }
+
+  async getReporte(filtros?: {
+    n_codper?: number;
+    c_codfac?: string;
+    c_codesp?: string;
+    c_grpcur?: string;
+    c_codmod?: string;
+    n_ciclo?: number;
+    n_codpla?: number;
+  }) {
+    const whereTurno = Object.fromEntries(
+      Object.entries(filtros || {}).filter(([, v]) => v !== undefined),
+    );
+
+    const horarios = await this.prismaService.horario.findMany({
+      where: {
+        Turno: Object.keys(whereTurno).length > 0 ? whereTurno : undefined,
+      },
+      include: {
+        Turno: true,
+        curso: true,
+        Docente: true,
+        aula: true,
+      },
+    });
+
+    return horarios;
+  }
 }

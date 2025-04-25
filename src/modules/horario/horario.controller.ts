@@ -24,6 +24,29 @@ import { AuthenticatedRequest } from '../auth/interface/request.interface';
 export class HorarioController {
   constructor(private readonly horarioService: HorarioService) {}
 
+  @Get('reporte')
+  getReporte(
+    @Query('n_codper') n_codper?: string,
+    @Query('c_codfac') c_codfac?: string,
+    @Query('c_codesp') c_codesp?: string,
+    @Query('c_grpcur') c_grpcur?: string,
+    @Query('c_codmod') c_codmod?: string,
+    @Query('n_ciclo') n_ciclo?: string,
+    @Query('n_codpla') n_codpla?: string,
+  ) {
+    const filtros = {
+      n_codper: n_codper !== undefined ? Number(n_codper) : undefined,
+      c_codfac,
+      c_codesp,
+      c_grpcur,
+      c_codmod,
+      n_ciclo: n_ciclo !== undefined ? Number(n_ciclo) : undefined,
+      n_codpla: n_codpla !== undefined ? Number(n_codpla) : undefined,
+    };
+
+    return this.horarioService.getReporte(filtros);
+  }
+
   @UseGuards(JwtAuthGuard)
   @Post('')
   createHorarioArray(
