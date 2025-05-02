@@ -1,5 +1,5 @@
 import { AulaService } from './aula.service';
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 
 @Controller('aula')
 export class AulaController {
@@ -12,5 +12,10 @@ export class AulaController {
     @Query('docente') docente?: boolean,
   ) {
     return this.aulaService.getAulas(horario, curso, docente);
+  }
+
+  @Get(':ip')
+  getAulaIp(@Param('ip') ip: string) {
+    return this.aulaService.getAulaIp(ip);
   }
 }

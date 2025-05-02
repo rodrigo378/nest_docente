@@ -33,4 +33,8 @@ export class AulaService {
       include,
     });
   }
+
+  async getAulaIp(ip: string) {
+    return this.prismaService.aula.findFirst({ where: { ip } });
+  }
 }

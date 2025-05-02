@@ -3,7 +3,15 @@ import { GetPermisoToDto } from './dto/getPermisoToDto';
 import { CreatePermisosDto } from './dto/createPermisosDto';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth/jwt-auth.guard';
 import { AuthenticatedRequest } from '../auth/interface/request.interface';
-import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Ip,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 
 @Controller('admin')
 export class AdminController {
@@ -33,7 +41,10 @@ export class AdminController {
   getModulos() {
     return this.adminService.getModulos();
   }
-}
 
-//cambiar horarios
-//cambiar logica de docente
+  @Get('ip')
+  getClientIp(@Ip() ip: string) {
+    ip = ip.replace('::ffff:', '');
+    return { ip };
+  }
+}

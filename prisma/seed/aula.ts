@@ -12,6 +12,7 @@ export async function seedAula() {
       pabellon: 'B',
       n_capacidad: '45',
       c_obs: null,
+      ip: '192.168.1.212',
     },
     {
       c_codaula: '2',
@@ -19,6 +20,7 @@ export async function seedAula() {
       pabellon: 'B',
       n_capacidad: '45',
       c_obs: null,
+      ip: '192.168.1.213',
     },
     {
       c_codaula: '3',
@@ -26,6 +28,7 @@ export async function seedAula() {
       pabellon: 'B',
       n_capacidad: '60',
       c_obs: null,
+      ip: '192.168.1.214',
     },
     {
       c_codaula: 'AUDITORIA',

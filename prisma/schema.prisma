@@ -372,27 +372,30 @@ model Horario {
 }
 
 model Aula {
-  id          Int       @id @default(autoincrement())
+  id          Int          @id @default(autoincrement())
   c_codaula   String
   n_piso      Int
   pabellon    String
   n_capacidad String
-  c_obs       String?   @db.Text
+  c_obs       String?      @db.Text
+  ip          String?
   Horario     Horario[]
+  asistencia  Asistencia[]
 
   @@map("aula")
 }
 
 model Docente {
-  id       Int       @id @default(autoincrement())
-  c_codfac String
-  nom_fac  String
-  c_nomdoc String
-  h_min    Int
-  h_max    Int
-  tipo     Int
-  h_total  Float     @default(0)
-  Horario  Horario[]
+  id         Int          @id @default(autoincrement())
+  c_codfac   String
+  nom_fac    String
+  c_nomdoc   String
+  h_min      Int
+  h_max      Int
+  tipo       Int
+  h_total    Float        @default(0)
+  Horario    Horario[]
+  asistencia Asistencia[]
 
   @@map("docente")
 }
@@ -410,4 +413,30 @@ model Log {
   createdAt   DateTime @default(now())
 
   @@map("log")
+}
+
+model Asistencia {
+  id Int @id @default(autoincrement())
+
+  docenteId Int     @map("docente_id")
+  docente   Docente @relation(fields: [docenteId], references: [id])
+
+  aulaId Int  @map("aula_id")
+  aula   Aula @relation(fields: [aulaId], references: [id])
+
+  fecha DateTime
+  dia   String
+  hora  DateTime
+  tipo  TipoMarca
+
+  salidaId Int?         @map("salida_id")
+  salida   Asistencia?  @relation("EntradaSalida", fields: [salidaId], references: [id])
+  salidas  Asistencia[] @relation("EntradaSalida")
+
+  @@map("asistencia")
+}
+
+enum TipoMarca {
+  entrada
+  salida
 }

@@ -11,6 +11,7 @@ import { HorarioModule } from './modules/horario/horario.module';
 import { PeriodoModule } from './modules/periodo/periodo.module';
 import { DocenteModule } from './modules/docente/docente.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { AsistenciaModule } from './modules/asistencia/asistencia.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
     UserModule,
     DashboardModule,
     PeriodoModule,
+    AsistenciaModule,
   ],
   controllers: [],
   providers: [],
