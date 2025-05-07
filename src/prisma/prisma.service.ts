@@ -20,7 +20,7 @@ export class PrismaService
   async onModuleInit() {
     try {
       await this.$connect(); // ✅ Intentar conectar Prisma
-      console.log('✅ V1.3'); // 🔍 Confirmación de conexión
+      console.log('✅ V1.4'); // 🔍 Confirmación de conexión
       console.log('✅ Prisma conectado correctamente'); // 🔍 Confirmación de conexión
     } catch (error) {
       console.error('❌ Error al conectar a la base de datos:', error);
