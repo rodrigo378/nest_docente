@@ -28,7 +28,6 @@ export class AuthController {
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
   googleAuthRedirect(@Req() req: Request, @Res() res: Response) {
-    console.log('usuario autentificado', req.user);
     const user = req.user as { accessToken: string };
 
     if (!user || !user.accessToken) {
@@ -69,7 +68,7 @@ export class AuthController {
       maxAge: 1000 * 60 * 60 * 24,
     });
 
-    return { user: result.user };
+    return { user: result };
   }
 
   @Post('logout')
