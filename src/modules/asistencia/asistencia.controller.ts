@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { AsistenciaService } from './asistencia.service';
 import { MarcarEntradaDto } from './dto/marcarAsistenciaDto';
 
@@ -17,7 +17,23 @@ export class AsistenciaController {
   }
 
   @Get('docente/:docente_id')
-  getAsistenciaDocente(@Param('docente_id') docente_id: string) {
-    return this.asistenciaService.getAsistenciaDocente(Number(docente_id));
+  getAsistenciaDocente(
+    @Param('docente_id') docente_id: string,
+    @Query('filtro') filtro: 'diario' | 'rango' | 'mensual',
+    @Query('fecha') fecha?: string,
+    @Query('desde') desde?: string,
+    @Query('hasta') hasta?: string,
+    @Query('mes') mes?: string,
+  ) {
+    return this.asistenciaService.getAsistenciaDocente(
+      Number(docente_id),
+      filtro,
+      {
+        fecha,
+        desde,
+        hasta,
+        mes,
+      },
+    );
   }
 }

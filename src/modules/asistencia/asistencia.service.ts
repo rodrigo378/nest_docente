@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { MarcarEntradaDto } from './dto/marcarAsistenciaDto';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class AsistenciaService {
@@ -97,29 +98,66 @@ export class AsistenciaService {
     return newAsistencia;
   }
 
-  async getAsistenciaDocente(docente_id: number) {
-    const ahora = new Date();
-    const soloFecha = new Date(ahora.toISOString().split('T')[0]);
-    const dia = ahora.toLocaleDateString('es-PE', { weekday: 'long' });
+  async getAsistenciaDocente(
+    docente_id: number,
+    filtro: 'diario' | 'rango' | 'mensual',
+    opciones: {
+      fecha?: string; // diario
+      desde?: string; // rango
+      hasta?: string;
+      mes?: string; // mensual (formato: "YYYY-MM")
+    },
+  ) {
+    console.log('iniciar funcion getAsistenciaDocente');
 
-    if (
-      !(await this.prismaService.docente.findUnique({
-        where: {
-          id: docente_id,
-        },
-      }))
-    ) {
-      throw new NotFoundException('Este docente no exite');
+    console.log('docente_id', docente_id);
+    console.log('filtro', filtro);
+    console.log('opciones', opciones);
+
+    // Validación del docente
+    const existeDocente = await this.prismaService.docente.findUnique({
+      where: { id: docente_id },
+    });
+
+    if (!existeDocente) {
+      throw new NotFoundException('Este docente no existe');
+    }
+
+    const where: Prisma.AsistenciaWhereInput = {
+      docenteId: docente_id,
+    };
+
+    // Filtro diario
+    if (filtro === 'diario' && opciones.fecha) {
+      where.fecha = new Date(opciones.fecha);
+    }
+
+    // Filtro rango (solo si ambos están presentes)
+    else if (filtro === 'rango' && opciones.desde && opciones.hasta) {
+      where.fecha = {
+        gte: new Date(opciones.desde),
+        lte: new Date(opciones.hasta),
+      };
+    }
+
+    // Filtro mensual (opcional)
+    else if (filtro === 'mensual' && opciones.mes) {
+      const [anio, mes] = opciones.mes.split('-').map(Number);
+      const inicioMes = new Date(anio, mes - 1, 1);
+      const finMes = new Date(anio, mes, 0);
+      where.fecha = {
+        gte: inicioMes,
+        lte: finMes,
+      };
     }
 
     const asistencias = await this.prismaService.asistencia.findMany({
-      where: {
-        docenteId: docente_id,
-        fecha: soloFecha,
-        dia,
-      },
+      where,
       include: {
         aula: true,
+      },
+      orderBy: {
+        fecha: 'asc',
       },
     });
 

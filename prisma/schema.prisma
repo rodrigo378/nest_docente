@@ -387,6 +387,7 @@ model Aula {
 
 model Docente {
   id         Int          @id @default(autoincrement())
+  c_dnidoc   String       @unique @db.Char(8)
   c_codfac   String
   nom_fac    String
   c_nomdoc   String

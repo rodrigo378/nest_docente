@@ -14,6 +14,14 @@ export class AulaController {
     return this.aulaService.getAulas(horario, curso, docente);
   }
 
+  @Get('/docente')
+  getDocentesAula(
+    @Query('aula_id') aula_id: string,
+    @Query('dia') dia: string,
+  ) {
+    return this.aulaService.getDocentesAula(Number(aula_id), dia);
+  }
+
   @Get(':ip')
   getAulaIp(@Param('ip') ip: string) {
     return this.aulaService.getAulaIp(ip);

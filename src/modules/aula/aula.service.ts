@@ -37,4 +37,19 @@ export class AulaService {
   async getAulaIp(ip: string) {
     return this.prismaService.aula.findFirst({ where: { ip } });
   }
+
+  async getDocentesAula(aula_id: number, dia: string) {
+    const docentes = await this.prismaService.docente.findMany({
+      where: {
+        Horario: {
+          some: {
+            aula_id,
+            dia,
+          },
+        },
+      },
+    });
+
+    return docentes;
+  }
 }

@@ -65,11 +65,12 @@ export class DocenteService {
 
   //se agrego log
   async createDocente(user_id: number, createDocenteDto: CreateDocenteDto) {
-    const { c_codfac, nom_fac, c_nomdoc, h_min, h_max, tipo } =
+    const { c_dnidoc, c_codfac, nom_fac, c_nomdoc, h_min, h_max, tipo } =
       createDocenteDto;
 
     const newDocente = await this.prismaService.docente.create({
       data: {
+        c_dnidoc,
         c_codfac,
         nom_fac,
         c_nomdoc,
@@ -654,3 +655,12 @@ export class DocenteService {
 //     include: Object.keys(include).length > 0 ? include : undefined,
 //   });
 // }
+
+// * Regularización de Trámite
+// * Regularización de Grabaciones
+// * Restablecimiento de contraseña Biblioteca Virtual
+// * Sincronización de cursos
+// * Solicitud de Credenciales de Acceso
+// * Activación de Cuenta Zoom
+// * Regularización de Asistencias
+// * Otros

@@ -5,8 +5,10 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class DashboardService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async dashboard_1() {
-    const countCursos = await this.prismaService.curso.count();
+  async dashboard_1(n_codper: string) {
+    const countCursos = await this.prismaService.curso.count({
+      where: { n_codper },
+    });
     const countDocentes = await this.prismaService.docente.count();
 
     const aulasUnicas = await this.prismaService.horario.findMany({
@@ -16,9 +18,11 @@ export class DashboardService {
       },
     });
 
-    const countTurnos = await this.prismaService.turno.count();
+    const countTurnos = await this.prismaService.turno.count({
+      where: { n_codper: Number(n_codper) },
+    });
     const countTurnosAsignados = await this.prismaService.turno.count({
-      where: { estado: 2 },
+      where: { estado: 2, n_codper: Number(n_codper) },
     });
 
     const porAsignacion = (100 * countTurnosAsignados) / countTurnos;
@@ -55,31 +59,31 @@ export class DashboardService {
     return { docente, data };
   }
 
-  async dash_TipoCurso() {
-    const countCursos = await this.prismaService.curso.count();
+  async dash_TipoCurso(n_codper: string) {
+    const countCursos = await this.prismaService.curso.count({});
 
     const countTransversales = await this.prismaService.grupo_sincro.count({
-      where: { tipo: 0 },
+      where: { tipo: 0, cursosHijo: { turno: { n_codper: Number(n_codper) } } },
     });
 
     const countAgrupados = await this.prismaService.grupo_sincro.count({
-      where: { tipo: 1 },
+      where: { tipo: 1, cursosHijo: { turno: { n_codper: Number(n_codper) } } },
     });
 
     return { countCursos, countTransversales, countAgrupados };
   }
 
-  async dash_EstadoTurno() {
+  async dash_EstadoTurno(n_codper: string) {
     const countTurnoEstado_0 = await this.prismaService.turno.count({
-      where: { estado: 0 },
+      where: { estado: 0, n_codper: Number(n_codper) },
     });
 
     const countTurnoEstado_1 = await this.prismaService.turno.count({
-      where: { estado: 1 },
+      where: { estado: 1, n_codper: Number(n_codper) },
     });
 
     const countTurnoEstado_2 = await this.prismaService.turno.count({
-      where: { estado: 2 },
+      where: { estado: 2, n_codper: Number(n_codper) },
     });
 
     return { countTurnoEstado_0, countTurnoEstado_1, countTurnoEstado_2 };
