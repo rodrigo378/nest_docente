@@ -25,8 +25,16 @@ export class DocenteController {
     @Query('horario') horario?: boolean,
     @Query('curso') curso?: boolean,
     @Query('aula') aula?: boolean,
+    @Query('c_codfac') c_codfac?: string,
+    @Query('c_codesp') c_codesp?: string,
   ) {
-    return this.docenteService.getDocentes(horario, curso, aula);
+    return this.docenteService.getDocentes(
+      horario,
+      curso,
+      aula,
+      c_codfac,
+      c_codesp,
+    );
   }
 
   @Get(':id')

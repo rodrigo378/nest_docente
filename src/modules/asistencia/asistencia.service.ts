@@ -108,12 +108,6 @@ export class AsistenciaService {
       mes?: string; // mensual (formato: "YYYY-MM")
     },
   ) {
-    console.log('iniciar funcion getAsistenciaDocente');
-
-    console.log('docente_id', docente_id);
-    console.log('filtro', filtro);
-    console.log('opciones', opciones);
-
     // Validación del docente
     const existeDocente = await this.prismaService.docente.findUnique({
       where: { id: docente_id },

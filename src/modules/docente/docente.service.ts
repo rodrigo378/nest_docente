@@ -12,8 +12,11 @@ export class DocenteService {
     horario: boolean = false,
     curso: boolean = false,
     aula: boolean = false,
+    c_codfac?: string,
+    c_codesp?: string,
   ) {
-    const include: { Horario: any } = { Horario: false };
+    const include: { Horario?: any } = { Horario: false };
+    const where: { Horario?: any } = {};
 
     if (horario) {
       include.Horario = {
@@ -32,7 +35,20 @@ export class DocenteService {
       };
     }
 
-    return this.prismaService.docente.findMany({ include });
+    if (c_codfac || c_codesp) {
+      const turnoWhere: { c_codfac?: string; c_codesp?: string } = {};
+
+      if (c_codfac) turnoWhere.c_codfac = c_codfac;
+      if (c_codesp) turnoWhere.c_codesp = c_codesp;
+
+      where.Horario = {
+        some: {
+          Turno: turnoWhere,
+        },
+      };
+    }
+
+    return this.prismaService.docente.findMany({ include, where });
   }
 
   async getDocente(
