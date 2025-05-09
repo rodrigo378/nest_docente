@@ -60,7 +60,9 @@ export class DashboardService {
   }
 
   async dash_TipoCurso(n_codper: string) {
-    const countCursos = await this.prismaService.curso.count({});
+    const countCursos = await this.prismaService.curso.count({
+      where: { turno: { n_codper: Number(n_codper) } },
+    });
 
     const countTransversales = await this.prismaService.grupo_sincro.count({
       where: { tipo: 0, cursosHijo: { turno: { n_codper: Number(n_codper) } } },
