@@ -7,7 +7,7 @@ export class DashboardService {
 
   async dashboard_1(n_codper: string) {
     const countCursos = await this.prismaService.curso.count({
-      where: { n_codper },
+      where: { turno: { n_codper: Number(n_codper) } },
     });
     const countDocentes = await this.prismaService.docente.count();
 
