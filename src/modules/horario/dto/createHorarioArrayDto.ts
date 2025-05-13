@@ -34,11 +34,6 @@ export class HorarioDto {
   @IsNotEmpty()
   n_horas: number;
 
-  @Type(() => Number)
-  @IsNumber()
-  @IsNotEmpty()
-  h_total: number;
-
   @IsHexColor()
   @IsNotEmpty()
   c_color: string;
