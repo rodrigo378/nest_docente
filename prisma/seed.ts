@@ -14,16 +14,17 @@ import { seedDepartamentos } from './seed/departamento.seed';
 const prisma = new PrismaClient();
 async function main() {
   await seedAula();
-  await seedCurso();
-  await seedTurno();
-  await seedUsers();
-  await seedItems();
-  await seedModulos();
   await seedPeriodo();
-  await seedDistrito();
-  await seedProvincia();
+  await seedTurno();
+  await seedCurso();
+  await seedUsers();
+  await seedModulos();
+  await seedItems();
   await seedPermissions();
+
   await seedDepartamentos();
+  await seedProvincia();
+  await seedDistrito();
 }
 main()
   .then(async () => {

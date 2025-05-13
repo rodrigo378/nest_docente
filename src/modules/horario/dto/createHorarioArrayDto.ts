@@ -8,6 +8,7 @@ import {
   IsOptional,
   IsDateString,
   ValidateNested,
+  IsNumber,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -29,9 +30,14 @@ export class HorarioDto {
   h_fin: string;
 
   @Type(() => Number)
-  @IsInt()
+  @IsNumber()
   @IsNotEmpty()
   n_horas: number;
+
+  @Type(() => Number)
+  @IsNumber()
+  @IsNotEmpty()
+  h_total: number;
 
   @IsHexColor()
   @IsNotEmpty()
@@ -59,7 +65,7 @@ export class HorarioDto {
 
   @IsOptional()
   @Type(() => Number)
-  @IsInt()
+  @IsNumber()
   h_umaPlus?: number;
 }
 

@@ -350,11 +350,11 @@ model Horario {
   dia       String?
   h_inicio  DateTime?
   h_fin     DateTime?
-  n_horas   Int
+  n_horas   Float
   c_color   String?
   tipo      String //teorico practico
   // c_codmod Int 
-  h_umaPlus Int?
+  h_umaPlus Float?
 
   aula_id Int?
   aula    Aula? @relation(fields: [aula_id], references: [id], onDelete: Cascade)
