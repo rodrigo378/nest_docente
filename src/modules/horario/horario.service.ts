@@ -570,7 +570,7 @@ export class HorarioService {
           id: {
             in: horarios
               .map((h) => h.id)
-              .filter((id): id is number => id !== undefined),
+              .filter((id): id is number => id !== undefined && id !== null),
           },
         },
         select: {

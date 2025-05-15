@@ -344,3 +344,87 @@ export class SiguService {
 //     tp.c_nomcur as c_nomcur_equ
 // from tb_plan_estudio_equ te
 // inner join tb_plan_estudio_curso tp on te.c_codcur_equ = tp.c_codcur;
+
+/* 
+  Exportar al sigu
+
+  1 => cursos
+  select * from tb_curso_grupo where n_codper = 20251;
+  {
+    n_codper: 20251,
+    c_codfac: E,
+    c_codcur: ANI01001,
+    c_grpcur: N1,
+    c_codmod: 2,
+    d_freg: 2024-11-29 11:51:59,
+    c_codesp: E4,
+    n_codpla: 2023,
+    c_sedcod: 1, => no cambia
+    id_unidad_estudio_plan:  12 => varia nose 
+    n_sync_plan: 1, => no cambia
+    n_tipprog: 1, => no cambia
+    lock: 0 => no cambia
+    moodle: 0 => no cambia
+  }
+
+  // 2 => docernte 
+  select * from tb_doc_cur_grp where n_codper = 20251;
+  {
+    c_dnidoc:  0289293,
+    n_codper: 20251,
+    c_codmod: 1,
+    c_codfac: S,
+    c_codcur: PESG5024,
+    c_grpcur: T1,
+    c_tipo: EP,
+    c_categoria: P => no cambia nose,
+    c_codesp: S2
+    n_codpla: 2025,
+    c_sedcod: 1 => no cambia
+  }
+
+  // 3 => horario
+  select * from tb_cur_grp_hor where n_codper = 20251;
+  {
+    id: 17838,
+    n_codper: 20251,
+    c_codfac: S,
+    c_codcur: PSI0703,
+    c_grpcur: N1,
+    c_dnidoc: 23937540,
+    n_numdia: 1,
+    c_hh_ini: 19,
+    c_min_ini: 40,
+    c_hh_fin: 19,
+    c_min_fin: 40,
+    n_break: 0 => no cambia
+    d_freg: 2024-11-28 11:01:47,
+    c_codmod: 2,
+    c_tipo: TEV
+    id_aula: 0 => cambia,
+    c_codesp: S4,
+    n_codpla: 2025,
+    c_sedcod: 1 => no cambia
+  }
+
+  // 4 negativo => 5 positivo
+  select * from tb_curso_grupo_sincro ORDER BY courseid DESC
+  {
+    courseid: 3619
+    c_codfac: S
+    c_codesp: S1
+    c_sedcod: 1
+    c_codcur: SESG3031
+    c_grpcur: CS1
+    n_codper: 20251
+    c_codmod: 2
+    n_codpla: 2025
+    tipo: 1
+    f_reg: 2025-05-08 14:51:41
+    f_upd: 2025-05-08 14:51:41
+    orden: 1
+    shortname: SESG3031-1-251-CS1
+    name: INGLÉS I (ENF CS1)
+  }
+
+*/
