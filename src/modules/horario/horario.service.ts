@@ -198,6 +198,7 @@ export class HorarioService {
                   aula_id: horario.aula_id || null,
                   docente_id: horario.docente_id || null,
                   h_umaPlus: horario.h_umaPlus || null,
+                  modalidad: horario.modalidad,
                 },
               });
               await createLog(
@@ -232,6 +233,7 @@ export class HorarioService {
             aula_id: horario.aula_id || null,
             docente_id: horario.docente_id || null,
             h_umaPlus: horario.h_umaPlus || null,
+            modalidad: horario.modalidad,
           },
         });
 
@@ -544,6 +546,7 @@ export class HorarioService {
                 aula_id: horario.aula_id ?? null,
                 docente_id: horario.docente_id ?? null,
                 h_umaPlus: horario.h_umaPlus,
+                modalidad: horario.modalidad,
               },
             });
             await createLog(
@@ -694,6 +697,7 @@ export class HorarioService {
               docente_id: horario.docente_id ?? null,
               curso_id: cursoExistente?.id || 0,
               h_umaPlus: horario.h_umaPlus ?? null,
+              modalidad: horario.modalidad,
             },
           });
           await createLog(
@@ -1019,6 +1023,8 @@ export class HorarioService {
             docente_id: padreHorario.docente_id,
             curso_id: hijo_id,
             turno_id: cursoHijo?.turno_id || 0,
+            h_umaPlus: padreHorario.h_umaPlus,
+            modalidad: padreHorario.modalidad,
           },
         });
         await createLog(
@@ -1173,6 +1179,7 @@ export class HorarioService {
         tipo: horario.tipo,
         curso_id: cursoCreado?.id || 0,
         turno_id: horario.turno_id,
+        modalidad: 'vir',
       },
     });
     await createLog(

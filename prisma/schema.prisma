@@ -355,6 +355,7 @@ model Horario {
   tipo      String //teorico practico
   // c_codmod Int 
   h_umaPlus Float?
+  modalidad String // pre vir
 
   aula_id Int?
   aula    Aula? @relation(fields: [aula_id], references: [id], onDelete: Cascade)

@@ -9,8 +9,14 @@ import {
   IsDateString,
   ValidateNested,
   IsNumber,
+  IsEnum,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+
+export enum Modalidad {
+  PRESENCIAL = 'pre',
+  VIRTUAL = 'vir',
+}
 
 export class HorarioUpdateDto {
   @IsOptional()
@@ -62,6 +68,9 @@ export class HorarioUpdateDto {
   @Type(() => Number)
   @IsNumber()
   h_umaPlus?: number;
+
+  @IsEnum(Modalidad, { message: 'La modalidad debe ser "pre" o "vir"' })
+  modalidad: Modalidad;
 }
 
 export class CursoUpdateDto {
