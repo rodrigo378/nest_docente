@@ -18,6 +18,7 @@ export class StrategyService extends PassportStrategy(Strategy) {
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
+        ExtractJwt.fromAuthHeaderAsBearerToken(), // ✅ para Postman u otros clientes REST
         (req: Request): string | null => {
           const token = req.cookies?.token as string | undefined;
           return token ?? null;
