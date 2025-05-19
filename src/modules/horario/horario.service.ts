@@ -1279,15 +1279,15 @@ export class HorarioService {
       AND?: any[];
     } = {
       ...(c_codmod && { c_codmod }),
-      ...(n_codper && { n_codper }),
       ...(c_codfac && { c_codfac }),
       ...(c_codesp && { c_codesp }),
       ...(c_codcur && { c_codcur }),
       ...(n_ciclo && { n_ciclo }),
       ...(turno_id && { turno_id }),
-      ...(periodo && {
+      ...((n_codper || periodo) && {
         turno: {
-          n_codper: periodo,
+          ...(n_codper && { n_codpla: Number(n_codper) }),
+          ...(periodo && { n_codper: periodo }),
         },
       }),
     };
