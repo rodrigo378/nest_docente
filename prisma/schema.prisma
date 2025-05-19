@@ -276,6 +276,8 @@ model Periodo {
   n_codper Int      @id
   f_cierre DateTime
   turnos   Turno[] // Relación 1 a muchos: Un periodo tiene varios turnos
+
+  @@map("periodo")
 }
 
 model Turno {
@@ -394,7 +396,7 @@ model Docente {
   c_nomdoc   String
   h_min      Int
   h_max      Int
-  tipo       Int
+  tipo       Int // 0 => tc , 1 => tp 
   h_total    Float        @default(0)
   Horario    Horario[]
   asistencia Asistencia[]
