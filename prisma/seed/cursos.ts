@@ -55,7 +55,7 @@ export async function seedCurso() {
       INNER JOIN tb_plan_estudio_curso tp2 ON te.c_codcur_equ = tp2.c_codcur
       WHERE te.n_codper_equ in (2023, 2025)) tpee
       ON tpee.c_codcur = tp.c_codcur
-      and tpee.c_codmod = tp.c_codmodb
+      and tpee.c_codmod = tp.c_codmod
       and tpee.c_codfac = tp.c_codfac
       and tpee.c_codesp = tp.c_codesp
       WHERE
