@@ -22,27 +22,74 @@ export const formatoHora = (hora: Date): string => {
   return `${h}:${m}`;
 };
 
+export const sonCursosAgrupados = async (
+  prisma: PrismaService,
+  curso1Id: number,
+  curso2Id: number,
+): Promise<boolean> => {
+  if (!curso1Id || !curso2Id) return false;
+  if (curso1Id === curso2Id) return false;
+
+  const relacion = await prisma.grupo_sincro.findFirst({
+    where: {
+      tipo: 1,
+      OR: [
+        { curso_id: curso1Id, padre_curso_id: curso2Id },
+        { curso_id: curso2Id, padre_curso_id: curso1Id },
+      ],
+    },
+  });
+
+  return !!relacion;
+};
+
 export const verificarCruzeCreate = async (
   prisma: PrismaService,
   createHorarioArrayDto: CreateHorarioArrayDto,
 ) => {
   const errores: string[] = [];
+  const todosLosHorarios: { h: HorarioDto; curso: CursoDto }[] = [];
 
-  const todosLosHorarios: {
-    h: HorarioDto;
-    curso: CursoDto;
-  }[] = [];
-
-  // 1️⃣ Validar entre todos los cursos y sus horarios enviados
   for (const data of createHorarioArrayDto.dataArray) {
     const { curso, horarios } = data;
 
+    const grupo = await prisma.grupo_sincro.findFirst({
+      where: { curso_id: curso.id },
+      select: { tipo: true },
+    });
+
+    const esTransversal = grupo?.tipo === 0;
+    const esAgrupado = grupo?.tipo === 1;
+
+    if (esTransversal) {
+      // console.log(`Curso "${curso.c_nomcur}" es TRANSVERSAL`);
+    }
+
+    if (esAgrupado) {
+      // console.log(`Curso "${curso.c_nomcur}" es AGRUPADO`);
+    }
+
+    const cursoBD = await prisma.curso.findFirst({
+      where: {
+        n_codper: curso.n_codper,
+        c_codmod: curso.c_codmod,
+        c_codfac: curso.c_codfac,
+        c_codesp: curso.c_codesp,
+        c_codcur: curso.c_codcur,
+      },
+      select: { id: true },
+    });
+
     for (let i = 0; i < horarios.length; i++) {
       const h1 = horarios[i];
+
+      if (!h1.curso_id && cursoBD) {
+        h1.curso_id = cursoBD.id;
+      }
+
       const inicio1 = parseHora(h1.h_inicio);
       const fin1 = parseHora(h1.h_fin);
 
-      // Cruces dentro del mismo curso
       for (let j = i + 1; j < horarios.length; j++) {
         const h2 = horarios[j];
         if (h1.dia !== h2.dia) continue;
@@ -63,16 +110,15 @@ export const verificarCruzeCreate = async (
           );
         }
       }
+
       todosLosHorarios.push({ h: h1, curso });
     }
   }
 
-  // 2️⃣ Verificación con la base de datos
   for (const { h } of todosLosHorarios) {
     const condicionesOR: any[] = [];
     if (h.aula_id) condicionesOR.push({ aula_id: h.aula_id });
     if (h.docente_id) condicionesOR.push({ docente_id: h.docente_id });
-
     if (condicionesOR.length === 0) continue;
 
     const existentes = await prisma.horario.findMany({
@@ -94,6 +140,19 @@ export const verificarCruzeCreate = async (
       const mismoAula = h.aula_id && e.aula_id && h.aula_id === e.aula_id;
       const mismoDocente =
         h.docente_id && e.docente_id && h.docente_id === e.docente_id;
+
+      if (h.curso_id && e.curso_id) {
+        if (h.curso_id === e.curso_id) continue;
+
+        const sonAgrupados = await sonCursosAgrupados(
+          prisma,
+          h.curso_id,
+          e.curso_id,
+        );
+        if (sonAgrupados) {
+          continue;
+        }
+      }
 
       if (cruce && (mismoAula || mismoDocente)) {
         errores.push(
@@ -160,31 +219,23 @@ export const verificarCruzeUpdate = async (
   updateHorarioArrayDto: UpdateHorarioArrayDto,
 ) => {
   const errores = new Set<string>();
-
-  const todosLosHorarios: {
-    h: HorarioUpdateDto;
-    curso: CursoUpdateDto;
-  }[] = [];
+  const todosLosHorarios: { h: HorarioUpdateDto; curso: CursoUpdateDto }[] = [];
 
   for (const data of updateHorarioArrayDto.dataArray) {
     const { curso, horarios } = data;
 
     for (let i = 0; i < horarios.length; i++) {
       const h1 = horarios[i];
-
       const inicio1 = h1.h_inicio ? parseHora(h1.h_inicio) : null;
       const fin1 = h1.h_fin ? parseHora(h1.h_fin) : null;
-
       if (!inicio1 || !fin1) continue;
 
       for (let j = i + 1; j < horarios.length; j++) {
         const h2 = horarios[j];
-
         if (h1.dia !== h2.dia) continue;
 
         const inicio2 = h2.h_inicio ? parseHora(h2.h_inicio) : null;
         const fin2 = h2.h_fin ? parseHora(h2.h_fin) : null;
-
         if (!inicio2 || !fin2) continue;
 
         const cruceHoras = inicio1 < fin2 && fin1 > inicio2;
@@ -195,7 +246,9 @@ export const verificarCruzeUpdate = async (
         if (cruceHoras && (mismoAula || mismoDocente)) {
           errores.add(
             `⛔ Conflicto interno en curso "${curso.c_nomcur}" el día ${h1.dia}` +
-              ` (${mismoAula ? 'misma aula' : ''}${mismoAula && mismoDocente ? ' y ' : ''}${mismoDocente ? 'mismo docente' : ''})`,
+              ` (${mismoAula ? 'misma aula' : ''}${
+                mismoAula && mismoDocente ? ' y ' : ''
+              }${mismoDocente ? 'mismo docente' : ''})`,
           );
         }
       }
@@ -204,9 +257,7 @@ export const verificarCruzeUpdate = async (
     }
   }
 
-  // 2️⃣ Verificación con la BD excluyendo los horarios originales si ya existen
   for (const { h, curso } of todosLosHorarios) {
-    // for (const { h } of todosLosHorarios) {
     const cur = await prisma.curso.findFirst({
       where: { c_codcur: curso.c_codcur, turno_id: curso.turno_id },
       include: { cursosPadres: true },
@@ -215,7 +266,6 @@ export const verificarCruzeUpdate = async (
     const condicionesOR: any[] = [];
     if (h.aula_id) condicionesOR.push({ aula_id: h.aula_id });
     if (h.docente_id) condicionesOR.push({ docente_id: h.docente_id });
-
     if (condicionesOR.length === 0) continue;
 
     const existentes = await prisma.horario.findMany({
@@ -229,25 +279,44 @@ export const verificarCruzeUpdate = async (
 
     const inicio1 = h.h_inicio ? parseHora(h.h_inicio) : null;
     const fin1 = h.h_fin ? parseHora(h.h_fin) : null;
-
     if (!inicio1 || !fin1) continue;
+
+    const esCursoTransversal =
+      cur?.cursosPadres.length &&
+      cur.cursosPadres.some((padre) => padre.tipo === 0);
+
+    if (esCursoTransversal) {
+      // console.log(`📘 Curso "${curso.c_nomcur}" es TRANSVERSAL`);
+    }
 
     for (const e of existentes) {
       const inicio2 = parseHora(e.h_inicio || '');
       const fin2 = parseHora(e.h_fin || '');
-
       const cruce = inicio1 < fin2 && fin1 > inicio2;
+
       const mismoAula = h.aula_id && e.aula_id && h.aula_id === e.aula_id;
       const mismoDocente =
         h.docente_id && e.docente_id && h.docente_id === e.docente_id;
 
-      const esCursoRegular =
-        cur?.cursosPadres.length !== 0 && cur?.cursosPadres[0].tipo === 0;
+      if (cur?.id && e.curso_id) {
+        if (cur.id === e.curso_id) continue;
 
-      if (!esCursoRegular && cruce && (mismoAula || mismoDocente)) {
+        const sonAgrupados = await sonCursosAgrupados(
+          prisma,
+          cur.id,
+          e.curso_id,
+        );
+        if (sonAgrupados) {
+          continue;
+        }
+      }
+
+      if (!esCursoTransversal && cruce && (mismoAula || mismoDocente)) {
         errores.add(
           `⛔ Conflicto con "${e.curso?.c_nomcur}" en BD el día ${h.dia}` +
-            ` (${mismoAula ? 'misma aula' : ''}${mismoAula && mismoDocente ? ' y ' : ''}${mismoDocente ? 'mismo docente' : ''})`,
+            ` (${mismoAula ? 'misma aula' : ''}${
+              mismoAula && mismoDocente ? ' y ' : ''
+            }${mismoDocente ? 'mismo docente' : ''})`,
         );
       }
     }

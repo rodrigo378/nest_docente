@@ -30,6 +30,14 @@ export async function seedModulos() {
       createdAt: new Date(),
       updatedAt: new Date(),
     },
+    {
+      nombre: 'Docente',
+      codigo: '4',
+      icono: null,
+      estado: 'A',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
   ];
 
   const result = await prisma.modulo.createMany({ data });

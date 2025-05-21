@@ -76,6 +76,20 @@ export async function seedItems() {
       createdAt: new Date(),
       updatedAt: new Date(),
     },
+    {
+      moduloId: 4,
+      nombre: 'Marcar Asistencia',
+      codigo: '4.1',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    {
+      moduloId: 4,
+      nombre: 'Ver Asistencia',
+      codigo: '4.2',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
   ];
 
   const result = await prisma.item.createMany({ data });

@@ -314,6 +314,7 @@ model Curso {
   c_nomcur String
   n_ciclo  Int
   c_area   String
+  c_alu    Int?
 
   n_codper_equ String?
   c_codmod_equ Int?

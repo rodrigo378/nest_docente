@@ -18,6 +18,8 @@ import {
   verificarCruzesCursosTransversalesUpdate,
 } from 'src/common/utils/cruze.util';
 import { createLog } from 'src/common/utils/log.util';
+import { asignarHoraDocente } from 'src/common/utils/asignarHoraDocente';
+
 interface HorarioRaw {
   tipo: number | null;
   padre_curso_id: number | null;
@@ -162,24 +164,12 @@ export class HorarioService {
           // 11 => se actualiza el n_horas de docente
           for (const horario of horarios) {
             if (horario.docente_id) {
-              await this.prismaService.docente.update({
-                where: { id: horario.docente_id },
-                data: { h_total: { increment: horario.n_horas } },
-              });
+              await asignarHoraDocente(
+                this.prismaService,
+                horario.docente_id,
+                user_id,
+              );
             }
-            await createLog(
-              this.prismaService,
-              user_id,
-              'docente',
-              'UPDATE',
-              `Se asignaron ${horario.n_horas} horas al docente ${horario.docente_id} por asignación grupal`,
-              null,
-              {},
-              {
-                docente_id: horario.docente_id,
-                h_total: `+ ${horario.n_horas}`,
-              },
-            );
           }
 
           // 12 => crear cursos transversales
@@ -249,19 +239,10 @@ export class HorarioService {
         );
 
         if (horario.docente_id) {
-          await this.prismaService.docente.update({
-            where: { id: horario.docente_id },
-            data: { h_total: { increment: horario.n_horas } },
-          });
-          await createLog(
+          await asignarHoraDocente(
             this.prismaService,
+            horario.docente_id,
             user_id,
-            'docente',
-            'UPDATE',
-            `Se asignaron ${horario.n_horas} horas al docente ${horario.docente_id} por nuevo horario`,
-            null,
-            {},
-            { docente_id: horario.docente_id, h_total: `+ ${horario.n_horas}` },
           );
         }
 
@@ -300,6 +281,8 @@ export class HorarioService {
     let cursosCreados = 0;
     let horariosCreados = 0;
     let horariosActualizados = 0;
+
+    const docentesAActualizar = new Set<number>(); // <-- Recolección única de docentes
 
     // 3 => Iterar sobre cada conjunto curso-horarios
     for (const { curso, horarios } of dataArray) {
@@ -360,7 +343,6 @@ export class HorarioService {
         cursoCreado?.cursosPadres.length !== 0 &&
         cursoCreado?.cursosPadres[0].tipo === 0
       ) {
-        // 7 => Obtener todos los cursos agrupados (hijos) sincronizados
         const cursosAgrupados = await this.prismaService.grupo_sincro.findMany({
           where: {
             padre_curso_id: cursoCreado.cursosPadres[0].padre_curso_id,
@@ -370,14 +352,12 @@ export class HorarioService {
           },
         });
 
-        // 8 => Verificar si hay conflictos de horario con los cursos agrupados
         const errores = await verificarCruzesCursosTransversalesUpdate(
           this.prismaService,
           cursosAgrupados,
           horarios,
         );
 
-        // 9 => Si hay errores, retornar
         if (errores.length > 0) {
           return {
             success: false,
@@ -385,124 +365,8 @@ export class HorarioService {
           };
         }
 
-        // 10 => Obtener los ID de los cursos a eliminar sus horarios
         const idCursos = cursosAgrupados.map((g) => g.curso_id);
 
-        // 11 => Obtener horarios actuales para esos cursos
-        const horariosBD = await this.prismaService.horario.findMany({
-          where: {
-            id: {
-              in: horarios
-                .map((h) => h.id)
-                .filter((id): id is number => id !== undefined),
-            },
-          },
-          select: {
-            id: true,
-            docente_id: true,
-            n_horas: true,
-          },
-        });
-
-        // 12 => Mapear los horarios encontrados por ID
-        const mapHorarioBD = new Map<
-          number,
-          { docente_id: number | null; n_horas: number | null }
-        >();
-        horariosBD.forEach((h) => mapHorarioBD.set(h.id, h));
-
-        // 13 => Actualizar carga horaria de los docentes involucrados
-        for (const horario of horarios) {
-          const nuevoDocenteId = horario.docente_id;
-          const nuevasHoras = horario.n_horas ?? 0;
-
-          if (horario.id && mapHorarioBD.has(horario.id)) {
-            const anterior = mapHorarioBD.get(horario.id);
-
-            // 14 => Si cambió el docente
-            if (anterior?.docente_id !== nuevoDocenteId) {
-              // 15 => Descontar horas al anterior
-              if (anterior?.docente_id && anterior.n_horas != null) {
-                await this.prismaService.docente.update({
-                  where: { id: anterior.docente_id },
-                  data: { h_total: { decrement: anterior.n_horas } },
-                });
-                await createLog(
-                  this.prismaService,
-                  user_id,
-                  'docente',
-                  'UPDATE',
-                  `Se descontaron ${anterior.n_horas} horas al docente ${anterior.docente_id} por reasignación de horario`,
-                  null,
-                  {
-                    docente_id: anterior.docente_id,
-                    h_total: `- ${anterior.n_horas}`,
-                  },
-                  {},
-                );
-              }
-
-              // 16 => Asignar horas al nuevo docente
-              if (nuevoDocenteId) {
-                await this.prismaService.docente.update({
-                  where: { id: nuevoDocenteId },
-                  data: { h_total: { increment: nuevasHoras } },
-                });
-                await createLog(
-                  this.prismaService,
-                  user_id,
-                  'docente',
-                  'UPDATE',
-                  `Se asignaron ${nuevasHoras} horas al docente ${nuevoDocenteId} por nuevo horario`,
-                  null,
-                  {},
-                  { docente_id: nuevoDocenteId, h_total: `+ ${nuevasHoras}` },
-                );
-              }
-            }
-
-            // 17 => Si no cambió el docente pero cambió el número de horas
-            else if (nuevoDocenteId && anterior?.n_horas != null) {
-              const diferencia = nuevasHoras - anterior.n_horas;
-              if (diferencia !== 0) {
-                await this.prismaService.docente.update({
-                  where: { id: nuevoDocenteId },
-                  data: { h_total: { increment: diferencia } },
-                });
-                await createLog(
-                  this.prismaService,
-                  user_id,
-                  'docente',
-                  'UPDATE',
-                  `Se ajustaron ${diferencia > 0 ? '+' : ''}${diferencia} horas al docente ${nuevoDocenteId} por modificación de horario`,
-                  null,
-                  { docente_id: nuevoDocenteId, h_total: anterior.n_horas },
-                  { docente_id: nuevoDocenteId, h_total: nuevasHoras },
-                );
-              }
-            }
-          }
-
-          // 18 => Si el horario es nuevo, solo se suma horas al docente
-          else if (!horario.id && nuevoDocenteId) {
-            await this.prismaService.docente.update({
-              where: { id: nuevoDocenteId },
-              data: { h_total: { increment: nuevasHoras } },
-            });
-            await createLog(
-              this.prismaService,
-              user_id,
-              'docente',
-              'UPDATE',
-              `Se asignaron ${nuevasHoras} horas al docente ${nuevoDocenteId} por nuevo horario`,
-              null,
-              {},
-              { docente_id: nuevoDocenteId, h_total: `+${nuevasHoras}` },
-            );
-          }
-        }
-
-        // 19 => Eliminar horarios actuales de los cursos agrupados
         const horariosEliminados = await this.prismaService.horario.findMany({
           where: {
             curso_id: { in: idCursos },
@@ -526,7 +390,6 @@ export class HorarioService {
           {},
         );
 
-        // 20 => Crear los nuevos horarios para cada curso hijo agrupado
         for (const grupo of cursosAgrupados) {
           const cursoHijo = grupo.cursosHijo;
 
@@ -560,10 +423,13 @@ export class HorarioService {
               nuevoHorario,
             );
             horariosCreados++;
+
+            if (horario.docente_id) {
+              docentesAActualizar.add(horario.docente_id);
+            }
           }
         }
 
-        // 21 => Continuar con siguiente curso si ya era transversal
         continue;
       }
 
@@ -591,68 +457,12 @@ export class HorarioService {
 
       for (const horario of horarios) {
         const nuevoDocenteId = horario.docente_id;
-        const nuevasHoras = horario.n_horas ?? 0;
+
+        if (nuevoDocenteId) {
+          docentesAActualizar.add(nuevoDocenteId);
+        }
 
         if (horario.id && mapHorarioBD.has(horario.id)) {
-          const anterior = mapHorarioBD.get(horario.id);
-
-          if (anterior?.docente_id !== nuevoDocenteId) {
-            if (anterior?.docente_id && anterior.n_horas != null) {
-              await this.prismaService.docente.update({
-                where: { id: anterior.docente_id },
-                data: { h_total: { decrement: anterior.n_horas } },
-              });
-              await createLog(
-                this.prismaService,
-                user_id,
-                'docente',
-                'UPDATE',
-                `Se descontaron ${anterior.n_horas} horas al docente ${anterior.docente_id} por cambio de horario`,
-                null,
-                {
-                  docente_id: anterior.docente_id,
-                  h_total: `- ${anterior.n_horas}`,
-                },
-                {},
-              );
-            }
-
-            if (nuevoDocenteId) {
-              await this.prismaService.docente.update({
-                where: { id: nuevoDocenteId },
-                data: { h_total: { increment: nuevasHoras } },
-              });
-              await createLog(
-                this.prismaService,
-                user_id,
-                'docente',
-                'UPDATE',
-                `Se asignaron ${nuevasHoras} horas al docente ${nuevoDocenteId} por cambio de horario`,
-                null,
-                {},
-                { docente_id: nuevoDocenteId, h_total: `+ ${nuevasHoras}` },
-              );
-            }
-          } else if (nuevoDocenteId && anterior?.n_horas != null) {
-            const diferencia = nuevasHoras - anterior.n_horas;
-            if (diferencia !== 0) {
-              await this.prismaService.docente.update({
-                where: { id: nuevoDocenteId },
-                data: { h_total: { increment: diferencia } },
-              });
-              await createLog(
-                this.prismaService,
-                user_id,
-                'docente',
-                'UPDATE',
-                `Se ajustaron ${diferencia > 0 ? '+' : ''}${diferencia} horas al docente ${nuevoDocenteId} por modificación de horario`,
-                null,
-                { docente_id: nuevoDocenteId, h_total: anterior.n_horas },
-                { docente_id: nuevoDocenteId, h_total: nuevasHoras },
-              );
-            }
-          }
-
           const horarioAnterior = await this.prismaService.horario.findUnique({
             where: { id: horario.id },
           });
@@ -669,9 +479,9 @@ export class HorarioService {
               aula_id: horario.aula_id ?? null,
               docente_id: horario.docente_id ?? null,
               h_umaPlus: horario.h_umaPlus ?? null,
-              modalidad: horario.modalidad ?? null,
             },
           });
+
           await createLog(
             this.prismaService,
             user_id,
@@ -682,7 +492,6 @@ export class HorarioService {
             horarioAnterior || '',
             horarioActualizado,
           );
-
           horariosActualizados++;
         } else {
           const nuevoHorario = await this.prismaService.horario.create({
@@ -711,29 +520,14 @@ export class HorarioService {
             {},
             nuevoHorario,
           );
-
-          if (horario.docente_id) {
-            await this.prismaService.docente.update({
-              where: { id: horario.docente_id },
-              data: { h_total: { increment: horario.n_horas } },
-            });
-            await createLog(
-              this.prismaService,
-              user_id,
-              'docente',
-              'UPDATE',
-              `Se asignaron ${horario.n_horas} horas al docente ${horario.docente_id} por nuevo horario`,
-              null,
-              {},
-              {
-                docente_id: horario.docente_id,
-                h_total: `+ ${horario.n_horas}`,
-              },
-            );
-          }
           horariosCreados++;
         }
       }
+    }
+
+    // ✅ Actualizar todos los docentes afectados
+    for (const docenteId of docentesAActualizar) {
+      await asignarHoraDocente(this.prismaService, docenteId, user_id);
     }
 
     // 23 => Finalizar y retornar resumen de acciones
@@ -757,26 +551,7 @@ export class HorarioService {
         include: { curso: { include: { cursosPadres: true } } },
       });
 
-      if (!horario) {
-        continue;
-      }
-
-      if (horario?.docente_id) {
-        await this.prismaService.docente.update({
-          where: { id: horario?.docente_id || 0 },
-          data: { h_total: { decrement: horario?.n_horas } },
-        });
-        await createLog(
-          this.prismaService,
-          user_id,
-          'docente',
-          'UPDATE',
-          `Se descontaron ${horario.n_horas} horas al docente ${horario.docente_id} por eliminación de horario`,
-          null,
-          { docente_id: horario.docente_id, h_total: `- ${horario.n_horas}` },
-          {},
-        );
-      }
+      if (!horario) continue;
 
       if (horario?.curso?.cursosPadres?.[0]?.tipo === 0) {
         const grupoCursos = await this.prismaService.grupo_sincro.findMany({
@@ -802,6 +577,15 @@ export class HorarioService {
             h_fin: horario.h_fin,
           },
         });
+
+        const docentesIds = [
+          ...new Set(horariosEliminar.map((h) => h.docente_id).filter(Boolean)),
+        ];
+        for (const docenteId of docentesIds) {
+          if (docenteId)
+            await asignarHoraDocente(this.prismaService, docenteId, user_id);
+        }
+
         await createLog(
           this.prismaService,
           user_id,
@@ -816,6 +600,16 @@ export class HorarioService {
         await this.prismaService.horario.delete({
           where: { id: horario_id },
         });
+
+        // ✅ Recalcular carga del docente único
+        if (horario?.docente_id) {
+          await asignarHoraDocente(
+            this.prismaService,
+            horario.docente_id,
+            user_id,
+          );
+        }
+
         await createLog(
           this.prismaService,
           user_id,
@@ -1280,15 +1074,16 @@ export class HorarioService {
       AND?: any[];
     } = {
       ...(c_codmod && { c_codmod }),
+      // ...(n_codper && { n_codper }),
       ...(c_codfac && { c_codfac }),
       ...(c_codesp && { c_codesp }),
       ...(c_codcur && { c_codcur }),
       ...(n_ciclo && { n_ciclo }),
       ...(turno_id && { turno_id }),
-      ...((n_codper || periodo) && {
+      ...(periodo && {
         turno: {
-          ...(n_codper && { n_codpla: Number(n_codper) }),
-          ...(periodo && { n_codper: periodo }),
+          n_codpla: Number(n_codper),
+          n_codper: periodo,
         },
       }),
     };
@@ -1446,7 +1241,7 @@ export class HorarioService {
       ${whereClause}
       ;
       `,
-      ...valores, // 🔥 Pasamos los valores parametrizados
+      ...valores,
     );
 
     const agrupado: {
