@@ -9,13 +9,20 @@ export async function seedCurso20252() {
 
   const turnos = await prisma.turno.findMany({
     where: {
-      n_codper: 20252,
+      id: 2351,
     },
   });
+
+  // console.log('turnos => ', turnos);
 
   let total = 0;
 
   for (const turno of turnos) {
+    console.log('turno.c_codfac => ', turno.c_codfac);
+    console.log('turno.c_codesp => ', turno.c_codesp);
+    console.log('turno.n_ciclo => ', turno.n_ciclo);
+    console.log('turno.c_codmod => ', turno.c_codmod);
+
     const cursosRaw: Curso[] = await prismaReadonly.$queryRawUnsafe(
       `
       SELECT
@@ -85,6 +92,8 @@ export async function seedCurso20252() {
       turno.n_ciclo,
       turno.c_codmod,
     );
+
+    // console.log('cursosRaw => ', cursosRaw);
 
     const cursos = cursosRaw.map((curso) => ({
       n_codper: String(curso.n_codper),

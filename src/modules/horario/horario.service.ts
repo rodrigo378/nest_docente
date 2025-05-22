@@ -1069,12 +1069,15 @@ export class HorarioService {
     sortField?: string,
     sortOrder: 'asc' | 'desc' = 'asc',
   ) {
+    // console.log('n_codper => ', n_codper);
+
     const where: {
       [key: string]: any;
       AND?: any[];
     } = {
       ...(c_codmod && { c_codmod }),
-      // ...(n_codper && { n_codper }),
+      ...(n_codper !== '0' && n_codper && { n_codper }), // ← solo se filtra si es distinto de 0
+
       ...(c_codfac && { c_codfac }),
       ...(c_codesp && { c_codesp }),
       ...(c_codcur && { c_codcur }),
@@ -1082,7 +1085,7 @@ export class HorarioService {
       ...(turno_id && { turno_id }),
       ...(periodo && {
         turno: {
-          n_codpla: Number(n_codper),
+          // n_codpla: Number(n_codper),
           n_codper: periodo,
         },
       }),
