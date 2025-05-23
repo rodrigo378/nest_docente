@@ -32,6 +32,7 @@ export class DocenteService {
           curso: curso ? { include: { cursosPadres: true } } : false,
           aula: aula ? true : false,
           modalidad: true
+          //modlalidad: { select: { id: true, nombre: true } },
         },
       };
     }
