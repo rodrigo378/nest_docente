@@ -31,6 +31,7 @@ export class DocenteService {
           tipo: true,
           curso: curso ? { include: { cursosPadres: true } } : false,
           aula: aula ? true : false,
+          modalidad: true
         },
       };
     }
