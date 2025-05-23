@@ -7,10 +7,15 @@ import { UpdateTurnoDto } from './dto/updateTurnoDto';
 import { CreateTurnoDto } from './dto/createTurnoDto';
 import { createLog } from 'src/common/utils/log.util';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaReadonlyService } from 'src/prisma/readonly.service';
+import { Curso } from '@prisma/client';
 
 @Injectable()
 export class TurnoService {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly prismaReadonly: PrismaReadonlyService,
+  ) {}
 
   async getTurnos(
     c_codfac?: string,
@@ -85,6 +90,115 @@ export class TurnoService {
         ...createTurnoDto,
       },
     });
+
+    let total = 0;
+
+    console.log('turno.c_codfac => ', newTurno.c_codfac);
+    console.log('turno.c_codesp => ', newTurno.c_codesp);
+    console.log('turno.n_ciclo => ', newTurno.n_ciclo);
+    console.log('turno.c_codmod => ', newTurno.c_codmod);
+
+    const cursosRaw: Curso[] = await this.prismaReadonly.$queryRawUnsafe(
+      `
+          SELECT
+            tp.n_codper,
+            tp.c_codmod,
+            tb.c_nommod,
+            tp.c_codfac,
+            t_f.nom_fac,
+            tp.c_codesp,
+            t_e.nomesp,
+            tp.c_area,
+            tpec.c_nom_cur_area,
+            tp.n_ciclo,
+            tp.c_ciclo,
+            tp.c_codcur,
+            tp.c_nomcur,
+            tp.n_ht,
+            tp.n_hp,
+            tpee.n_codper_equ,
+            tpee.c_codmod_equ,
+            tpee.c_codfac_equ,
+            tpee.c_codesp_equ,
+            tpee.c_codcur_equ,
+            tpee.c_nomcur_equ
+          FROM tb_plan_estudio_curso tp
+          INNER JOIN tb_modalidad tb ON tb.c_codmod = tp.c_codmod
+          INNER JOIN tb_plan_estudio_curso_area tpec ON tpec.c_cod_cur_area = tp.c_area
+          INNER JOIN tb_facultad t_f ON t_f.cod_fac = tp.c_codfac
+          INNER JOIN tb_especialidad t_e ON t_e.codesp = tp.c_codesp
+          LEFT JOIN (
+            SELECT DISTINCT
+              te.c_codcur,
+              te.c_codfac,
+              te.c_codesp,
+              te.c_codmod,
+              te.n_codper_equ,
+              te.c_codmod_equ,
+              te.c_codfac_equ,
+              te.c_codesp_equ,
+              te.c_codcur_equ,
+              tp2.c_nomcur AS c_nomcur_equ
+            FROM tb_plan_estudio_equ te
+            INNER JOIN tb_plan_estudio_curso tp2 ON te.c_codcur_equ = tp2.c_codcur
+            WHERE te.n_codper_equ IN (2023, 2025)
+          ) tpee
+          ON tpee.c_codcur = tp.c_codcur
+            AND tpee.c_codmod = tp.c_codmod
+            AND tpee.c_codfac = tp.c_codfac
+            AND tpee.c_codesp = tp.c_codesp
+          WHERE
+            tp.n_codper IN ( 2023, 2025 )
+            AND tp.c_codfac = ?
+            AND tp.c_codesp = ?
+            AND tp.n_ciclo = ?
+            AND tp.c_codmod = ?
+          GROUP BY
+            tp.n_codper, tp.c_codmod, tb.c_nommod,
+            tp.c_codfac, t_f.nom_fac, tp.c_codesp, t_e.nomesp,
+            tp.c_area, tpec.c_nom_cur_area, tp.c_codcur, tp.c_nomcur,
+            tp.n_ciclo, tp.c_ciclo, tp.n_ht, tp.n_hp,
+            tpee.n_codper_equ, tpee.c_codmod_equ, tpee.c_codfac_equ,
+            tpee.c_codesp_equ, tpee.c_codcur_equ, tpee.c_nomcur_equ
+          ORDER BY tp.c_nomcur
+          `,
+      newTurno.c_codfac,
+      newTurno.c_codesp,
+      newTurno.n_ciclo,
+      newTurno.c_codmod,
+    );
+
+    // console.log('cursosRaw => ', cursosRaw);
+
+    const cursos = cursosRaw.map((curso) => ({
+      n_codper: String(curso.n_codper),
+      c_codmod: Number(curso.c_codmod),
+      c_codfac: curso.c_codfac,
+      nom_fac: curso.nom_fac,
+      c_codesp: curso.c_codesp,
+      nomesp: curso.nomesp,
+      c_codcur: curso.c_codcur,
+      c_nomcur: curso.c_nomcur,
+      n_ciclo: curso.n_ciclo,
+      c_area: curso.c_area,
+      n_codper_equ: curso.n_codper_equ ? String(curso.n_codper_equ) : null,
+      c_codmod_equ: curso.c_codmod_equ ? Number(curso.c_codmod_equ) : null,
+      c_codfac_equ: curso.c_codfac_equ ?? null,
+      c_codesp_equ: curso.c_codesp_equ ?? null,
+      c_codcur_equ: curso.c_codcur_equ ?? null,
+      c_nomcur_equ: curso.c_nomcur_equ ?? null,
+      turno_id: newTurno.id,
+    }));
+
+    if (cursos.length > 0) {
+      const result = await this.prismaService.curso.createMany({
+        data: cursos,
+        skipDuplicates: true,
+      });
+      total += result.count;
+    }
+
+    console.log(`✅ Cursos insertados correctamente: ${total}`);
 
     await createLog(
       this.prismaService,

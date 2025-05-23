@@ -9,7 +9,7 @@ export async function seedCurso20252() {
 
   const turnos = await prisma.turno.findMany({
     where: {
-      id: 2351,
+      id: 2353,
     },
   });
 
