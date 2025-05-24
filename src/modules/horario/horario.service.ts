@@ -479,6 +479,7 @@ export class HorarioService {
               aula_id: horario.aula_id ?? null,
               docente_id: horario.docente_id ?? null,
               h_umaPlus: horario.h_umaPlus ?? null,
+              modalidad: horario.modalidad ?? null,
             },
           });
 
