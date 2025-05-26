@@ -183,7 +183,8 @@ export class SiguService {
       return {
         ...curso,
         tipoAgrupado,
-        vacante: Math.floor(Math.random() * (30 - 10 + 1)) + 10,
+        c_alu: match?.c_alu ?? null,
+        // vacante: Math.floor(Math.random() * (30 - 10 + 1)) + 10,
       };
     });
 
