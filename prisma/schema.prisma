@@ -386,6 +386,8 @@ model Aula {
   Horario     Horario[]
   asistencia  Asistencia[]
 
+  id_aula_sigu String?
+
   @@map("aula")
 }
 

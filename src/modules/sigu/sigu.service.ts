@@ -346,6 +346,12 @@ export class SiguService {
 // from tb_plan_estudio_equ te
 // inner join tb_plan_estudio_curso tp on te.c_codcur_equ = tp.c_codcur;
 
+// REGISTRA EXAMENES Y PRACTICAS = EP
+// DOCENTE OFICIAL = DO
+// DOCENTE TEORIA = E
+// DOCENTE PRACTICA = P
+// NO REGISTRA EVALUACIONES = NR
+
 /* 
   Exportar al sigu
 
@@ -357,7 +363,7 @@ export class SiguService {
     c_codcur: ANI01001,
     c_grpcur: N1,
     c_codmod: 2,
-    d_freg: 2024-11-29 11:51:59,
+    d_freg: 2024-11-29 11:51:59, => fecha de creacion
     c_codesp: E4,
     n_codpla: 2023,
     c_sedcod: 1, => no cambia
@@ -377,7 +383,7 @@ export class SiguService {
     c_codfac: S,
     c_codcur: PESG5024,
     c_grpcur: T1,
-    c_tipo: EP,
+    c_tipo: EP, => nose cambia
     c_categoria: P => no cambia nose,
     c_codesp: S2
     n_codpla: 2025,
@@ -411,7 +417,7 @@ export class SiguService {
   // 4 negativo => 5 positivo
   select * from tb_curso_grupo_sincro ORDER BY courseid DESC
   {
-    courseid: 3619
+    courseid: -1 => negativo
     c_codfac: S
     c_codesp: S1
     c_sedcod: 1
@@ -424,8 +430,9 @@ export class SiguService {
     f_reg: 2025-05-08 14:51:41
     f_upd: 2025-05-08 14:51:41
     orden: 1
-    shortname: SESG3031-1-251-CS1
-    name: INGLÉS I (ENF CS1)
+    shortname: SESG3031-1-251-CS1 => null
+    name: INGLÉS I (ENF CS1) => null
   }
+
 
 */

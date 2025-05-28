@@ -25,7 +25,9 @@ interface HorarioRaw {
   padre_curso_id: number | null;
   curso_id: number;
   n_codper: number;
+  c_codfac: string;
   nom_fac: string;
+  c_codesp: string;
   nomesp: string;
   c_codcur: string;
   c_nomcur: string;
@@ -161,18 +163,7 @@ export class HorarioService {
             };
           }
 
-          // 11 => se actualiza el n_horas de docente
-          for (const horario of horarios) {
-            if (horario.docente_id) {
-              await asignarHoraDocente(
-                this.prismaService,
-                horario.docente_id,
-                user_id,
-              );
-            }
-          }
-
-          // 12 => crear cursos transversales
+          // 11 => crear cursos transversales
           for (const grupo of cursosAgrupados) {
             for (const horario of horarios) {
               const nuevoHorario = await this.prismaService.horario.create({
@@ -204,6 +195,21 @@ export class HorarioService {
               horariosCreados++;
             }
           }
+
+          // 12 => se actualiza el n_horas de docente
+          for (const horario of horarios) {
+            if (horario.docente_id) {
+              console.log('se creo 1');
+              console.log('=> ', horario.docente_id);
+
+              await asignarHoraDocente(
+                this.prismaService,
+                horario.docente_id,
+                user_id,
+              );
+            }
+          }
+
           continue;
         }
       }
@@ -239,6 +245,9 @@ export class HorarioService {
         );
 
         if (horario.docente_id) {
+          console.log('se creo 2');
+          console.log('=> horario.docente_id');
+
           await asignarHoraDocente(
             this.prismaService,
             horario.docente_id,
@@ -1176,7 +1185,6 @@ export class HorarioService {
       Object.entries(filtros || {}).filter(([, v]) => v !== undefined),
     );
 
-    // Armamos la condición dinámica
     const condiciones: string[] = [];
     const valores: (string | number)[] = [];
 
@@ -1184,26 +1192,32 @@ export class HorarioService {
       condiciones.push('t.n_codper = ?');
       valores.push(whereTurno.n_codper);
     }
+
     if (whereTurno.c_codfac) {
       condiciones.push('t.c_codfac = ?');
       valores.push(whereTurno.c_codfac);
     }
+
     if (whereTurno.c_codesp) {
       condiciones.push('t.c_codesp = ?');
       valores.push(whereTurno.c_codesp);
     }
+
     if (whereTurno.c_grpcur) {
       condiciones.push('t.c_grpcur = ?');
       valores.push(whereTurno.c_grpcur);
     }
+
     if (whereTurno.c_codmod) {
       condiciones.push('t.c_codmod = ?');
       valores.push(whereTurno.c_codmod);
     }
+
     if (whereTurno.n_ciclo !== undefined) {
       condiciones.push('t.n_ciclo = ?');
       valores.push(whereTurno.n_ciclo);
     }
+
     if (whereTurno.n_codpla !== undefined) {
       condiciones.push('t.n_codpla = ?');
       valores.push(whereTurno.n_codpla);
@@ -1214,105 +1228,90 @@ export class HorarioService {
 
     const horariosData = await this.prismaService.$queryRawUnsafe<HorarioRaw[]>(
       `
-      SELECT
-        g_s.tipo,
-        g_s.padre_curso_id,
-        h.curso_id,
-        t.n_codper,
-        t.nom_fac,
-        t.nomesp,
-        c.c_codcur,
-        c.c_nomcur,
-        t.c_grpcur,
-        t.c_nommod,
-        t.n_ciclo,
-        t.n_codpla,
-        d.c_nomdoc,
-        h.dia,
-        h.h_inicio,
-        h.h_fin,
-        h.n_horas,
-        h.tipo as tipoCurso,
-        a.c_codaula,
-        a.n_piso,
-        a.pabellon
-      FROM horario h
-      LEFT JOIN turno t ON t.id = h.turno_id
-      LEFT JOIN curso c ON c.id = h.curso_id
-      LEFT JOIN docente d ON d.id = h.docente_id
-      LEFT JOIN aula a ON a.id = h.aula_id
-      LEFT JOIN grupo_sincro g_s ON g_s.curso_id = h.curso_id
-      ${whereClause}
-      ;
-      `,
+    SELECT
+      g_s.tipo,
+      g_s.padre_curso_id,
+      h.curso_id,
+      t.n_codper,
+      t.c_codfac,
+      t.nom_fac,
+      t.c_codesp,
+      t.nomesp,
+      c.c_codcur,
+      c.c_nomcur,
+      t.c_grpcur,
+      t.c_nommod,
+      t.n_ciclo,
+      t.n_codpla,
+      d.c_nomdoc,
+      h.dia,
+      h.h_inicio,
+      h.h_fin,
+      h.n_horas,
+      h.tipo as tipoCurso,
+      a.c_codaula,
+      a.n_piso,
+      a.pabellon
+    FROM horario h
+    LEFT JOIN turno t ON t.id = h.turno_id
+    LEFT JOIN curso c ON c.id = h.curso_id
+    LEFT JOIN docente d ON d.id = h.docente_id
+    LEFT JOIN aula a ON a.id = h.aula_id
+    LEFT JOIN grupo_sincro g_s ON g_s.curso_id = h.curso_id
+    ${whereClause};
+    `,
       ...valores,
     );
 
-    const agrupado: {
-      n_codper: string;
-      nom_fac: string;
-      nomesp: string;
-      c_codcur: string;
-      c_nomcur: string;
-      c_grpcur: string;
-      modalidad: string;
-      n_ciclo: string;
-      n_codpla: string;
-      docentes: string;
-      dias: string;
-      horas_inicio: string;
-      horas_fin: string;
-      n_horas: string;
-      c_tipo: string;
-      aula: string;
-      piso: string;
-      pabellon: string;
-    }[] = Object.values(
+    const agrupado = Object.values(
       horariosData.reduce((acc: Record<string, HorarioRaw[]>, item) => {
         const agrupador =
-          item.tipo === 0
+          item.tipo === 0 // transversal
             ? (item.padre_curso_id ?? item.curso_id)
-            : item.curso_id;
+            : item.tipo === 1 // agrupado
+              ? (item.padre_curso_id ?? item.curso_id)
+              : item.curso_id;
 
         if (!acc[agrupador]) acc[agrupador] = [];
         acc[agrupador].push(item);
         return acc;
       }, {}),
     ).map((grupo) => {
+      // Agrupar combinaciones únicas de día - hora inicio - hora fin
+      const horariosUnicos = Array.from(
+        new Map(
+          grupo.map((x) => {
+            const hini = new Date(x.h_inicio).toLocaleTimeString('es-PE', {
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: false,
+            });
+            const hfin = new Date(x.h_fin).toLocaleTimeString('es-PE', {
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: false,
+            });
+            return [`${x.dia}|${hini}|${hfin}`, { dia: x.dia, hini, hfin }];
+          }),
+        ).values(),
+      );
+
       return {
         n_codper: String(grupo[0].n_codper),
+        c_codfac: String(grupo[0].c_codfac),
         nom_fac: grupo[0].nom_fac,
+        c_codesp: String(grupo[0].c_codesp),
         nomesp: grupo[0].nomesp,
         c_codcur: [...new Set(grupo.map((x) => x.c_codcur))].join(', '),
         c_nomcur: [...new Set(grupo.map((x) => x.c_nomcur))].join(', '),
-        c_grpcur: [...new Set(grupo.map((x) => x.c_grpcur))].join(', '),
+        c_grpcur: grupo.map((x) => x.c_grpcur).join(', '),
         modalidad: grupo[0].c_nommod,
         n_ciclo: [...new Set(grupo.map((x) => x.n_ciclo))].join(', '),
         n_codpla: String(grupo[0].n_codpla),
         docentes: [...new Set(grupo.map((x) => x.c_nomdoc))].join(', '),
-        dias: [...new Set(grupo.map((x) => x.dia))].join(', '),
-        horas_inicio: [
-          ...new Set(
-            grupo.map((x) =>
-              new Date(x.h_inicio).toLocaleTimeString('es-PE', {
-                hour: '2-digit',
-                minute: '2-digit',
-                hour12: false,
-              }),
-            ),
-          ),
-        ].join(', '),
-        horas_fin: [
-          ...new Set(
-            grupo.map((x) =>
-              new Date(x.h_fin).toLocaleTimeString('es-PE', {
-                hour: '2-digit',
-                minute: '2-digit',
-                hour12: false,
-              }),
-            ),
-          ),
-        ].join(', '),
+        dias: horariosUnicos.map((h) => h.dia).join(', '),
+        horas_inicio: horariosUnicos.map((h) => h.hini).join(', '),
+        horas_fin: horariosUnicos.map((h) => h.hfin).join(', '),
         n_horas: [...new Set(grupo.map((x) => x.n_horas))].join(', '),
         c_tipo: String(grupo[0].tipo ?? ''),
         aula: String(grupo[0].c_codaula ?? ''),
@@ -1321,6 +1320,7 @@ export class HorarioService {
       };
     });
 
+    console.log('agrupado => ', agrupado.length);
     return agrupado;
   }
 }
