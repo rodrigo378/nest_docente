@@ -199,8 +199,8 @@ export class HorarioService {
           // 12 => se actualiza el n_horas de docente
           for (const horario of horarios) {
             if (horario.docente_id) {
-              console.log('se creo 1');
-              console.log('=> ', horario.docente_id);
+              // console.log('se creo 1');
+              // console.log('=> ', horario.docente_id);
 
               await asignarHoraDocente(
                 this.prismaService,
@@ -245,8 +245,8 @@ export class HorarioService {
         );
 
         if (horario.docente_id) {
-          console.log('se creo 2');
-          console.log('=> horario.docente_id');
+          // console.log('se creo 2');
+          // console.log('=> horario.docente_id');
 
           await asignarHoraDocente(
             this.prismaService,
@@ -1304,7 +1304,8 @@ export class HorarioService {
         nomesp: grupo[0].nomesp,
         c_codcur: [...new Set(grupo.map((x) => x.c_codcur))].join(', '),
         c_nomcur: [...new Set(grupo.map((x) => x.c_nomcur))].join(', '),
-        c_grpcur: grupo.map((x) => x.c_grpcur).join(', '),
+        // c_grpcur: grupo.map((x) => x.c_grpcur).join(', '),
+        c_grpcur: [...new Set(grupo.map((x) => x.c_grpcur))].join(', '),
         modalidad: grupo[0].c_nommod,
         n_ciclo: [...new Set(grupo.map((x) => x.n_ciclo))].join(', '),
         n_codpla: String(grupo[0].n_codpla),
@@ -1320,7 +1321,7 @@ export class HorarioService {
       };
     });
 
-    console.log('agrupado => ', agrupado.length);
+    // console.log('agrupado => ', agrupado.length);
     return agrupado;
   }
 }
