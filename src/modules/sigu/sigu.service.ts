@@ -166,27 +166,57 @@ export class SiguService {
       },
     });
 
-    const cursosFinal = cursosSigu.map((curso) => {
-      const match = cursosLocales.find(
-        (c) =>
-          String(c.n_codper) === String(curso.n_codper) &&
-          Number(c.c_codmod) === Number(curso.c_codmod) &&
-          c.c_codfac === curso.c_codfac &&
-          c.c_codesp === curso.c_codesp &&
-          c.c_codcur === curso.c_codcur,
-      );
+    const cursosFinal = await Promise.all(
+      cursosSigu.map(async (curso) => {
+        const match = cursosLocales.find(
+          (c) =>
+            String(c.n_codper) === String(curso.n_codper) &&
+            Number(c.c_codmod) === Number(curso.c_codmod) &&
+            c.c_codfac === curso.c_codfac &&
+            c.c_codesp === curso.c_codesp &&
+            c.c_codcur === curso.c_codcur,
+        );
 
-      const tipoAgrupado = match?.cursosPadres?.length
-        ? match.cursosPadres[0].tipo
-        : null;
+        let tipoAgrupado: number | null = null;
+        let c_alu_total = match?.c_alu ?? null;
 
-      return {
-        ...curso,
-        tipoAgrupado,
-        c_alu: match?.c_alu ?? null,
-        // vacante: Math.floor(Math.random() * (30 - 10 + 1)) + 10,
-      };
-    });
+        if (match?.cursosPadres?.[0]?.padre_curso_id) {
+          tipoAgrupado = match.cursosPadres[0].tipo;
+
+          try {
+            const cursosDelGrupo =
+              await this.prismaService.grupo_sincro.findMany({
+                where: {
+                  padre_curso_id: match.cursosPadres[0].padre_curso_id,
+                },
+              });
+
+            let sumaCAlu = 0;
+            for (const curso of cursosDelGrupo) {
+              const cursoDB = await this.prismaService.curso.findFirst({
+                where: { id: curso.curso_id },
+                select: { c_alu: true },
+              });
+              if (cursoDB?.c_alu) sumaCAlu += cursoDB.c_alu;
+            }
+
+            // console.log(
+            // `🔢 Total c_alu del grupo [${match.cursosPadres[0].padre_curso_id}]:`,
+            // sumaCAlu,
+            // );
+            c_alu_total = sumaCAlu;
+          } catch (err) {
+            console.error('❌ Error al obtener cursos del grupo:', err);
+          }
+        }
+
+        return {
+          ...curso,
+          tipoAgrupado,
+          c_alu: c_alu_total,
+        };
+      }),
+    );
 
     return cursosFinal;
   }
@@ -355,7 +385,7 @@ export class SiguService {
 /* 
   Exportar al sigu
 
-  1 => cursos
+  1 => Se crean los cursos
   select * from tb_curso_grupo where n_codper = 20251;
   {
     n_codper: 20251,
@@ -374,7 +404,7 @@ export class SiguService {
     moodle: 0 => no cambia
   }
 
-  // 2 => docernte 
+  // 2 => se le asigna docente
   select * from tb_doc_cur_grp where n_codper = 20251;
   {
     c_dnidoc:  0289293,
@@ -390,7 +420,7 @@ export class SiguService {
     c_sedcod: 1 => no cambia
   }
 
-  // 3 => horario
+  // 3 => se le asigna horario docente
   select * from tb_cur_grp_hor where n_codper = 20251;
   {
     id: 17838,
@@ -434,5 +464,250 @@ export class SiguService {
     name: INGLÉS I (ENF CS1) => null
   }
 
+  // 5 asignar numero de vacantes
+  select * from tb_cur_grp_vac;
+  {
+    n_codper: 20201
+    c_codfac: E
+    c_codcur: EEGG107
+    c_grpcur: N1
+    n_vactot: 10 => vacatentes totales igual
+    n_vacmax: 10 => vacantes maxima igual
+    n_vacmat: 10 => vacantes matriculadas
+    c_codadm: null => no cambia  
+    d_freg: null => no cambia 
+    d_fact: null => no cambia 
+    c_codmod: 2
+    c_codesp: E3
+    n_codpla: 2025
+    c_sedcod: 1 => no cambia
+  }
 
 */
+
+// 186
+// 189
+// 190
+// 191
+// 192
+// 193
+// 194
+// 195
+// 196
+// 197
+// 198
+// 199
+// 200
+// 201
+// 202
+// 203
+// 204
+// 205
+// 206
+// 207
+// 208
+// 209
+// 210
+// 211
+// 212
+// 213
+// 214
+// 215
+// 216
+// 217
+// 218
+// 219
+// 220
+// 221
+// 222
+// 223
+// 224
+// 225
+// 226
+// 227
+// 228
+// 229
+// 230
+// 231
+// 2120
+// 2121
+// 2123
+// 2124
+// 2132
+// 2133
+// 2134
+// 2135
+// 2136
+// 2139
+// 2140
+// 2145
+// 2146
+// 2147
+// 2148
+// 2149
+// 2150
+// 2151
+// 2152
+// 2153
+// 2154
+// 2155
+// 2156
+// 2157
+// 2158
+// 2159
+// 2160
+// 2161
+// 2162
+// 2163
+// 2164
+// 2165
+// 2166
+// 2167
+// 2168
+// 2169
+// 2170
+// 2171
+// 2172
+// 2173
+// 2174
+// 2175
+// 2176
+// 2177
+// 2178
+// 2179
+// 2180
+// 2181
+// 2182
+// 2183
+// 2184
+// 2185
+// 2186
+// 2187
+// 2188
+// 2189
+// 2190
+// 2191
+// 2192
+// 2193
+// 2194
+// 2195
+// 2196
+// 2197
+// 2198
+// 2199
+// 2200
+// 2201
+// 2202
+// 2203
+// 2204
+// 2205
+// 2206
+// 2207
+// 2208
+// 2209
+// 2210
+// 2211
+// 2212
+// 2213
+// 2214
+// 2215
+// 2216
+// 2217
+// 2218
+// 2219
+// 2220
+// 2221
+// 2222
+// 2223
+// 2224
+// 2225
+// 2226
+// 2227
+// 2228
+// 2229
+// 2230
+// 2231
+// 2232
+// 2233
+// 2234
+// 2235
+// 2236
+// 2237
+// 2238
+// 2239
+// 2240
+// 2241
+// 2242
+// 2243
+// 2244
+// 2245
+// 2246
+// 2247
+// 2248
+// 2249
+// 2250
+// 2251
+// 2252
+// 2253
+// 2254
+// 2255
+// 2256
+// 2257
+// 2258
+// 2259
+// 2260
+// 2261
+// 2262
+// 2263
+// 2264
+// 2265
+// 2266
+// 2267
+// 2268
+// 2269
+// 2270
+// 2271
+// 2272
+// 2273
+// 2274
+// 2275
+// 2276
+// 2277
+// 2278
+// 2279
+// 2280
+// 2281
+// 2282
+// 2283
+// 2284
+// 2285
+// 2286
+// 2287
+// 2288
+// 2289
+// 2290
+// 2291
+// 2292
+// 2293
+// 2294
+// 2295
+// 2296
+// 2297
+// 2298
+// 2299
+// 2300
+// 2301
+// 2302
+// 2303
+// 2304
+// 2305
+// 2306
+// 2307
+// 2308
+// 2309
+// 2310
+// 2311
+// 2312
+// 2313
+// 2314
+// 2315
