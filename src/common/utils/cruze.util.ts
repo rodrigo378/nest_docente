@@ -53,24 +53,9 @@ export const verificarCruzeCreate = async (
   for (const data of createHorarioArrayDto.dataArray) {
     const { curso, horarios } = data;
 
-    const grupo = await prisma.grupo_sincro.findFirst({
-      where: { curso_id: curso.id },
-      select: { tipo: true },
-    });
-
-    const esTransversal = grupo?.tipo === 0;
-    const esAgrupado = grupo?.tipo === 1;
-
-    if (esTransversal) {
-      // console.log(`Curso "${curso.c_nomcur}" es TRANSVERSAL`);
-    }
-
-    if (esAgrupado) {
-      // console.log(`Curso "${curso.c_nomcur}" es AGRUPADO`);
-    }
-
     const cursoBD = await prisma.curso.findFirst({
       where: {
+        turno_id: curso.turno_id,
         n_codper: curso.n_codper,
         c_codmod: curso.c_codmod,
         c_codfac: curso.c_codfac,
@@ -79,6 +64,22 @@ export const verificarCruzeCreate = async (
       },
       select: { id: true },
     });
+
+    const grupo = await prisma.grupo_sincro.findFirst({
+      where: { curso_id: cursoBD?.id },
+      select: { tipo: true },
+    });
+
+    const esTransversal = grupo?.tipo === 0;
+    const esAgrupado = grupo?.tipo === 1;
+
+    if (esTransversal) {
+      console.log(`Curso "${curso.c_nomcur}" es TRANSVERSAL`);
+    }
+
+    if (esAgrupado) {
+      console.log(`Curso "${curso.c_nomcur}" es AGRUPADO`);
+    }
 
     for (let i = 0; i < horarios.length; i++) {
       const h1 = horarios[i];
