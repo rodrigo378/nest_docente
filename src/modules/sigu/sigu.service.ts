@@ -113,7 +113,7 @@ export class SiguService {
         FROM
           tb_plan_estudio_curso tp
           INNER JOIN tb_modalidad tb ON tb.c_codmod = tp.c_codmod 
-          INNER JOIN tb_plan_estudio_curso_area tpec ON tpec.c_cod_cur_area = tp.c_area
+          left JOIN tb_plan_estudio_curso_area tpec ON tpec.c_cod_cur_area = tp.c_area
           INNER JOIN tb_facultad t_f ON t_f.cod_fac = tp.c_codfac
           INNER JOIN tb_especialidad t_e ON t_e.codesp = tp.c_codesp
           LEFT JOIN (
