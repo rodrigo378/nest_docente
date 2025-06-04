@@ -1021,9 +1021,21 @@ export class HorarioService {
       where: { curso_id: { in: cursoIds } },
     });
 
+    const docentesAfectados = Array.from(
+      new Set(
+        horariosAntes
+          .map((h) => h.docente_id)
+          .filter((id): id is number => id !== null),
+      ),
+    );
+
     await this.prismaService.horario.deleteMany({
       where: { curso_id: { in: cursoIds } },
     });
+
+    for (const docente_id of docentesAfectados) {
+      await asignarHoraDocente(this.prismaService, docente_id, user_id);
+    }
 
     await createLog(
       this.prismaService,
