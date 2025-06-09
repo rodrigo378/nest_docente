@@ -84,6 +84,10 @@ export const verificarCruzeCreate = async (
       console.log(`Curso "${curso.c_nomcur}" es AGRUPADO`);
     }
 
+    if (!esAgrupado && !esTransversal) {
+      console.log(`Curso "${curso.c_nomcur}" es un curso normal`);
+    }
+
     for (let i = 0; i < horarios.length; i++) {
       const h1 = horarios[i];
 
@@ -133,6 +137,8 @@ export const verificarCruzeCreate = async (
       include: { curso: true },
     });
 
+    console.log('existentes => ', existentes);
+
     const inicio1 = parseHora(h.h_inicio);
     const fin1 = parseHora(h.h_fin);
 
@@ -159,6 +165,8 @@ export const verificarCruzeCreate = async (
       }
 
       if (cruce && (mismoAula || mismoDocente)) {
+        console.log('conflicto');
+
         errores.push(
           `⛔ Conflicto con curso "${e.curso?.c_nomcur}" en BD el día ${h.dia} (ID horario: ${e.id}) ` +
             `entre ${formatoHora(inicio1)} - ${formatoHora(fin1)} y ${formatoHora(inicio2)} - ${formatoHora(fin2)} ` +
