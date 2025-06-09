@@ -169,6 +169,10 @@ export const verificarCruzeCreate = async (
         }
       }
 
+      console.log('cruce => ', cruce);
+      console.log('mismoAula => ', mismoAula);
+      console.log('mismoDocente => ', mismoDocente);
+
       if (cruce && (mismoAula || mismoDocente)) {
         console.log('conflicto');
 
