@@ -137,12 +137,15 @@ export const verificarCruzeCreate = async (
       include: { curso: true },
     });
 
-    console.log('existentes => ', existentes);
+    // console.log('existentes => ', existentes);
 
     const inicio1 = parseHora(h.h_inicio);
     const fin1 = parseHora(h.h_fin);
 
     for (const e of existentes) {
+      console.log('=========================================================');
+      console.log('e => ', e);
+
       const inicio2 = parseHora(e.h_inicio || '');
       const fin2 = parseHora(e.h_fin || '');
       const cruce = inicio1 < fin2 && fin1 > inicio2;
@@ -173,6 +176,7 @@ export const verificarCruzeCreate = async (
             `(${mismoAula ? 'misma aula' : ''}${mismoAula && mismoDocente ? ' y ' : ''}${mismoDocente ? 'mismo docente' : ''})`,
         );
       }
+      console.log('=========================================================');
     }
   }
 
