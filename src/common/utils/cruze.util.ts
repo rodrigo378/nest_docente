@@ -151,6 +151,10 @@ export const verificarCruzeCreate = async (
       const inicio2 = parseHora(e.h_inicio || '');
       const fin2 = parseHora(e.h_fin || '');
       const cruce = inicio1 < fin2 && fin1 > inicio2;
+      console.log('inicio1 => ', inicio1);
+      console.log('inicio2 => ', inicio2);
+      console.log('fin1 => ', fin1);
+      console.log('fin2 => ', fin2);
 
       const mismoAula = h.aula_id && e.aula_id && h.aula_id === e.aula_id;
       const mismoDocente =
