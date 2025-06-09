@@ -47,6 +47,7 @@ export const verificarCruzeCreate = async (
   prisma: PrismaService,
   createHorarioArrayDto: CreateHorarioArrayDto,
 ) => {
+  console.log('🔁 Ejecutando función verificarCruzeCreate');
   const errores: string[] = [];
   const todosLosHorarios: { h: HorarioDto; curso: CursoDto }[] = [];
 
