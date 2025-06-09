@@ -145,6 +145,8 @@ export const verificarCruzeCreate = async (
     for (const e of existentes) {
       console.log('=========================================================');
       console.log('e => ', e);
+      console.log('h_inicio original:', h.h_inicio);
+      console.log('e.h_inicio original:', e.h_inicio);
 
       const inicio2 = parseHora(e.h_inicio || '');
       const fin2 = parseHora(e.h_fin || '');
