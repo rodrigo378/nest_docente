@@ -66,6 +66,8 @@ export const verificarCruzeCreate = async (
       select: { id: true },
     });
 
+    console.log('cursoBD => ', cursoBD);
+
     const grupo = await prisma.grupo_sincro.findFirst({
       where: { curso_id: cursoBD?.id },
       select: { tipo: true },
