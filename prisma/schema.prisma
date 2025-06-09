@@ -204,7 +204,7 @@ model Distrito {
 
 // model AsesoriaJurado {
 //   id           Int     @id @default(autoincrement())
-//   titulo_tesis String?
+//   titulo_tesis String?-
 //   universidad  String?
 //   nivel        String?
 //   año         String?
@@ -221,11 +221,7 @@ model Distrito {
 //   office          String?
 //   nivel_office    String? // Básico, Intermedio, Avanzado
 //   elearning       String?
-//   nivel_elearning String? // Básico, Intermedio, Avanzado
-
-//   docente_id Int?
-//   docente    Docente? @relation(fields: [docente_id], references: [id], onDelete: SetNull)
-// }
+//   nivel_elearning String? // Básico, Intermedio, Avanza
 
 model Modulo {
   id        Int       @id @default(autoincrement())
@@ -281,18 +277,19 @@ model Periodo {
 }
 
 model Turno {
-  id       Int    @id @default(autoincrement())
-  n_codper Int
-  n_codpla Int
-  c_codfac String
-  nom_fac  String
-  c_codesp String
-  nomesp   String
-  c_grpcur String
-  c_codmod Int
-  c_nommod String
-  n_ciclo  Int
-  estado   Int    @default(0)
+  id          Int     @id @default(autoincrement())
+  n_codper    Int
+  n_codpla    Int
+  c_codfac    String
+  nom_fac     String
+  c_codesp    String
+  nomesp      String
+  c_grpcur    String
+  c_codmod    Int
+  c_nommod    String
+  n_ciclo     Int
+  estado      Int     @default(0)
+  subido_sigu Boolean @default(false)
 
   Horario Horario[]
   Curso   Curso[]
@@ -391,16 +388,26 @@ model Aula {
   @@map("aula")
 }
 
+model funcion_docente {
+  id          Int     @id @default(autoincrement())
+  descripcion String?
+}
+
 model Docente {
-  id         Int          @id @default(autoincrement())
-  c_dnidoc   String       @unique @db.Char(8)
-  c_codfac   String
-  nom_fac    String
-  c_nomdoc   String
-  h_min      Int
-  h_max      Int
-  tipo       Int // 0 => tc , 1 => tp 
-  h_total    Float        @default(0)
+  id          Int    @id @default(autoincrement())
+  c_dnidoc    String @unique @db.Char(8)
+  c_codfac    String
+  nom_fac     String
+  c_nomdoc    String
+  h_min       Int
+  h_max       Int
+  tipo        Int // 0 => tc , 1 => tp 
+  h_total     Float  @default(0)
+  h_rectorado Int
+  v1          Int    @default(0)
+  v2          Int    @default(0)
+  id_funcion  Int?
+
   Horario    Horario[]
   asistencia Asistencia[]
 

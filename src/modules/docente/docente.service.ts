@@ -95,6 +95,9 @@ export class DocenteService {
         h_min,
         h_max,
         tipo,
+        v1: 0,
+        v2: 0,
+        h_rectorado: 0,
       },
     });
 
