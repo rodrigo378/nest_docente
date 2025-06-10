@@ -14,8 +14,11 @@ import {
 import { Type } from 'class-transformer';
 
 export enum Modalidad {
-  PRESENCIAL = 'pre',
-  VIRTUAL = 'vir',
+  'PRESENCIAL' = 'pre',
+  'VIRTUAL' = 'vir',
+  'TEORIA VIRTUAL' = 'tev',
+  'LABORATORIO PRESENCIAL' = 'lbp',
+  'TEORIA PRESENCIAL' = 'tep',
 }
 
 export class HorarioDto {
@@ -69,7 +72,7 @@ export class HorarioDto {
   @IsNumber()
   h_umaPlus?: number;
 
-  @IsEnum(Modalidad, { message: 'La modalidad debe ser "pre" o "vir"' })
+  @IsEnum(Modalidad)
   modalidad: Modalidad;
 }
 
