@@ -253,6 +253,7 @@ export const verificarCruzeUpdate = async (
   prisma: PrismaService,
   updateHorarioArrayDto: UpdateHorarioArrayDto,
 ) => {
+  console.log('inicio verificarCruzeUpdate');
   const errores = new Set<string>();
   const todosLosHorarios: { h: HorarioUpdateDto; curso: CursoUpdateDto }[] = [];
 
@@ -335,12 +336,21 @@ export const verificarCruzeUpdate = async (
     }
 
     for (const e of existentes) {
+      console.log('=========================================================');
+
       const { inicio: inicio2, fin: fin2 } = parseHorarioConRango(
         e.h_inicio || '',
         e.h_fin || '',
       );
+      console.log('horario_id => ', e.id);
+
+      console.log('inicio1 => ', inicio1);
+      console.log('inicio2 => ', inicio2);
+      console.log('fin1 => ', fin1);
+      console.log('fin2 => ', fin2);
 
       const cruce = inicio1 < fin2 && fin1 > inicio2;
+      console.log('cruce => ', cruce);
 
       const mismoAula = h.aula_id && e.aula_id && h.aula_id === e.aula_id;
       const mismoDocente =
@@ -360,6 +370,7 @@ export const verificarCruzeUpdate = async (
       }
 
       if (!esCursoTransversal && cruce && (mismoAula || mismoDocente)) {
+        console.log('cruze');
         errores.add(
           `⛔ Conflicto con "${e.curso?.c_nomcur}" en BD el día ${h.dia}` +
             ` (${mismoAula ? 'misma aula' : ''}${
@@ -367,6 +378,7 @@ export const verificarCruzeUpdate = async (
             }${mismoDocente ? 'mismo docente' : ''})`,
         );
       }
+      console.log('=========================================================');
     }
   }
 
