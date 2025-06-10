@@ -72,7 +72,7 @@ export class HorarioUpdateDto {
   @IsNumber()
   h_umaPlus?: number;
 
-  @IsEnum(Modalidad, { message: 'La modalidad debe ser "pre" o "vir"' })
+  @IsEnum(Modalidad)
   modalidad: Modalidad;
 }
 
