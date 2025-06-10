@@ -11,29 +11,29 @@ import {
 } from 'src/modules/horario/dto/updateHorarioArrayDto';
 import { PrismaService } from 'src/prisma/prisma.service';
 
-// const diasSemana: Record<string, number> = {
-//   Lunes: 0,
-//   Martes: 1,
-//   Miércoles: 2,
-//   Miercoles: 2, // por si acaso
-//   Jueves: 3,
-//   Viernes: 4,
-//   Sábado: 5,
-//   Domingo: 6,
-// };
+const diasSemana: Record<string, number> = {
+  Lunes: 0, //Lunes
+  Martes: 1, //Martes
+  Miércoles: 2, //Miércoles
+  Miercoles: 2,
+  Jueves: 3, //Jueves
+  Viernes: 4, //Viernes
+  Sábado: 5, //Sábado
+};
 
 export const parseHora = (hora: Date | string): Date => {
   const date = new Date(hora);
   return new Date(1970, 0, 1, date.getHours(), date.getMinutes(), 0, 0);
 };
-// export const parseHoraConDia = (hora: Date | string, dia: string): Date => {
-//   const base = new Date(1970, 0, 5); // lunes
-//   const offset = diasSemana[dia] ?? 0;
-//   const h = new Date(hora);
-//   base.setDate(base.getDate() + offset);
-//   base.setHours(h.getHours(), h.getMinutes(), 0, 0);
-//   return base;
-// };
+
+export const parseHoraConDia = (hora: Date | string, dia: string): Date => {
+  const base = new Date(1970, 0, 5); // lunes
+  const offset = diasSemana[dia] ?? 0;
+  const h = new Date(hora);
+  base.setDate(base.getDate() + offset);
+  base.setHours(h.getHours(), h.getMinutes(), 0, 0);
+  return base;
+};
 
 export const formatoHora = (hora: Date): string => {
   const h = hora.getHours().toString().padStart(2, '0');
@@ -114,21 +114,21 @@ export const verificarCruzeCreate = async (
         h1.curso_id = cursoBD.id;
       }
 
-      const inicio1 = parseHora(h1.h_inicio);
-      const fin1 = parseHora(h1.h_fin);
+      // const inicio1 = parseHora(h1.h_inicio);
+      // const fin1 = parseHora(h1.h_fin);
 
-      // const inicio1 = parseHoraConDia(h1.h_inicio, h1.dia);
-      // const fin1 = parseHoraConDia(h1.h_fin, h1.dia);
+      const inicio1 = parseHoraConDia(h1.h_inicio, h1.dia);
+      const fin1 = parseHoraConDia(h1.h_fin, h1.dia);
 
       for (let j = i + 1; j < horarios.length; j++) {
         const h2 = horarios[j];
         if (h1.dia !== h2.dia) continue;
 
-        const inicio2 = parseHora(h2.h_inicio);
-        const fin2 = parseHora(h2.h_fin);
+        // const inicio2 = parseHora(h2.h_inicio);
+        // const fin2 = parseHora(h2.h_fin);
 
-        // const inicio2 = parseHoraConDia(h2.h_inicio, h2.dia);
-        // const fin2 = parseHoraConDia(h2.h_fin, h2.dia);
+        const inicio2 = parseHoraConDia(h2.h_inicio, h2.dia);
+        const fin2 = parseHoraConDia(h2.h_fin, h2.dia);
 
         const cruceHoras = inicio1 < fin2 && fin1 > inicio2;
         const mismoAula = h1.aula_id && h2.aula_id && h1.aula_id === h2.aula_id;
@@ -164,8 +164,11 @@ export const verificarCruzeCreate = async (
 
     // console.log('existentes => ', existentes);
 
-    const inicio1 = parseHora(h.h_inicio);
-    const fin1 = parseHora(h.h_fin);
+    // const inicio1 = parseHora(h.h_inicio);
+    // const fin1 = parseHora(h.h_fin);
+
+    const inicio1 = parseHoraConDia(h.h_inicio, h.dia);
+    const fin1 = parseHoraConDia(h.h_fin, h.dia);
 
     for (const e of existentes) {
       console.log('=========================================================');
@@ -173,8 +176,12 @@ export const verificarCruzeCreate = async (
       console.log('h_inicio original:', h.h_inicio);
       console.log('e.h_inicio original:', e.h_inicio);
 
-      const inicio2 = parseHora(e.h_inicio || '');
-      const fin2 = parseHora(e.h_fin || '');
+      // const inicio2 = parseHora(e.h_inicio || '');
+      // const fin2 = parseHora(e.h_fin || '');
+
+      const inicio2 = parseHoraConDia(e.h_inicio || '', e.dia || '');
+      const fin2 = parseHoraConDia(e.h_fin || '', e.dia || '');
+
       const cruce = inicio1 < fin2 && fin1 > inicio2;
       console.log('inicio1 => ', inicio1);
       console.log('inicio2 => ', inicio2);
