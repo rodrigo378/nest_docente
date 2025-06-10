@@ -11,18 +11,6 @@ import {
 } from 'src/modules/horario/dto/updateHorarioArrayDto';
 import { PrismaService } from 'src/prisma/prisma.service';
 
-// export const parseHora = (hora: Date | string): Date => {
-//   const date = new Date(hora);
-//   return new Date(1970, 0, 1, date.getHours(), date.getMinutes(), 0, 0);
-// };
-
-// export const parseHora = (hora: Date | string): Date => {
-//   const date = new Date(hora);
-//   return new Date(
-//     Date.UTC(1970, 0, 1, date.getUTCHours(), date.getUTCMinutes(), 0, 0),
-//   );
-// };
-
 export const parseHora = (hora: Date | string): Date => {
   const date = new Date(hora);
   return new Date(
@@ -38,8 +26,7 @@ export const parseHorarioConRango = (
   let fin = parseHora(h_fin);
 
   if (fin <= inicio) {
-    // si el fin es "más temprano" que el inicio, significa que es del día siguiente
-    fin = new Date(fin.getTime() + 24 * 60 * 60 * 1000); // +1 día
+    fin = new Date(fin.getTime() + 24 * 60 * 60 * 1000);
   }
 
   return { inicio, fin };
@@ -76,7 +63,6 @@ export const verificarCruzeCreate = async (
   prisma: PrismaService,
   createHorarioArrayDto: CreateHorarioArrayDto,
 ) => {
-  console.log('🔁 Ejecutando función verificarCruzeCreate');
   const errores: string[] = [];
   const todosLosHorarios: { h: HorarioDto; curso: CursoDto }[] = [];
 
@@ -94,8 +80,6 @@ export const verificarCruzeCreate = async (
       },
       select: { id: true },
     });
-
-    console.log('cursoBD => ', cursoBD);
 
     const grupo = await prisma.grupo_sincro.findFirst({
       where: { curso_id: cursoBD?.id },
@@ -124,15 +108,19 @@ export const verificarCruzeCreate = async (
         h1.curso_id = cursoBD.id;
       }
 
-      const inicio1 = parseHora(h1.h_inicio);
-      const fin1 = parseHora(h1.h_fin);
+      const { inicio: inicio1, fin: fin1 } = parseHorarioConRango(
+        h1.h_inicio,
+        h1.h_fin,
+      );
 
       for (let j = i + 1; j < horarios.length; j++) {
         const h2 = horarios[j];
         if (h1.dia !== h2.dia) continue;
 
-        const inicio2 = parseHora(h2.h_inicio);
-        const fin2 = parseHora(h2.h_fin);
+        const { inicio: inicio2, fin: fin2 } = parseHorarioConRango(
+          h2.h_inicio || '',
+          h2.h_fin || '',
+        );
 
         const cruceHoras = inicio1 < fin2 && fin1 > inicio2;
         const mismoAula = h1.aula_id && h2.aula_id && h1.aula_id === h2.aula_id;
@@ -166,35 +154,18 @@ export const verificarCruzeCreate = async (
       include: { curso: true },
     });
 
-    // console.log('existentes => ', existentes);
-
-    // const inicio1 = parseHora(h.h_inicio);
-    // const fin1 = parseHora(h.h_fin);
-    console.log('cambio de guncion');
-
     const { inicio: inicio1, fin: fin1 } = parseHorarioConRango(
       h.h_inicio,
       h.h_fin,
     );
 
     for (const e of existentes) {
-      console.log('=========================================================');
-      console.log('e => ', e);
-      console.log('h_inicio original:', h.h_inicio);
-      console.log('e.h_inicio original:', e.h_inicio);
-
-      // const inicio2 = parseHora(e.h_inicio || '');
-      // const fin2 = parseHora(e.h_fin || '');
       const { inicio: inicio2, fin: fin2 } = parseHorarioConRango(
         e.h_inicio || '',
         e.h_fin || '',
       );
 
       const cruce = inicio1 < fin2 && fin1 > inicio2;
-      console.log('inicio1 => ', inicio1);
-      console.log('inicio2 => ', inicio2);
-      console.log('fin1 => ', fin1);
-      console.log('fin2 => ', fin2);
 
       const mismoAula = h.aula_id && e.aula_id && h.aula_id === e.aula_id;
       const mismoDocente =
@@ -213,20 +184,13 @@ export const verificarCruzeCreate = async (
         }
       }
 
-      console.log('cruce => ', cruce);
-      console.log('mismoAula => ', mismoAula);
-      console.log('mismoDocente => ', mismoDocente);
-
       if (cruce && (mismoAula || mismoDocente)) {
-        console.log('conflicto');
-
         errores.push(
           `⛔ Conflicto con curso "${e.curso?.c_nomcur}" en BD el día ${h.dia} (ID horario: ${e.id}) ` +
             `entre ${formatoHora(inicio1)} - ${formatoHora(fin1)} y ${formatoHora(inicio2)} - ${formatoHora(fin2)} ` +
             `(${mismoAula ? 'misma aula' : ''}${mismoAula && mismoDocente ? ' y ' : ''}${mismoDocente ? 'mismo docente' : ''})`,
         );
       }
-      console.log('=========================================================');
     }
   }
 
@@ -256,14 +220,19 @@ export const verificarCruzesCursosTransversales = async (
     });
 
     for (const hNuevo of horarios) {
-      const inicioNuevo = parseHora(hNuevo.h_inicio);
-      const finNuevo = parseHora(hNuevo.h_fin);
+      const { inicio: inicioNuevo, fin: finNuevo } = parseHorarioConRango(
+        hNuevo.h_inicio,
+        hNuevo.h_fin,
+      );
 
       for (const hExistente of turnoHorarios) {
         if (hNuevo.dia !== hExistente.dia) continue;
 
-        const inicioExistente = parseHora(hExistente.h_inicio || '');
-        const finExistente = parseHora(hExistente.h_fin || '');
+        const { inicio: inicioExistente, fin: finExistente } =
+          parseHorarioConRango(
+            hExistente.h_inicio || '',
+            hExistente.h_fin || '',
+          );
 
         const cruceHoras =
           inicioNuevo < finExistente && finNuevo > inicioExistente;
@@ -292,16 +261,23 @@ export const verificarCruzeUpdate = async (
 
     for (let i = 0; i < horarios.length; i++) {
       const h1 = horarios[i];
-      const inicio1 = h1.h_inicio ? parseHora(h1.h_inicio) : null;
-      const fin1 = h1.h_fin ? parseHora(h1.h_fin) : null;
+
+      const { inicio: inicio1, fin: fin1 } = parseHorarioConRango(
+        h1.h_inicio || '',
+        h1.h_fin || '',
+      );
+
       if (!inicio1 || !fin1) continue;
 
       for (let j = i + 1; j < horarios.length; j++) {
         const h2 = horarios[j];
         if (h1.dia !== h2.dia) continue;
 
-        const inicio2 = h2.h_inicio ? parseHora(h2.h_inicio) : null;
-        const fin2 = h2.h_fin ? parseHora(h2.h_fin) : null;
+        const { inicio: inicio2, fin: fin2 } = parseHorarioConRango(
+          h2.h_inicio || '',
+          h2.h_fin || '',
+        );
+
         if (!inicio2 || !fin2) continue;
 
         const cruceHoras = inicio1 < fin2 && fin1 > inicio2;
@@ -343,8 +319,11 @@ export const verificarCruzeUpdate = async (
       include: { curso: true },
     });
 
-    const inicio1 = h.h_inicio ? parseHora(h.h_inicio) : null;
-    const fin1 = h.h_fin ? parseHora(h.h_fin) : null;
+    const { inicio: inicio1, fin: fin1 } = parseHorarioConRango(
+      h.h_inicio || '',
+      h.h_fin || '',
+    );
+
     if (!inicio1 || !fin1) continue;
 
     const esCursoTransversal =
@@ -356,8 +335,11 @@ export const verificarCruzeUpdate = async (
     }
 
     for (const e of existentes) {
-      const inicio2 = parseHora(e.h_inicio || '');
-      const fin2 = parseHora(e.h_fin || '');
+      const { inicio: inicio2, fin: fin2 } = parseHorarioConRango(
+        e.h_inicio || '',
+        e.h_fin || '',
+      );
+
       const cruce = inicio1 < fin2 && fin1 > inicio2;
 
       const mismoAula = h.aula_id && e.aula_id && h.aula_id === e.aula_id;
@@ -416,15 +398,21 @@ export const verificarCruzesCursosTransversalesUpdate = async (
     });
 
     for (const hNuevo of horarios) {
-      const inicioNuevo = hNuevo.h_inicio ? parseHora(hNuevo.h_inicio) : null;
-      const finNuevo = hNuevo.h_fin ? parseHora(hNuevo.h_fin) : null;
+      const { inicio: inicioNuevo, fin: finNuevo } = parseHorarioConRango(
+        hNuevo.h_inicio || '',
+        hNuevo.h_fin || '',
+      );
+
       if (!inicioNuevo || !finNuevo) continue;
 
       for (const hExistente of turnoHorarios) {
         if (hNuevo.dia !== hExistente.dia) continue;
 
-        const inicioExistente = parseHora(hExistente.h_inicio || '');
-        const finExistente = parseHora(hExistente.h_fin || '');
+        const { inicio: inicioExistente, fin: finExistente } =
+          parseHorarioConRango(
+            hExistente.h_inicio || '',
+            hExistente.h_fin || '',
+          );
 
         const cruceHoras =
           inicioNuevo < finExistente && finNuevo > inicioExistente;
