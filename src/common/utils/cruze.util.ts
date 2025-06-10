@@ -27,11 +27,11 @@ export const parseHora = (hora: Date | string): Date => {
 };
 
 export const parseHoraConDia = (hora: Date | string, dia: string): Date => {
-  const base = new Date(1970, 0, 5); // lunes
   const offset = diasSemana[dia] ?? 0;
   const h = new Date(hora);
-  base.setDate(base.getDate() + offset);
-  base.setHours(h.getHours(), h.getMinutes(), 0, 0);
+  const base = new Date(
+    Date.UTC(1970, 0, 5 + offset, h.getUTCHours(), h.getUTCMinutes(), 0, 0),
+  );
   return base;
 };
 

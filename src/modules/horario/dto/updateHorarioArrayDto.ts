@@ -168,3 +168,13 @@ export class UpdateHorarioArrayDto {
   @IsBoolean()
   verificar: boolean;
 }
+
+// inicio1 =>  1970-01-09T23:00:00.000Z
+// inicio2 =>  1970-01-09T23:00:00.000Z
+// fin1 =>  1970-01-10T00:40:00.000Z
+// fin2 =>  1970-01-10T00:40:00.000Z
+
+//  inicio1 =>  1970-01-09T23:00:00.000Z
+// 0|api-docentes  | inicio2 =>  1970-01-09T23:00:00.000Z
+// 0|api-docentes  | fin1 =>  1970-01-09T23:50:00.000Z
+// 0|api-docentes  | fin2 =>  1970-01-09T00:40:00.000Z
