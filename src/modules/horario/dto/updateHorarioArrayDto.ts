@@ -19,6 +19,7 @@ export enum Modalidad {
   'TEORIA VIRTUAL' = 'tev',
   'LABORATORIO PRESENCIAL' = 'lbp',
   'TEORIA PRESENCIAL' = 'tep',
+  'LABORATORIO' = 'lab',
 }
 
 export class HorarioUpdateDto {
