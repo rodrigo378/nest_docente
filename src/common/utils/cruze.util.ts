@@ -11,9 +11,38 @@ import {
 } from 'src/modules/horario/dto/updateHorarioArrayDto';
 import { PrismaService } from 'src/prisma/prisma.service';
 
+// export const parseHora = (hora: Date | string): Date => {
+//   const date = new Date(hora);
+//   return new Date(1970, 0, 1, date.getHours(), date.getMinutes(), 0, 0);
+// };
+
+// export const parseHora = (hora: Date | string): Date => {
+//   const date = new Date(hora);
+//   return new Date(
+//     Date.UTC(1970, 0, 1, date.getUTCHours(), date.getUTCMinutes(), 0, 0),
+//   );
+// };
+
 export const parseHora = (hora: Date | string): Date => {
   const date = new Date(hora);
-  return new Date(1970, 0, 1, date.getHours(), date.getMinutes(), 0, 0);
+  return new Date(
+    Date.UTC(1970, 0, 1, date.getUTCHours(), date.getUTCMinutes(), 0, 0),
+  );
+};
+
+export const parseHorarioConRango = (
+  h_inicio: Date | string,
+  h_fin: Date | string,
+): { inicio: Date; fin: Date } => {
+  const inicio = parseHora(h_inicio);
+  let fin = parseHora(h_fin);
+
+  if (fin <= inicio) {
+    // si el fin es "más temprano" que el inicio, significa que es del día siguiente
+    fin = new Date(fin.getTime() + 24 * 60 * 60 * 1000); // +1 día
+  }
+
+  return { inicio, fin };
 };
 
 export const formatoHora = (hora: Date): string => {
@@ -139,8 +168,14 @@ export const verificarCruzeCreate = async (
 
     // console.log('existentes => ', existentes);
 
-    const inicio1 = parseHora(h.h_inicio);
-    const fin1 = parseHora(h.h_fin);
+    // const inicio1 = parseHora(h.h_inicio);
+    // const fin1 = parseHora(h.h_fin);
+    console.log('cambio de guncion');
+
+    const { inicio: inicio1, fin: fin1 } = parseHorarioConRango(
+      h.h_inicio,
+      h.h_fin,
+    );
 
     for (const e of existentes) {
       console.log('=========================================================');
@@ -148,8 +183,12 @@ export const verificarCruzeCreate = async (
       console.log('h_inicio original:', h.h_inicio);
       console.log('e.h_inicio original:', e.h_inicio);
 
-      const inicio2 = parseHora(e.h_inicio || '');
-      const fin2 = parseHora(e.h_fin || '');
+      // const inicio2 = parseHora(e.h_inicio || '');
+      // const fin2 = parseHora(e.h_fin || '');
+      const { inicio: inicio2, fin: fin2 } = parseHorarioConRango(
+        e.h_inicio || '',
+        e.h_fin || '',
+      );
 
       const cruce = inicio1 < fin2 && fin1 > inicio2;
       console.log('inicio1 => ', inicio1);
