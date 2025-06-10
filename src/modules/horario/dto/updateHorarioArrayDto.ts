@@ -14,8 +14,11 @@ import {
 import { Type } from 'class-transformer';
 
 export enum Modalidad {
-  PRESENCIAL = 'pre',
-  VIRTUAL = 'vir',
+  'PRESENCIAL' = 'pre',
+  'VIRTUAL' = 'vir',
+  'TEORIA VIRTUAL' = 'tev',
+  'LABORATORIO PRESENCIAL' = 'lbp',
+  'TEORIA PRESENCIAL' = 'tep',
 }
 
 export class HorarioUpdateDto {
