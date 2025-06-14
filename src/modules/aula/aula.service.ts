@@ -11,6 +11,7 @@ export class AulaService {
     docente: boolean = false,
   ) {
     const include: { Horario: any } = { Horario: false };
+    console.log('se borra');
 
     if (horario) {
       include.Horario = {
