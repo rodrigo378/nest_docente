@@ -57,12 +57,13 @@ export class DocenteController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Put('')
+  @Put(':id')
   updateDocente(
     @Req() req: AuthenticatedRequest,
+    @Param('id') id: number,
     @Body() updateDocenteDto: UpdateDocenteDto,
   ) {
-    return this.docenteService.updateDocente(req.user.id, updateDocenteDto);
+    return this.docenteService.updateDocente(req.user.id, id, updateDocenteDto);
   }
 
   // @Post('')

@@ -1,7 +1,7 @@
 import { seedAula } from './seed/aula';
 import { seedItems } from './seed/item';
 import { seedTurno } from './seed/turno';
-import { seedCurso } from './seed/cursos';
+// import { seedCurso } from './seed/cursos';
 import { seedUsers } from './seed/usuario';
 import { seedModulos } from './seed/modulo';
 import { seedPeriodo } from './seed/periodo';
@@ -16,7 +16,7 @@ async function main() {
   await seedAula();
   await seedPeriodo();
   await seedTurno();
-  await seedCurso();
+  // await seedCurso();
   await seedUsers();
   await seedModulos();
   await seedItems();

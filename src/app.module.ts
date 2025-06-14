@@ -12,6 +12,7 @@ import { PeriodoModule } from './modules/periodo/periodo.module';
 import { DocenteModule } from './modules/docente/docente.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { AsistenciaModule } from './modules/asistencia/asistencia.module';
+import { PlanModule } from './modules/plan/plan.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { AsistenciaModule } from './modules/asistencia/asistencia.module';
     DashboardModule,
     PeriodoModule,
     AsistenciaModule,
+    PlanModule,
   ],
   controllers: [],
   providers: [],

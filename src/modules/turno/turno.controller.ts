@@ -74,4 +74,14 @@ export class TurnoController {
   ) {
     return this.turnoService.deleteTurno(req.user.id, id);
   }
+
+  @Post('bloquear')
+  blockearTurnos(@Body() turnos_id: number[]) {
+    return this.turnoService.blockearTurnos(turnos_id);
+  }
+
+  @Post('desbloquear')
+  desblockearTurnos(@Body() turnos_id: number[]) {
+    return this.turnoService.desblockearTurnos(turnos_id);
+  }
 }

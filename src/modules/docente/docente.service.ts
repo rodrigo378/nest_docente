@@ -15,13 +15,16 @@ export class DocenteService {
     c_codfac?: string,
     c_codesp?: string,
   ) {
-    const include: { Horario?: any } = { Horario: false };
+    const include: { Horario?: any } = {
+      Horario: false,
+    };
     const where: { Horario?: any } = {};
 
     if (horario) {
       include.Horario = {
         orderBy: { id: 'desc' },
         distinct: ['dia', 'h_inicio', 'h_fin'],
+        // include: { funcion_docente: true },
         select: {
           id: true,
           dia: true,
@@ -116,19 +119,21 @@ export class DocenteService {
   }
 
   //se agrego log
-  async updateDocente(user_id: number, updateDocenteDto: UpdateDocenteDto) {
+  async updateDocente(
+    user_id: number,
+    docente_id: number,
+    updateDocenteDto: UpdateDocenteDto,
+  ) {
     const docente = await this.prismaService.docente.findUnique({
-      where: { id: updateDocenteDto.id },
+      where: { id: docente_id },
     });
 
     if (!docente) {
-      throw new NotFoundException(
-        `Docente con id ${updateDocenteDto.id} no encontrado`,
-      );
+      throw new NotFoundException(`Docente con id ${docente_id} no encontrado`);
     }
 
     const updatedDocente = await this.prismaService.docente.update({
-      where: { id: updateDocenteDto.id },
+      where: { id: docente_id },
       data: {
         ...updateDocenteDto,
       },

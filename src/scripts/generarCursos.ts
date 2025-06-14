@@ -36,7 +36,6 @@ export async function seedCurso20252() {
         tp.c_area,
         tpec.c_nom_cur_area,
         tp.n_ciclo,
-        tp.c_ciclo,
         tp.c_codcur,
         tp.c_nomcur,
         tp.n_ht,
@@ -82,7 +81,7 @@ export async function seedCurso20252() {
         tp.n_codper, tp.c_codmod, tb.c_nommod,
         tp.c_codfac, t_f.nom_fac, tp.c_codesp, t_e.nomesp,
         tp.c_area, tpec.c_nom_cur_area, tp.c_codcur, tp.c_nomcur,
-        tp.n_ciclo, tp.c_ciclo, tp.n_ht, tp.n_hp,
+        tp.n_ciclo, tp.n_ht, tp.n_hp,
         tpee.n_codper_equ, tpee.c_codmod_equ, tpee.c_codfac_equ,
         tpee.c_codesp_equ, tpee.c_codcur_equ, tpee.c_nomcur_equ
       ORDER BY tp.c_nomcur

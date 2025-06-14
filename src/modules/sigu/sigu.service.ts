@@ -1,22 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { GetCursoDto } from './dto/getCursoDto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { PrismaReadonlyService } from 'src/prisma/readonly.service';
-
-interface CursoQuery {
-  n_codper: number;
-  c_codmod: string;
-  c_nommod: string;
-  c_codfac: string;
-  c_codesp: string;
-  n_ciclo: number;
-  c_ciclo: string;
-  c_codcur: string;
-  c_nomcur: string;
-  n_ht: number;
-  n_hp: number;
-  equivalencias: string | null;
-}
 
 @Injectable()
 export class SiguService {
@@ -33,299 +17,256 @@ export class SiguService {
     );
   }
 
-  async getCarreras(n_ciclo: number, c_codfac: string) {
-    return await this.prismaReadonly.$queryRawUnsafe(
-      `select 
-        tp.c_codmod,
-        tp.c_codfac,
-        tp.c_codesp,
-        tb.nomesp,
-        tp.c_ciclo,
-        tp.n_ciclo
-      from tb_plan_estudio_curso tp
-      inner join tb_especialidad tb on (tp.c_codfac  = tb.codfac and tp.c_codesp  = tb.codesp)
-      where n_ciclo = ? and c_codfac = ?
-      group by tp.c_codfac, tp.c_codesp, tp.c_ciclo, tp.n_ciclo  , tp.c_codmod
-      -- order by tp.c_ciclo;
-      order by tb.nomesp, tp.n_ciclo -- , tp.c_codmod;
-        `,
-      n_ciclo,
-      c_codfac,
-    );
-  }
-
-  async getCicloCarreras(c_codfac: string) {
-    return await this.prismaReadonly.$queryRawUnsafe(
-      `SELECT 
-        es.nomesp AS especialidad,
-        GROUP_CONCAT(DISTINCT pe.c_ciclo ORDER BY pe.c_ciclo SEPARATOR ', ') AS ciclos
-      FROM tb_plan_estudio_curso pe
-      JOIN tb_especialidad es 
-        ON pe.c_codesp = es.codesp  
-        AND pe.c_codfac = es.codfac
-      WHERE pe.c_codfac = ?
-      GROUP BY es.nomesp;`,
-      c_codfac,
-    );
-  }
-
-  async getCursos(getCursoDto: GetCursoDto) {
-    const turno = await this.prismaService.turno.findFirst({
-      where: {
-        n_codper: getCursoDto.n_codper,
-        n_codpla: getCursoDto.n_codpla,
-        c_codfac: getCursoDto.c_codfac,
-        c_codesp: getCursoDto.c_codesp,
-        n_ciclo: Number(getCursoDto.n_ciclo),
-        c_codmod: Number(getCursoDto.c_codmod),
-        c_grpcur: getCursoDto.c_grpcur,
-      },
-    });
-
-    if (!turno) {
-      return [];
-    }
-
-    const cursosSigu = await this.prismaReadonly.$queryRawUnsafe<CursoQuery[]>(
-      `SELECT
-          tp.n_codper,
-          tp.c_codmod,
-          tb.c_nommod,
-          tp.c_codfac,
-          t_f.nom_fac,
-          tp.c_codesp,
-          t_e.nomesp,
-          tp.c_area,
-          tpec.c_nom_cur_area,
-          tp.n_ciclo,	
-          tp.c_ciclo,
-          tp.c_codcur,
-          tp.c_nomcur,
-          tp.n_ht,
-          tp.n_hp,
-          tpee.n_codper_equ,
-          tpee.c_codmod_equ,
-          tpee.c_codfac_equ,
-          tpee.c_codesp_equ,
-          tpee.c_codcur_equ,
-          tpee.c_nomcur_equ,
-          tp.c_curup as h_umaPlus
-        FROM
-          tb_plan_estudio_curso tp
-          INNER JOIN tb_modalidad tb ON tb.c_codmod = tp.c_codmod 
-          left JOIN tb_plan_estudio_curso_area tpec ON tpec.c_cod_cur_area = tp.c_area
-          INNER JOIN tb_facultad t_f ON t_f.cod_fac = tp.c_codfac
-          INNER JOIN tb_especialidad t_e ON t_e.codesp = tp.c_codesp
-          LEFT JOIN (
-              SELECT DISTINCT
-                te.c_codcur,
-                te.c_codfac,
-                te.c_codesp,
-                te.c_codmod,
-                te.n_codper_equ,
-                te.c_codmod_equ,
-                te.c_codfac_equ,
-                te.c_codesp_equ,
-                te.c_codcur_equ,
-                tp2.c_nomcur AS c_nomcur_equ
-              FROM tb_plan_estudio_equ te
-              INNER JOIN tb_plan_estudio_curso tp2 ON te.c_codcur_equ = tp2.c_codcur
-              WHERE te.n_codper_equ IN (2023, 2025)
-          ) tpee 
-            ON tpee.c_codcur = tp.c_codcur 
-            AND tpee.c_codmod = tp.c_codmod 
-            AND tpee.c_codfac = tp.c_codfac
-            AND tpee.c_codesp = tp.c_codesp
-        WHERE
-          tp.n_codper IN (2023, 2025) 
-          AND tp.c_codfac = ?
-          AND tp.c_codesp = ?
-          AND tp.n_ciclo = ?
-          AND tp.c_codmod = ?
-        GROUP BY
-          tp.n_codper, tp.c_codmod, tb.c_nommod, tp.c_codfac, t_f.nom_fac,
-          tp.c_codesp, t_e.nomesp, tp.c_area, tpec.c_nom_cur_area,
-          tp.c_codcur, tp.c_nomcur, tp.n_ciclo, tp.c_ciclo,
-          tp.n_ht, tp.n_hp,
-          tpee.n_codper_equ, tpee.c_codmod_equ, tpee.c_codfac_equ,
-          tpee.c_codesp_equ, tpee.c_codcur_equ, tpee.c_nomcur_equ,
-          tp.c_curup
-        ORDER BY tp.c_nomcur;`,
-      getCursoDto.c_codfac,
-      getCursoDto.c_codesp,
-      getCursoDto.n_ciclo,
-      getCursoDto.c_codmod,
-    );
-
-    const cursosLocales = await this.prismaService.curso.findMany({
-      where: {
-        turno_id: turno.id,
-      },
-      include: {
-        cursosPadres: true,
-      },
-    });
-
-    const cursosFinal = await Promise.all(
-      cursosSigu.map(async (curso) => {
-        const match = cursosLocales.find(
-          (c) =>
-            String(c.n_codper) === String(curso.n_codper) &&
-            Number(c.c_codmod) === Number(curso.c_codmod) &&
-            c.c_codfac === curso.c_codfac &&
-            c.c_codesp === curso.c_codesp &&
-            c.c_codcur === curso.c_codcur,
-        );
-
-        let tipoAgrupado: number | null = null;
-        let c_alu_total = match?.c_alu ?? null;
-
-        if (match?.cursosPadres?.[0]?.padre_curso_id) {
-          tipoAgrupado = match.cursosPadres[0].tipo;
-
-          try {
-            const cursosDelGrupo =
-              await this.prismaService.grupo_sincro.findMany({
-                where: {
-                  padre_curso_id: match.cursosPadres[0].padre_curso_id,
-                },
-              });
-
-            let sumaCAlu = 0;
-            for (const curso of cursosDelGrupo) {
-              const cursoDB = await this.prismaService.curso.findFirst({
-                where: { id: curso.curso_id },
-                select: { c_alu: true },
-              });
-              if (cursoDB?.c_alu) sumaCAlu += cursoDB.c_alu;
-            }
-
-            // console.log(
-            // `🔢 Total c_alu del grupo [${match.cursosPadres[0].padre_curso_id}]:`,
-            // sumaCAlu,
-            // );
-            c_alu_total = sumaCAlu;
-          } catch (err) {
-            console.error('❌ Error al obtener cursos del grupo:', err);
-          }
-        }
-
-        return {
-          ...curso,
-          tipoAgrupado,
-          c_alu: c_alu_total,
-        };
-      }),
-    );
-
-    return cursosFinal;
-  }
-
   // async getCursos(getCursoDto: GetCursoDto) {
-  //   return await this.prismaReadonly.$queryRawUnsafe(
+  //   const turno = await this.prismaService.turno.findFirst({
+  //     where: {
+  //       n_codper: getCursoDto.n_codper,
+  //       n_codpla: getCursoDto.n_codpla,
+  //       c_codfac: getCursoDto.c_codfac,
+  //       c_codesp: getCursoDto.c_codesp,
+  //       n_ciclo: Number(getCursoDto.n_ciclo),
+  //       c_codmod: Number(getCursoDto.c_codmod),
+  //       c_grpcur: getCursoDto.c_grpcur,
+  //     },
+  //   });
+
+  //   if (!turno) {
+  //     return [];
+  //   }
+
+  //   const cursosSigu = await this.prismaReadonly.$queryRawUnsafe<CursoQuery[]>(
   //     `SELECT
-  //       tp.n_codper,
-  //       tp.c_codmod,
-  //       tb.c_nommod,
-  //       tp.c_codfac,
-  //       tp.c_codesp,
-  //       tp.c_area,
-  //       tpec.c_nom_cur_area,
-  //       tp.n_ciclo,
-  //       tp.c_ciclo,
-  //       tp.c_codcur,
-  //       tp.c_nomcur,
-  //       tp.n_ht,
-  //       tp.n_hp
-  //     FROM
-  //       tb_plan_estudio_curso tp
-  //       INNER JOIN tb_modalidad tb ON tb.c_codmod = tp.c_codmod
-  //       INNER JOIN tb_plan_estudio_curso_area tpec ON tpec.c_cod_cur_area = tp.c_area
-  //     WHERE
-  //       tp.n_codper IN ( 2023, 2025 )
-  //       AND tp.c_codfac = ?
-  //       AND tp.c_codesp = ?
-  //       AND tp.n_ciclo = ?
-  //       AND tp.c_codmod = ?
-  //     GROUP BY
-  //       tp.n_codper,
-  //       tp.c_codmod,
-  //       tp.c_codfac,
-  //       tp.c_codesp,
-  //       tp.c_area,
-  //       tpec.c_nom_cur_area,
-  //       tp.c_codcur,
-  //       tp.c_nomcur,
-  //       tp.n_ciclo,
-  //       tp.c_ciclo,
-  //       tp.n_ht,
-  //       tp.n_hp
-  //     ORDER BY
-  //       tp.c_nomcur;
-  //       `,
-  // getCursoDto.c_codfac,
-  // getCursoDto.c_codesp,
-  // getCursoDto.n_ciclo,
-  // getCursoDto.c_codmod,
-  //   );
-  // }
-  // async getCursos(getCursoDto: GetCursoDto) {
-  //   return await this.prismaReadonly.$queryRawUnsafe(
-  //     `SELECT distinct
-  //       tp.n_codper,
-  //       tp.c_codmod,
-  //       tb.c_nommod,
-  //       tp.c_codfac,
-  //       tp.c_codesp,
-  //       tp.n_ciclo,
-  //       tp.c_ciclo,
-  //       tp.c_codcur,
-  //       tp.c_nomcur,
-  //       tp.n_ht,
-  //       tp.n_hp,
-  //       te.n_codper_equ,
-  //       te.c_codmod_equ,
-  //       te.c_codfac_equ,
-  //       te.c_codesp_equ,
-  //       te.c_codcur_equ,
-  //       te.c_nomcur_equ
-  //     FROM
-  //       tb_plan_estudio_curso tp
-  //         INNER JOIN
-  //       tb_modalidad tb ON tb.c_codmod = tp.c_codmod
-  //         INNER JOIN
-  //     (select distinct
-  //       te.*,
-  //       tp.c_nomcur as c_nomcur_equ
-  //     from tb_plan_estudio_equ te
-  //     inner join tb_plan_estudio_curso tp on te.c_codcur_equ = tp.c_codcur) te ON te.c_codcur_equ = tp.c_codcur
-  //     WHERE
-  //       tp.n_codper IN (2023 , 2025)
-  //       AND tp.c_codfac = ?
-  //       AND tp.c_codesp = ?
-  //       AND tp.n_ciclo = ?
-  //       AND tp.c_codmod = ?
-  //     GROUP BY tp.n_codper , tp.c_codmod , tp.c_codfac , tp.c_codesp , tp.c_codcur , tp.c_nomcur , tp.n_ciclo , tp.c_ciclo , tp.n_ht , tp.n_hp, te.n_codper_equ,
-  //       te.c_codmod_equ,
-  //       te.c_codfac_equ,
-  //       te.c_codesp_equ,
-  //       te.c_codcur_equ,
-  //       te.c_nomcur_equ
-  //     ORDER BY tp.c_nomcur;
-  //       `,
+  //         tp.n_codper,
+  //         tp.c_codmod,
+  //         tb.c_nommod,
+  //         tp.c_codfac,
+  //         t_f.nom_fac,
+  //         tp.c_codesp,
+  //         t_e.nomesp,
+  //         tp.c_area,
+  //         tpec.c_nom_cur_area,
+  //         tp.n_ciclo,
+  //         tp.c_codcur,
+  //         tp.c_nomcur,
+  //         tp.n_ht,
+  //         tp.n_hp,
+  //         tpee.n_codper_equ,
+  //         tpee.c_codmod_equ,
+  //         tpee.c_codfac_equ,
+  //         tpee.c_codesp_equ,
+  //         tpee.c_codcur_equ,
+  //         tpee.c_nomcur_equ,
+  //         tp.c_curup as h_umaPlus
+  //       FROM
+  //         tb_plan_estudio_curso tp
+  //         INNER JOIN tb_modalidad tb ON tb.c_codmod = tp.c_codmod
+  //         left JOIN tb_plan_estudio_curso_area tpec ON tpec.c_cod_cur_area = tp.c_area
+  //         INNER JOIN tb_facultad t_f ON t_f.cod_fac = tp.c_codfac
+  //         INNER JOIN tb_especialidad t_e ON t_e.codesp = tp.c_codesp
+  //         LEFT JOIN (
+  //             SELECT DISTINCT
+  //               te.c_codcur,
+  //               te.c_codfac,
+  //               te.c_codesp,
+  //               te.c_codmod,
+  //               te.n_codper_equ,
+  //               te.c_codmod_equ,
+  //               te.c_codfac_equ,
+  //               te.c_codesp_equ,
+  //               te.c_codcur_equ,
+  //               tp2.c_nomcur AS c_nomcur_equ
+  //             FROM tb_plan_estudio_equ te
+  //             INNER JOIN tb_plan_estudio_curso tp2 ON te.c_codcur_equ = tp2.c_codcur
+  //             WHERE te.n_codper_equ IN (2023, 2025)
+  //         ) tpee
+  //           ON tpee.c_codcur = tp.c_codcur
+  //           AND tpee.c_codmod = tp.c_codmod
+  //           AND tpee.c_codfac = tp.c_codfac
+  //           AND tpee.c_codesp = tp.c_codesp
+  //       WHERE
+  //         tp.n_codper IN (2023, 2025)
+  //         AND tp.c_codfac = ?
+  //         AND tp.c_codesp = ?
+  //         AND tp.n_ciclo = ?
+  //         AND tp.c_codmod = ?
+  //       GROUP BY
+  //         tp.n_codper, tp.c_codmod, tb.c_nommod, tp.c_codfac, t_f.nom_fac,
+  //         tp.c_codesp, t_e.nomesp, tp.c_area, tpec.c_nom_cur_area,
+  //         tp.c_codcur, tp.c_nomcur, tp.n_ciclo,
+  //         tp.n_ht, tp.n_hp,
+  //         tpee.n_codper_equ, tpee.c_codmod_equ, tpee.c_codfac_equ,
+  //         tpee.c_codesp_equ, tpee.c_codcur_equ, tpee.c_nomcur_equ,
+  //         tp.c_curup
+  //       ORDER BY tp.c_nomcur;`,
   //     getCursoDto.c_codfac,
   //     getCursoDto.c_codesp,
   //     getCursoDto.n_ciclo,
   //     getCursoDto.c_codmod,
   //   );
-  // }
 
-  async getEquivalencias() {
-    return await this.prismaReadonly.$queryRawUnsafe(`
-      SELECT * FROM tb_plan_estudio_equ WHERE n_codper in (2023, 2025)
-    `);
-  }
+  //   const cursosLocales = await this.prismaService.curso.findMany({
+  //     where: {
+  //       turno_id: turno.id,
+  //     },
+  //     include: {
+  //       cursosPadres: true,
+  //     },
+  //   });
+
+  //   const cursosFinal = await Promise.all(
+  //     cursosSigu.map(async (curso) => {
+  //       const match = cursosLocales.find(
+  //         (c) =>
+  //           String(c.n_codper) === String(curso.n_codper) &&
+  //           Number(c.c_codmod) === Number(curso.c_codmod) &&
+  //           c.c_codfac === curso.c_codfac &&
+  //           c.c_codesp === curso.c_codesp &&
+  //           c.c_codcur === curso.c_codcur,
+  //       );
+
+  //       let tipoAgrupado: number | null = null;
+  //       let c_alu_total = match?.c_alu ?? null;
+
+  //       if (match?.cursosPadres?.[0]?.padre_curso_id) {
+  //         tipoAgrupado = match.cursosPadres[0].tipo;
+
+  //         try {
+  //           const cursosDelGrupo =
+  //             await this.prismaService.grupo_sincro.findMany({
+  //               where: {
+  //                 padre_curso_id: match.cursosPadres[0].padre_curso_id,
+  //               },
+  //             });
+
+  //           let sumaCAlu = 0;
+  //           for (const curso of cursosDelGrupo) {
+  //             const cursoDB = await this.prismaService.curso.findFirst({
+  //               where: { id: curso.curso_id },
+  //               select: { c_alu: true },
+  //             });
+  //             if (cursoDB?.c_alu) sumaCAlu += cursoDB.c_alu;
+  //           }
+
+  //           // console.log(
+  //           // `🔢 Total c_alu del grupo [${match.cursosPadres[0].padre_curso_id}]:`,
+  //           // sumaCAlu,
+  //           // );
+  //           c_alu_total = sumaCAlu;
+  //         } catch (err) {
+  //           console.error('❌ Error al obtener cursos del grupo:', err);
+  //         }
+  //       }
+
+  //       return {
+  //         ...curso,
+  //         tipoAgrupado,
+  //         c_alu: c_alu_total,
+  //       };
+  //     }),
+  //   );
+
+  //   return cursosFinal;
+  // }
 }
+
+// async getCursos(getCursoDto: GetCursoDto) {
+//   return await this.prismaReadonly.$queryRawUnsafe(
+//     `SELECT
+//       tp.n_codper,
+//       tp.c_codmod,
+//       tb.c_nommod,
+//       tp.c_codfac,
+//       tp.c_codesp,
+//       tp.c_area,
+//       tpec.c_nom_cur_area,
+//       tp.n_ciclo,
+//       tp.c_ciclo,
+//       tp.c_codcur,
+//       tp.c_nomcur,
+//       tp.n_ht,
+//       tp.n_hp
+//     FROM
+//       tb_plan_estudio_curso tp
+//       INNER JOIN tb_modalidad tb ON tb.c_codmod = tp.c_codmod
+//       INNER JOIN tb_plan_estudio_curso_area tpec ON tpec.c_cod_cur_area = tp.c_area
+//     WHERE
+//       tp.n_codper IN ( 2023, 2025 )
+//       AND tp.c_codfac = ?
+//       AND tp.c_codesp = ?
+//       AND tp.n_ciclo = ?
+//       AND tp.c_codmod = ?
+//     GROUP BY
+//       tp.n_codper,
+//       tp.c_codmod,
+//       tp.c_codfac,
+//       tp.c_codesp,
+//       tp.c_area,
+//       tpec.c_nom_cur_area,
+//       tp.c_codcur,
+//       tp.c_nomcur,
+//       tp.n_ciclo,
+//       tp.c_ciclo,
+//       tp.n_ht,
+//       tp.n_hp
+//     ORDER BY
+//       tp.c_nomcur;
+//       `,
+// getCursoDto.c_codfac,
+// getCursoDto.c_codesp,
+// getCursoDto.n_ciclo,
+// getCursoDto.c_codmod,
+//   );
+// }
+// async getCursos(getCursoDto: GetCursoDto) {
+//   return await this.prismaReadonly.$queryRawUnsafe(
+//     `SELECT distinct
+//       tp.n_codper,
+//       tp.c_codmod,
+//       tb.c_nommod,
+//       tp.c_codfac,
+//       tp.c_codesp,
+//       tp.n_ciclo,
+//       tp.c_ciclo,
+//       tp.c_codcur,
+//       tp.c_nomcur,
+//       tp.n_ht,
+//       tp.n_hp,
+//       te.n_codper_equ,
+//       te.c_codmod_equ,
+//       te.c_codfac_equ,
+//       te.c_codesp_equ,
+//       te.c_codcur_equ,
+//       te.c_nomcur_equ
+//     FROM
+//       tb_plan_estudio_curso tp
+//         INNER JOIN
+//       tb_modalidad tb ON tb.c_codmod = tp.c_codmod
+//         INNER JOIN
+//     (select distinct
+//       te.*,
+//       tp.c_nomcur as c_nomcur_equ
+//     from tb_plan_estudio_equ te
+//     inner join tb_plan_estudio_curso tp on te.c_codcur_equ = tp.c_codcur) te ON te.c_codcur_equ = tp.c_codcur
+//     WHERE
+//       tp.n_codper IN (2023 , 2025)
+//       AND tp.c_codfac = ?
+//       AND tp.c_codesp = ?
+//       AND tp.n_ciclo = ?
+//       AND tp.c_codmod = ?
+//     GROUP BY tp.n_codper , tp.c_codmod , tp.c_codfac , tp.c_codesp , tp.c_codcur , tp.c_nomcur , tp.n_ciclo , tp.c_ciclo , tp.n_ht , tp.n_hp, te.n_codper_equ,
+//       te.c_codmod_equ,
+//       te.c_codfac_equ,
+//       te.c_codesp_equ,
+//       te.c_codcur_equ,
+//       te.c_nomcur_equ
+//     ORDER BY tp.c_nomcur;
+//       `,
+//     getCursoDto.c_codfac,
+//     getCursoDto.c_codesp,
+//     getCursoDto.n_ciclo,
+//     getCursoDto.c_codmod,
+//   );
+// }
 
 // SELECT distinct
 //     tp.n_codper,
@@ -334,7 +275,6 @@ export class SiguService {
 //     tp.c_codfac,
 //     tp.c_codesp,
 //     tp.n_ciclo,
-//     tp.c_ciclo,
 //     tp.c_codcur,
 //     tp.c_nomcur,
 //     tp.n_ht,
@@ -482,5 +422,21 @@ export class SiguService {
     n_codpla: 2025
     c_sedcod: 1 => no cambia
   }
+*/
 
+/*
+CREATE TABLE `tb_plan_estudio_curso` (
+  `id` int primary key auto_increment,
+  `n_codper` int DEFAULT NULL,
+  `c_codmod` int DEFAULT NULL,
+  `c_codfac` varchar(255) DEFAULT NULL,
+  `c_codesp` varchar(255) DEFAULT NULL,
+  `c_codcur` varchar(255) DEFAULT NULL,
+  `c_nomcur` varchar(255) DEFAULT NULL,
+  `n_ciclo` int DEFAULT NULL,
+  `n_ht` int DEFAULT NULL,
+  `n_hp` int DEFAULT NULL,
+  `c_area` varchar(255) DEFAULT NULL,
+  `c_curup` varchar(255) DEFAULT NULL
+) 
 */

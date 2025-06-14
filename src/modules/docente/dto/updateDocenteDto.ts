@@ -1,25 +1,10 @@
-import {
-  IsInt,
-  IsString,
-  IsNumber,
-  IsOptional,
-  IsNotEmpty,
-} from 'class-validator';
 import { Type } from 'class-transformer';
+import { IsInt, IsString, IsNumber, IsOptional } from 'class-validator';
 
 export class UpdateDocenteDto {
-  @Type(() => Number)
-  @IsInt()
-  @IsNotEmpty()
-  id: number;
-
   @IsOptional()
   @IsString()
-  c_codfac?: string;
-
-  @IsOptional()
-  @IsString()
-  nom_fac?: string;
+  c_dnidoc?: string;
 
   @IsOptional()
   @IsString()
@@ -27,17 +12,21 @@ export class UpdateDocenteDto {
 
   @IsOptional()
   @IsInt()
+  @Type(() => Number)
   h_min?: number;
 
   @IsOptional()
   @IsInt()
+  @Type(() => Number)
   h_max?: number;
 
   @IsOptional()
   @IsInt()
+  @Type(() => Number)
   tipo?: number;
 
   @IsOptional()
   @IsNumber()
+  @Type(() => Number)
   h_total?: number;
 }
