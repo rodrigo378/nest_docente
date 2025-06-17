@@ -11,6 +11,7 @@ export class AulaService {
     docente: boolean = false,
   ) {
     const include: { Horario: any } = { Horario: false };
+    console.log('getAulas con seccion');
 
     if (horario) {
       include.Horario = {
