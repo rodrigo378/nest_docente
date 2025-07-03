@@ -16,10 +16,13 @@ import { UpdateTurnoDto } from './dto/updateTurnoDto';
 import { CreateTurnoDto } from './dto/createTurnoDto';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth/jwt-auth.guard';
 import { AuthenticatedRequest } from '../auth/interface/request.interface';
+import { GenerarCursoDto } from './dto/generarCursoDto';
 
 @Controller('turno')
 export class TurnoController {
   constructor(private readonly turnoService: TurnoService) {}
+
+  // Rutas nuevas
 
   @Get('')
   getTurnos(
@@ -41,6 +44,44 @@ export class TurnoController {
       Number(estado),
     );
   }
+
+  @Get('plan/cursos/:id')
+  getCursosPlanTurno(@Param('id') id: number) {
+    return this.turnoService.getCursosPlanTurno(id);
+  }
+
+  @Get('cursos/:id')
+  getCursosTurno(@Param('id') id: number) {
+    return this.turnoService.getCursoTurno(id);
+  }
+
+  @Post('generar/curso')
+  generarCurso(@Body() generarCursoDto: GenerarCursoDto) {
+    return this.turnoService.generarCurso(generarCursoDto);
+  }
+
+  // Rutas antiguas
+
+  // @Get('')
+  // getTurnos(
+  //   @Query('c_codfac') c_codfac?: string,
+  //   @Query('c_codesp') c_codesp?: string,
+  //   @Query('c_codmod') c_codmod?: number,
+  //   @Query('n_codper') n_codper?: string,
+  //   @Query('c_codpla') c_codpla?: string,
+  //   @Query('n_ciclo') n_ciclo?: number,
+  //   @Query('estado') estado?: number,
+  // ) {
+  //   return this.turnoService.getTurnos(
+  //     c_codfac,
+  //     c_codesp,
+  //     Number(c_codmod),
+  //     Number(n_codper),
+  //     Number(c_codpla),
+  //     Number(n_ciclo),
+  //     Number(estado),
+  //   );
+  // }
 
   @Get(':id')
   getTurno(@Param('id', ParseIntPipe) id: number) {

@@ -8,6 +8,7 @@ import { CreateTurnoDto } from './dto/createTurnoDto';
 import { createLog } from 'src/common/utils/log.util';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { PrismaReadonlyService } from 'src/prisma/readonly.service';
+import { GenerarCursoDto } from './dto/generarCursoDto';
 
 @Injectable()
 export class TurnoService {
@@ -16,6 +17,7 @@ export class TurnoService {
     private readonly prismaReadonly: PrismaReadonlyService,
   ) {}
 
+  // Rutas nuevas
   async getTurnos(
     c_codfac?: string,
     c_codesp?: string,
@@ -35,24 +37,111 @@ export class TurnoService {
         ...(n_ciclo && { n_ciclo }),
         ...(estado && { estado }),
       },
-      include: { periodo: true },
     });
 
-    const fechaActual = new Date();
-
-    const turnosConVencimiento = turnos.map((turno) => {
-      const vencio = turno.periodo?.f_cierre
-        ? new Date(turno.periodo.f_cierre) < fechaActual
-        : false;
-
-      return {
-        ...turno,
-        vencio,
-      };
-    });
-
-    return turnosConVencimiento;
+    return turnos;
   }
+
+  async getCursosPlanTurno(id: number) {
+    const turno = await this.prismaService.turno.findUnique({ where: { id } });
+
+    if (!turno) {
+      return;
+    }
+
+    const cursos = await this.prismaService.tb_plan_estudio_curso.findMany({
+      where: {
+        n_codper: turno.n_codpla,
+        c_codmod: turno.c_codmod,
+        c_codfac: turno.c_codfac,
+        c_codesp: turno.c_codesp,
+        n_ciclo: turno.n_ciclo,
+      },
+    });
+
+    return cursos;
+  }
+
+  async generarCurso(generarCursoDto: GenerarCursoDto) {
+    const { id_planCurso, turno_id, c_alu } = generarCursoDto;
+
+    const turno = await this.prismaService.turno.findUnique({
+      where: { id: turno_id },
+    });
+    const curso = await this.prismaService.tb_plan_estudio_curso.findUnique({
+      where: { id: id_planCurso },
+    });
+
+    if (!turno || !curso) {
+      return;
+    }
+
+    const newCurso = await this.prismaService.curso.create({
+      data: {
+        curso_id: id_planCurso,
+        turno_id,
+        c_alu,
+      },
+    });
+
+    return { message: 'Curso creado', curso: newCurso };
+  }
+
+  async getCursoTurno(id: number) {
+    const turno = await this.prismaService.turno.findUnique({
+      where: { id: id },
+    });
+
+    if (!turno) {
+      return;
+    }
+    const cursos = await this.prismaService.curso.findMany({
+      where: { turno_id: id },
+      include: { curso: true },
+    });
+
+    return cursos;
+  }
+
+  // Rutas antiguas
+
+  // async getTurnos(
+  //   c_codfac?: string,
+  //   c_codesp?: string,
+  //   c_codmod?: number,
+  //   n_codper?: number,
+  //   n_codpla?: number,
+  //   n_ciclo?: number,
+  //   estado?: number,
+  // ) {
+  //   const turnos = await this.prismaService.turno.findMany({
+  //     where: {
+  //       ...(c_codfac && { c_codfac }),
+  //       ...(c_codesp && { c_codesp }),
+  //       ...(c_codmod && { c_codmod }),
+  //       ...(n_codper && { n_codper }),
+  //       ...(n_codpla && { n_codpla }),
+  //       ...(n_ciclo && { n_ciclo }),
+  //       ...(estado && { estado }),
+  //     },
+  //     include: { periodo: true },
+  //   });
+
+  //   const fechaActual = new Date();
+
+  //   const turnosConVencimiento = turnos.map((turno) => {
+  //     const vencio = turno.periodo?.f_cierre
+  //       ? new Date(turno.periodo.f_cierre) < fechaActual
+  //       : false;
+
+  //     return {
+  //       ...turno,
+  //       vencio,
+  //     };
+  //   });
+
+  //   return turnosConVencimiento;
+  // }
 
   async getTurno(id: number) {
     const turno = await this.prismaService.turno.findFirst({
