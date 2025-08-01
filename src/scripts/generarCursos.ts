@@ -7,9 +7,18 @@ const prisma = new PrismaClient();
 export async function seedCurso20252() {
   console.log('🌱 Seeding Curso para n_codper = 20252...');
 
+  // const turnos = await prisma.turno.findMany({
+  //   where: {
+  //     id: { in: [2392, 2753] },
+  //   },
+  // });
+
   const turnos = await prisma.turno.findMany({
     where: {
-      n_codper: 20252,
+      id: {
+        gte: 2392,
+        lte: 2772,
+      },
     },
   });
 

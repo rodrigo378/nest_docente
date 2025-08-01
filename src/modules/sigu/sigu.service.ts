@@ -166,57 +166,55 @@ export class SiguService {
       },
     });
 
-    const cursosFinal = await Promise.all(
-      cursosSigu.map(async (curso) => {
-        const match = cursosLocales.find(
-          (c) =>
-            String(c.n_codper) === String(curso.n_codper) &&
-            Number(c.c_codmod) === Number(curso.c_codmod) &&
-            c.c_codfac === curso.c_codfac &&
-            c.c_codesp === curso.c_codesp &&
-            c.c_codcur === curso.c_codcur,
-        );
+    const cursosFinal = (
+      await Promise.all(
+        cursosSigu.map(async (curso) => {
+          const match = cursosLocales.find(
+            (c) =>
+              String(c.n_codper) === String(curso.n_codper) &&
+              Number(c.c_codmod) === Number(curso.c_codmod) &&
+              c.c_codfac === curso.c_codfac &&
+              c.c_codesp === curso.c_codesp &&
+              c.c_codcur === curso.c_codcur,
+          );
 
-        let tipoAgrupado: number | null = null;
-        let c_alu_total = match?.c_alu ?? null;
+          let tipoAgrupado: number | null = null;
+          let c_alu_total = match?.c_alu ?? null;
 
-        if (match?.cursosPadres?.[0]?.padre_curso_id) {
-          tipoAgrupado = match.cursosPadres[0].tipo;
+          if (match?.cursosPadres?.[0]?.padre_curso_id) {
+            tipoAgrupado = match.cursosPadres[0].tipo;
 
-          try {
-            const cursosDelGrupo =
-              await this.prismaService.grupo_sincro.findMany({
-                where: {
-                  padre_curso_id: match.cursosPadres[0].padre_curso_id,
-                },
-              });
+            try {
+              const cursosDelGrupo =
+                await this.prismaService.grupo_sincro.findMany({
+                  where: {
+                    padre_curso_id: match.cursosPadres[0].padre_curso_id,
+                  },
+                });
 
-            let sumaCAlu = 0;
-            for (const curso of cursosDelGrupo) {
-              const cursoDB = await this.prismaService.curso.findFirst({
-                where: { id: curso.curso_id },
-                select: { c_alu: true },
-              });
-              if (cursoDB?.c_alu) sumaCAlu += cursoDB.c_alu;
+              let sumaCAlu = 0;
+              for (const curso of cursosDelGrupo) {
+                const cursoDB = await this.prismaService.curso.findFirst({
+                  where: { id: curso.curso_id },
+                  select: { c_alu: true },
+                });
+                if (cursoDB?.c_alu) sumaCAlu += cursoDB.c_alu;
+              }
+
+              c_alu_total = sumaCAlu;
+            } catch (err) {
+              console.error('❌ Error al obtener cursos del grupo:', err);
             }
-
-            // console.log(
-            // `🔢 Total c_alu del grupo [${match.cursosPadres[0].padre_curso_id}]:`,
-            // sumaCAlu,
-            // );
-            c_alu_total = sumaCAlu;
-          } catch (err) {
-            console.error('❌ Error al obtener cursos del grupo:', err);
           }
-        }
 
-        return {
-          ...curso,
-          tipoAgrupado,
-          c_alu: c_alu_total,
-        };
-      }),
-    );
+          return {
+            ...curso,
+            tipoAgrupado,
+            c_alu: c_alu_total,
+          };
+        }),
+      )
+    ).filter((curso) => curso.c_alu && curso.c_alu > 0); // 👈 aquí filtramos los cursos con c_alu válido
 
     return cursosFinal;
   }
