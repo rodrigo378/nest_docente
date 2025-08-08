@@ -29,10 +29,11 @@ export class DocenteService {
           h_fin: true,
           n_horas: true,
           tipo: true,
-          curso: curso ? { include: { cursosPadres: true } } : false,
+          curso: curso
+            ? { include: { cursosPadres: true, turno: true } }
+            : false,
           aula: aula ? true : false,
           modalidad: true,
-          //modlalidad: { select: { id: true, nombre: true } },
         },
       };
     }
