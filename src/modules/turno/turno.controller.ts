@@ -74,4 +74,19 @@ export class TurnoController {
   ) {
     return this.turnoService.deleteTurno(req.user.id, id);
   }
+
+  @Get('/sigu/verificar')
+  verificarSigu(
+    @Query('c_codfac') c_codfac: string,
+    @Query('c_codmod') c_codmod: string,
+    @Query('n_ciclo') n_ciclo: string,
+    @Query('c_codesp') c_codesp: string,
+  ) {
+    return this.turnoService.verificarSigu(
+      c_codfac,
+      Number(c_codmod),
+      Number(n_ciclo),
+      c_codesp,
+    );
+  }
 }

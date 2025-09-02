@@ -10,6 +10,30 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { PrismaReadonlyService } from 'src/prisma/readonly.service';
 import { Curso } from '@prisma/client';
 
+type RowComparacion = {
+  c_codfac: string;
+  c_codesp: string;
+  n_codper: number;
+  c_codcur: string;
+  c_dnidoc: string;
+  n_ciclo: number;
+  c_grpcur: string;
+  c_codmod: number;
+  dia: string; // 'Lunes'...'Domingo'
+  h_inicio: string; // 'HH:mm'
+  h_fin: string; // 'HH:mm'
+};
+
+type DiferenciaItem = {
+  key: string;
+  sigu: RowComparacion | null;
+  horario: RowComparacion | null;
+};
+
+type ResultadoTurno = {
+  turno: any; // si tienes el tipo Prisma de turno, úsalo aquí
+  diferencias: DiferenciaItem[];
+};
 @Injectable()
 export class TurnoService {
   constructor(
@@ -277,6 +301,235 @@ export class TurnoService {
       success: true,
       mensaje: '✅ Turno eliminado correctamente',
     };
+  }
+
+  // Tipos de apoyo (opcionales pero recomendados)
+
+  // function makeKey(r: RowComparacion): string {
+  //   return [
+  //     r.c_codfac,
+  //     r.c_codesp,
+  //     r.n_codper,
+  //     r.c_codcur,
+  //     r.c_dnidoc,
+  //     r.n_ciclo,
+  //     r.c_grpcur,
+  //     r.c_codmod,
+  //     r.dia,
+  //     r.h_inicio,
+  //     r.h_fin,
+  //   ].join('|');
+  // }
+
+  async verificarSigu(
+    c_codfac: string,
+    c_codmod: number,
+    n_ciclo: number,
+    c_codesp: string,
+  ) {
+    // base => sin docente/día/hora
+    const makeBase = (r: any) =>
+      [
+        String(r.c_codfac),
+        String(r.c_codesp),
+        String(r.Plan), // 👈 usamos Plan (ya viene en tus SELECTs)
+        String(r.c_codcur),
+        String(r.n_ciclo),
+        String(r.c_grpcur),
+        String(r.c_codmod),
+      ].join('|');
+
+    // detalle => solo asignación (docente + franja)
+    const makeDetail = (r: any) =>
+      [
+        String(r.c_dnidoc ?? ''),
+        String(r.dia),
+        String(r.h_inicio),
+        String(r.h_fin),
+      ].join('|');
+
+    // para sets de comparación (base + detail)
+    const makeFullKey = (r: any) => `${makeBase(r)}|${makeDetail(r)}`;
+
+    // para mostrar como pides: "base => detail"
+    const makeArrowFmt = (r: any) => `${makeBase(r)} => ${makeDetail(r)}`;
+
+    // turnos filtrados
+    const turnos = await this.prismaService.turno.findMany({
+      where: { c_codfac, c_codmod, n_ciclo, c_codesp },
+      select: {
+        id: true,
+        c_codfac: true,
+        c_codesp: true,
+        c_codmod: true,
+        n_ciclo: true,
+        c_grpcur: true,
+      },
+    });
+
+    const resultados: any[] = [];
+
+    for (const turno of turnos) {
+      // HORARIO (base local)
+      const dataHorario = await this.prismaService.$queryRawUnsafe(
+        `
+      SELECT 
+          b.c_codfac,
+          b.c_codesp,
+          b.n_codper AS Plan,                -- ⚠️ Asegúrate que tu SELECT ya devuelve Plan
+          b.c_codcur,
+          d.c_dnidoc,
+          b.n_ciclo,
+          c.c_grpcur,
+          b.c_codmod,
+          a.dia,
+          DATE_FORMAT(DATE_SUB(a.h_inicio, INTERVAL 5 HOUR), '%H:%i') AS h_inicio,
+          DATE_FORMAT(DATE_SUB(a.h_fin, INTERVAL 5 HOUR), '%H:%i')   AS h_fin
+      FROM horario a
+      INNER JOIN curso  b ON a.curso_id = b.id
+      INNER JOIN turno  c ON b.turno_id = c.id
+      LEFT  JOIN docente d ON a.docente_id = d.id
+      WHERE b.c_codfac = ?
+        AND b.c_codesp = ?
+        AND b.c_codmod = ?
+        AND b.n_ciclo = ?
+        AND c.c_grpcur = ?
+      `,
+        turno.c_codfac,
+        turno.c_codesp,
+        turno.c_codmod,
+        turno.n_ciclo,
+        turno.c_grpcur,
+      );
+
+      // si no hay registros en horario, no incluimos el turno
+      if (!dataHorario || (dataHorario as any[]).length === 0) continue;
+
+      // SIGU (referencia)
+      const dataSigu = await this.prismaReadonly.$queryRawUnsafe(
+        `
+      SELECT 
+          a.c_codfac,
+          a.c_codesp,
+          a.n_codpla AS Plan,
+          a.c_codcur,
+          a.c_dnidoc,
+          c.n_ciclo,
+          a.c_grpcur,
+          a.c_codmod,
+          CASE a.n_numdia
+              WHEN 1 THEN "Lunes"
+              WHEN 2 THEN "Martes"
+              WHEN 3 THEN "Miércoles"
+              WHEN 4 THEN "Jueves"
+              WHEN 5 THEN "Viernes"
+              WHEN 6 THEN "Sábado"
+              WHEN 7 THEN "Domingo"
+              ELSE "Revisar"
+          END AS dia,
+          CONCAT(LPAD(a.c_hh_ini, 2, "0"), ":", LPAD(a.c_mi_ini, 2, "0")) AS h_inicio,
+          CONCAT(LPAD(a.c_hh_fin, 2, "0"), ":", LPAD(a.c_mi_fin, 2, "0")) AS h_fin
+      FROM tb_cur_grp_hor a
+      LEFT JOIN tb_plan_estudio_curso c 
+        ON a.c_codcur = c.c_codcur 
+       AND a.c_codfac = c.c_codfac 
+       AND a.c_codesp = c.c_codesp 
+       AND a.c_codmod = c.c_codmod 
+       AND a.n_codpla = c.n_codper
+      WHERE a.n_codper = "20252"
+        AND a.c_codfac = ?
+        AND a.c_codesp = ?
+        AND a.c_codmod = ?
+        AND c.n_ciclo = ?
+        AND a.c_grpcur = ?
+      `,
+        turno.c_codfac,
+        turno.c_codesp,
+        turno.c_codmod,
+        turno.n_ciclo,
+        turno.c_grpcur,
+      );
+
+      // Agrupar por baseKey (para aparear diferencias por curso/grupo/mod)
+      const groupByBase = (rows: any[]) => {
+        const map = new Map<string, any[]>();
+        for (const r of rows) {
+          const base = makeBase(r);
+          if (!map.has(base)) map.set(base, []);
+          map.get(base)!.push(r);
+        }
+        return map;
+      };
+
+      const gH = groupByBase(dataHorario as any[]);
+      const gS = groupByBase(dataSigu as any[]);
+
+      const diferencias: { keySigu: string; keyHorario: string }[] = [];
+
+      // Unir todas las bases presentes en cualquiera de las fuentes
+      const allBases = new Set<string>([...gH.keys(), ...gS.keys()]);
+
+      for (const base of allBases) {
+        const hRows = gH.get(base) ?? [];
+        const sRows = gS.get(base) ?? [];
+
+        // sets de full keys para comparación exacta (docente + franja)
+        const setHFull = new Set(hRows.map(makeFullKey));
+        const setSFull = new Set(sRows.map(makeFullKey));
+
+        // comunes exactos
+        const comunes: string[] = [];
+        for (const fk of setHFull) if (setSFull.has(fk)) comunes.push(fk);
+        comunes.forEach((fk) => {
+          setHFull.delete(fk);
+          setSFull.delete(fk);
+        });
+
+        // ahora setHFull = solo en Horario; setSFull = solo en SIGU
+        const hOnly = [...setHFull];
+        const sOnly = [...setSFull];
+
+        // Intentar aparear por cantidad (1 a 1) para mostrar ambos lados juntos cuando hay “traslados”
+        const pairCount = Math.min(hOnly.length, sOnly.length);
+        for (let i = 0; i < pairCount; i++) {
+          const hKey = hOnly[i];
+          const sKey = sOnly[i];
+
+          // reconstruir filas para mostrar formateado con flecha
+          const hRow = hRows.find((r: any) => makeFullKey(r) === hKey)!;
+          const sRow = sRows.find((r: any) => makeFullKey(r) === sKey)!;
+
+          diferencias.push({
+            keySigu: makeArrowFmt(sRow), // base => docente|dia|inicio|fin (SIGU)
+            keyHorario: makeArrowFmt(hRow), // base => docente|dia|inicio|fin (HORARIO)
+          });
+        }
+
+        // Sobrantes solo en Horario
+        for (let i = pairCount; i < hOnly.length; i++) {
+          const hKey = hOnly[i];
+          const hRow = hRows.find((r: any) => makeFullKey(r) === hKey)!;
+          diferencias.push({
+            keySigu: '',
+            keyHorario: makeArrowFmt(hRow),
+          });
+        }
+
+        // Sobrantes solo en SIGU
+        for (let i = pairCount; i < sOnly.length; i++) {
+          const sKey = sOnly[i];
+          const sRow = sRows.find((r: any) => makeFullKey(r) === sKey)!;
+          diferencias.push({
+            keySigu: makeArrowFmt(sRow),
+            keyHorario: '',
+          });
+        }
+      }
+
+      resultados.push({ turno, diferencias });
+    }
+
+    return resultados;
   }
 }
 
