@@ -408,8 +408,9 @@ model Docente {
   v2          Int    @default(0)
   id_funcion  Int?
 
-  Horario    Horario[]
-  asistencia Asistencia[]
+  Horario      Horario[]
+  asistencia   Asistencia[]
+  DocenteCurso DocenteCurso[]
 
   @@map("docente")
 }
@@ -453,4 +454,14 @@ model Asistencia {
 enum TipoMarca {
   entrada
   salida
+}
+
+model DocenteCurso {
+  id         Int    @id @default(autoincrement())
+  docente_id Int
+  nom_cur    String @db.VarChar(150)
+
+  docente Docente @relation(fields: [docente_id], references: [id])
+
+  @@map("docente_curso")
 }

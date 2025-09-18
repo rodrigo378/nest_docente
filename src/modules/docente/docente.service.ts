@@ -3,6 +3,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateDocenteDto } from './dto/createDocenteDto';
 import { UpdateDocenteDto } from './dto/updateDocenteDto';
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { calcularDisponibilidad } from 'src/common/utils/disponibilidad';
 
 @Injectable()
 export class DocenteService {
@@ -15,13 +16,16 @@ export class DocenteService {
     c_codfac?: string,
     c_codesp?: string,
   ) {
-    const include: { Horario?: any } = { Horario: false };
+    const include: { Horario?: any; DocenteCurso?: any } = {
+      Horario: false,
+      DocenteCurso: true, // ✅ se mantiene
+    };
     const where: { Horario?: any } = {};
 
     if (horario) {
       include.Horario = {
         orderBy: { id: 'desc' },
-        distinct: ['dia', 'h_inicio', 'h_fin'],
+        distinct: ['dia', 'h_inicio', 'h_fin'], // si Prisma te da error, quítalo (nested distinct no siempre es soportado)
         select: {
           id: true,
           dia: true,
@@ -32,14 +36,12 @@ export class DocenteService {
           curso: curso ? { include: { cursosPadres: true } } : false,
           aula: aula ? true : false,
           modalidad: true,
-          //modlalidad: { select: { id: true, nombre: true } },
         },
       };
     }
 
     if (c_codfac || c_codesp) {
       const turnoWhere: { c_codfac?: string; c_codesp?: string } = {};
-
       if (c_codfac) turnoWhere.c_codfac = c_codfac;
       if (c_codesp) turnoWhere.c_codesp = c_codesp;
 
@@ -50,7 +52,34 @@ export class DocenteService {
       };
     }
 
-    return this.prismaService.docente.findMany({ include, where });
+    const docentes = await this.prismaService.docente.findMany({
+      include,
+      where,
+    });
+
+    // Si no pediste Horario, devolvemos tal cual
+    if (!include.Horario) return docentes;
+
+    // Jornada base (ajusta claves según cómo guardas 'dia': 'lu','ma','mi','ju','vi','sa','do' o 'LUNES', etc.)
+    const jornadaBase = {
+      lu: { ini: '08:00', fin: '23:00' },
+      ma: { ini: '08:00', fin: '23:00' },
+      mi: { ini: '08:00', fin: '23:00' },
+      ju: { ini: '08:00', fin: '23:00' },
+      vi: { ini: '08:00', fin: '23:00' },
+      sa: { ini: '08:00', fin: '14:00' },
+      do: { ini: '00:00', fin: '00:00' }, // sin jornada
+    } as const;
+
+    console.log('disponibilidad ');
+
+    // Adjunta disponibilidad calculada por docente
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+    return docentes.map((d: any) => ({
+      ...d,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+      disponibilidad: calcularDisponibilidad(d.Horario ?? [], jornadaBase),
+    }));
   }
 
   async getDocente(
