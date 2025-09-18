@@ -16,38 +16,42 @@ export class DocenteService {
     c_codfac?: string,
     c_codesp?: string,
   ) {
-    const include: { Horario?: any; DocenteCurso?: any } = {
-      Horario: false,
-      DocenteCurso: true, // ✅ se mantiene
+    // 1) include: DocenteCurso SIEMPRE; Horario SIEMPRE (mínimo) para poder calcular disponibilidad
+    //    Si horario=true, ampliamos el select de Horario.
+    const minimalHorarioSelect = { dia: true, h_inicio: true, h_fin: true };
+
+    const include: any = {
+      DocenteCurso: true,
+      Horario: horario
+        ? {
+            orderBy: { id: 'desc' },
+            // distinct en nested include puede fallar en Prisma; si te da error, quítalo
+            // distinct: ['dia', 'h_inicio', 'h_fin'],
+            select: {
+              ...minimalHorarioSelect,
+              id: true,
+              n_horas: true,
+              tipo: true,
+              modalidad: true,
+              curso: curso ? { include: { cursosPadres: true } } : false,
+              aula: aula ? true : false,
+            },
+          }
+        : {
+            // cuando horario=false, traemos lo mínimo para calcular disponibilidad
+            select: minimalHorarioSelect,
+          },
     };
-    const where: { Horario?: any } = {};
 
-    if (horario) {
-      include.Horario = {
-        orderBy: { id: 'desc' },
-        distinct: ['dia', 'h_inicio', 'h_fin'], // si Prisma te da error, quítalo (nested distinct no siempre es soportado)
-        select: {
-          id: true,
-          dia: true,
-          h_inicio: true,
-          h_fin: true,
-          n_horas: true,
-          tipo: true,
-          curso: curso ? { include: { cursosPadres: true } } : false,
-          aula: aula ? true : false,
-          modalidad: true,
-        },
-      };
-    }
-
+    // 2) where condicional por Turno (facultad/especialidad)
+    const where: any = {};
     if (c_codfac || c_codesp) {
-      const turnoWhere: { c_codfac?: string; c_codesp?: string } = {};
-      if (c_codfac) turnoWhere.c_codfac = c_codfac;
-      if (c_codesp) turnoWhere.c_codesp = c_codesp;
-
       where.Horario = {
         some: {
-          Turno: turnoWhere,
+          Turno: {
+            ...(c_codfac ? { c_codfac } : {}),
+            ...(c_codesp ? { c_codesp } : {}),
+          },
         },
       };
     }
@@ -57,10 +61,7 @@ export class DocenteService {
       where,
     });
 
-    // Si no pediste Horario, devolvemos tal cual
-    if (!include.Horario) return docentes;
-
-    // Jornada base (ajusta claves según cómo guardas 'dia': 'lu','ma','mi','ju','vi','sa','do' o 'LUNES', etc.)
+    // 3) Jornada base (ajusta a tus reglas)
     const jornadaBase = {
       lu: { ini: '08:00', fin: '23:00' },
       ma: { ini: '08:00', fin: '23:00' },
@@ -71,15 +72,18 @@ export class DocenteService {
       do: { ini: '00:00', fin: '00:00' }, // sin jornada
     } as const;
 
-    console.log('disponibilidad ');
-
-    // Adjunta disponibilidad calculada por docente
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-    return docentes.map((d: any) => ({
-      ...d,
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
-      disponibilidad: calcularDisponibilidad(d.Horario ?? [], jornadaBase),
-    }));
+    // 4) Adjunta disponibilidad SIEMPRE; si horario=false, ocultamos Horario del output
+    return docentes.map((d: any) => {
+      const disponibilidad = calcularDisponibilidad(
+        d.Horario ?? [],
+        jornadaBase,
+      );
+      if (!horario) {
+        const { Horario, ...rest } = d;
+        return { ...rest, disponibilidad }; // sin Horario en la respuesta
+      }
+      return { ...d, disponibilidad }; // con Horario detallado
+    });
   }
 
   async getDocente(
